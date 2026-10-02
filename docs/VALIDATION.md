@@ -60,3 +60,14 @@ SMS thật, Supabase Auth/RLS và Cloudflare R2 chưa tích hợp. Thử giao di
 ## SMS tạm tắt để thử nghiệm trên cloud
 
 Bổ sung SMS_PROVIDER=preview: không gọi dịch vụ SMS, trả mã OTP có giới hạn cho UI và thông báo chỉ dùng dữ liệu thử. Disabled vẫn đóng đăng ký/OTP, Twilio không trả mã OTP qua API. Kiểm thử riêng dùng database tạm xác minh đăng ký, đăng nhập, mật khẩu bắt buộc, OTP không dùng chéo tài khoản/phiên, chống replay, đổi mật khẩu và chuyển về disabled.
+
+## Tối ưu cập nhật cấu hình và đăng ký lớp
+
+- Đo hai request public trên deployment cũ: health khoảng 1,95 giây, bootstrap không đăng nhập khoảng 1,00 giây; đây là mẫu đo đơn lẻ, không phải benchmark ổn định.
+- Response header deployment cũ ghi vùng Functions iad1. Connection string cấu hình trên máy chỉ vùng ap-northeast-1; vercel.json đã chuyển Functions sang hnd1 (Tokyo), cần deploy lại để áp dụng.
+- Toggle bắt buộc/tùy chọn và đăng ký/hủy lớp cập nhật UI ngay, hiển thị trạng thái đang lưu, chặn gửi lặp cùng mục và rollback đúng mục nếu thất bại.
+- Các thao tác trên dùng một request ghi; bỏ bootstrap toàn bộ dữ liệu sau mỗi lần lưu. API trả trạng thái đã lưu/ngày đăng ký thật để đồng bộ UI.
+- Session/quyền và thao tác ghi chạy trong một transaction mỗi request; bootstrap cũng dùng một transaction thay vì từng query mở transaction riêng. Giữ search_path theo SET LOCAL và các kiểm tra phân quyền.
+- npm test: 22 tests đạt; bổ sung kiểm tra rollback không ghi đè thay đổi độc lập, chặn bấm lặp, ngày đăng ký không đổi khi đăng ký lặp, một transaction mỗi endpoint và quyền/OTP hiện có.
+- npm run build đạt, bao gồm TypeScript và kiểm tra loại trừ dữ liệu local/secret khỏi gói triển khai.
+- Chưa đo lại production sau thay đổi vì chưa deploy bản này.

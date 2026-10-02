@@ -292,3 +292,7 @@ Vercel Runtime Logs giúp tìm lỗi server; Twilio logs giúp xác minh gửi/p
 Chưa có quên mật khẩu/email, nhắc bổ sung trường bắt buộc, UI tạo thêm lớp/phân quyền, pagination server hoặc tự dọn ảnh orphan. Production đang chặn đổi SĐT vì chưa có luồng xác minh số mới; các trường hồ sơ khác vẫn cập nhật được. Các kiểm thử local/adapter không thay thế nghiệm thu trên dịch vụ thật.
 
 Đây là hướng dẫn triển khai bản đang có. Build local thành công không đồng nghĩa cloud đã sẵn sàng; chỉ xác nhận hoàn tất sau khi kiểm tra database, SMS, R2 và các quyền trên deployment thực tế.
+
+## Vùng chạy hiện tại của project
+
+`vercel.json` hiện đặt `regions: ["hnd1"]` (Tokyo) để gần database được cấu hình ở `ap-northeast-1`. Nếu chuyển Supabase sang vùng khác, đổi vùng Functions tương ứng rồi deploy lại. Tránh để Functions ở Mỹ khi database ở châu Á: từng lượt truy vấn sẽ phải đi xa. [Bảng vùng Vercel](https://vercel.com/docs/regions).
