@@ -1,66 +1,288 @@
-# Triển khai Vercel + Supabase PostgreSQL + Cloudflare R2
+# Triển khai project lên Vercel + Supabase + Cloudflare R2
 
-Mã nguồn đã có adapter và cấu hình production. Chưa tạo tài nguyên cloud hay deploy: cần tài khoản/project và các biến môi trường. Không upload `.local/`, `.env.production` hoặc mật khẩu vào Git/Vercel deployment files.
+Đối chiếu tài liệu chính thức ngày 02/10/2026. Hướng dẫn dành cho mã nguồn hiện tại: Next.js App Router, Node.js 24, PostgreSQL qua `pg`, R2 qua AWS SDK, SMS qua Twilio. Chưa thực hiện triển khai thật.
 
-## Kiến trúc bản này
+## 1. Hiểu các dịch vụ cần cấu hình
 
-Next.js App Router → Vercel; `/api/*` → Next.js Route Handler (Node.js runtime) → Supabase PostgreSQL private schema `phat_hao`. Ảnh qua API có xác thực → R2 private. Auth/password/session/OTP hiện do backend ứng dụng quản lý, **không phải Supabase Auth**. SĐT dùng chung vẫn được hỗ trợ.
+| Dịch vụ | Công việc trong project |
+|---|---|
+| Vercel | Chạy giao diện Next.js và API `/api/*` |
+| Supabase | Lưu PostgreSQL trong schema riêng `phat_hao` |
+| Cloudflare R2 | Lưu ảnh đại diện WebP trong bucket private |
+| Twilio | Gửi SMS OTP cho đăng ký, đăng nhập, đổi mật khẩu |
 
-Production không chạy PGlite, không tự migrate khi cold start, không seed tài khoản demo, không trả OTP/nội dung SMS ra HTTP. Cookie có Secure/HttpOnly/SameSite=Strict. Rate limit IP, account và SĐT lưu trong PostgreSQL để dùng giữa nhiều instance. SMS đang hỗ trợ Twilio; `SMS_PROVIDER=disabled` chặn đăng ký/OTP, dùng để chuẩn bị hosting trước khi chọn provider.
+Auth do backend ứng dụng quản lý, không dùng Supabase Auth. Không cần Supabase anon/publishable/service-role key, không cần bật Phone Auth trên Supabase. Backend lưu mật khẩu đã hash, phiên đăng nhập và OTP; SĐT không unique, nhiều tài khoản vẫn dùng chung một số. SMS có mã thành viên, OTP chỉ dùng cho đúng tài khoản và mục đích tương ứng.
 
-## 1. Supabase
+Có thể deploy hạ tầng với `SMS_PROVIDER=disabled`, nhưng đăng ký/đăng nhập sẽ bị chặn. Muốn sử dụng đầy đủ phải cấu hình SMS thật. Dữ liệu local và tài khoản mẫu không tự chuyển lên cloud.
 
-1. Tạo project trong tài khoản của đơn vị hoặc chọn project hiện có. Không chạy migration này vào database chưa kiểm tra quyền sở hữu/phạm vi.
-2. Lấy connection string từ **Connect**: Transaction pooler cho `DATABASE_URL` trên Vercel; Direct hoặc Session pooler cho migration. Password trong URL cần URL-encode. Bật kiểm tra TLS; nếu CA không được tin cậy, cung cấp PEM từ Supabase qua `DATABASE_SSL_CA`, không tắt certificate verification.
-3. Copy `.env.example` thành `.env.production` trên máy, điền các giá trị thật. Không gửi secret trong chat. File này đã được Git/Vercel ignore.
-4. Chạy `npm run db:migrate`, hoặc chạy nội dung `supabase/migrations/202610020001_initial.sql` trong SQL Editor của project.
+## 2. Chuẩn bị máy và mã nguồn
 
-Migration tạo schema riêng, enable RLS toàn bộ bảng, revoke quyền của `PUBLIC`, `anon`, `authenticated`; browser không có connection string hoặc key có quyền đọc các bảng này. Schema `phat_hao` không được thêm vào exposed schemas của Supabase Data API. API kết nối bằng tài khoản database ở server và kiểm tra quyền theo session; cấu hình hiện dùng connection string postgres của project, nên phải giữ bí mật tuyệt đối. Không cho frontend gọi trực tiếp bảng accounts/sessions/challenges. Nếu đổi sang DB role hạn chế, phải cấp quyền đúng schema và thiết kế policies cho backend role đó trước khi dùng.
+Mở Terminal:
 
-Project mới bắt đầu mã PH00001, chỉ có lớp/cấu hình, không có hồ sơ giả. Dữ liệu và mật khẩu local **không tự chuyển lên**. Bản local có thể chứa dữ liệu người dùng đã nhập; cần xác nhận phạm vi riêng trước khi thực hiện import.
+```sh
+cd /Users/hoanganh/Workspace/dtph-website-test01
+node -v
+npm ci
+npm test
+npm run build
+```
 
-## 2. Cloudflare R2
+Dùng Node.js 24.x để khớp `package.json`. Build phải kết thúc thành công và có dòng:
 
-1. Tạo/chọn bucket, ví dụ `phat-hao-avatars`; giữ private, tắt public access/r2.dev.
-2. Tạo S3 API credentials chỉ có Object Read & Write trên bucket đã chọn.
-3. Điền `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` vào environment Vercel.
+```text
+Deployment trace checked: no local database, environment files or test data.
+```
 
-Không cần bucket public domain hay browser CORS: API nhận ảnh, Sharp chuyển WebP và upload qua S3 SDK. Ảnh được đọc qua `/api/avatars/:key` có xác thực; DB không lưu presigned URL. Key nằm dưới `avatars/`. Các ảnh local cũ chưa tự chuyển lên R2.
+Project đã có `.gitignore`, `.vercelignore` và Next tracing exclusions cho dữ liệu local/secret. Không đưa `.local/` lên cloud. Nếu sao lưu database local, dừng tiến trình Next.js rồi sao chép cả `.local/`; sau đó có thể chạy lại `npm run dev`.
 
-## 3. SMS OTP
+Hướng dẫn dùng Vercel CLI, không bắt buộc có GitHub repo. Khi có repo Git riêng, có thể kết nối Vercel để tự deploy các lần cập nhật sau.
 
-Chưa chọn nhà cung cấp: dùng `SMS_PROVIDER=disabled`, chưa mở đăng ký thật. Khi chọn Twilio:
+## 3. Tạo Supabase project và lấy connection strings
 
-- `SMS_PROVIDER=twilio`
-- `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`
-- `TWILIO_MESSAGING_SERVICE_SID` hoặc `TWILIO_FROM`
+1. Mở https://supabase.com/dashboard, chọn tổ chức rồi tạo project mới dành cho Đạo Tràng.
+2. Đặt tên, lưu Database Password trong trình quản lý mật khẩu. Đây là mật khẩu PostgreSQL, khác mật khẩu đăng nhập Supabase và tài khoản huynh đệ.
+3. Chọn khu vực gần người dùng. Nếu chọn Singapore, bước Vercel Functions cũng nên chọn khu vực gần database.
+4. Chờ database khởi tạo, mở **Connect**.
+5. Copy connection string **Transaction pooler** để dùng cho `DATABASE_URL` trên Vercel.
+6. Copy connection string **Session pooler** để dùng cho `MIGRATION_DATABASE_URL` trên máy. Direct connection cũng dùng được nếu mạng máy hỗ trợ kết nối đó.
 
-Nhà cung cấp/sender phải được phép gửi tới Việt Nam; kiểm tra khả năng gửi, tài khoản, geo permissions và chi phí thực tế trong dashboard. Adapter chuyển 090… thành +8490… và gửi nội dung có mã thành viên. Production không có SMS mock hoặc mã OTP hiển thị.
+Hai chuỗi có dạng sau; phải copy host chính xác từ project của bạn:
 
-Đặt `OTP_SECRET` ngẫu nhiên ít nhất 32 ký tự, ổn định giữa các lần deploy. Có thể tạo bằng Node crypto và lưu trực tiếp vào file/env riêng, không in vào chat. Đổi secret làm vô hiệu OTP đang chờ và đổi khóa rate-limit.
+```dotenv
+DATABASE_URL=postgresql://postgres.PROJECT_REF:PASSWORD@POOLER_HOST:6543/postgres
+MIGRATION_DATABASE_URL=postgresql://postgres.PROJECT_REF:PASSWORD@POOLER_HOST:5432/postgres
+```
 
-## 4. Vercel
+Thay PASSWORD bằng Database Password đã URL-encode nếu có ký tự đặc biệt. Không suy ra pooler host từ tên vùng. Shared pooler hỗ trợ IPv4, còn Direct connection thường dùng IPv6 nếu chưa có IPv4 add-on. Transaction mode phù hợp cho serverless. [Tài liệu kết nối Supabase](https://supabase.com/docs/guides/database/connecting-to-postgres).
 
-1. Chọn/create project trong tài khoản Vercel. Framework **Next.js**, Node **24.x**, build `npm run build`; giữ mặc định Output Directory của Vercel, không đặt `dist`.
-2. Điền các environment server từ `.env.example`: `DATABASE_URL`, `OTP_SECRET`, `APP_ORIGIN`, R2, SMS. Không đưa `MIGRATION_DATABASE_URL` vào Vercel. Không dùng tiền tố `NEXT_PUBLIC_` cho secret.
-3. `APP_ORIGIN` là URL HTTPS chính xác của site, không có dấu `/` cuối. Nếu dùng domain mới, cập nhật và redeploy. Preview có URL khác phải dùng origin/environment riêng để đăng nhập; không cho phép wildcard toàn bộ vercel.app.
-4. Upload qua Vercel CLI từ thư mục này: `npx vercel login`, `npx vercel link`, `npx vercel` để preview; sau khi kiểm tra, `npx vercel --prod`.
+Backend hiện dùng transaction và `SET LOCAL search_path`, không dùng prepared statements có tên. Pool hiện giới hạn 3 kết nối mỗi instance; khi tăng tải cần theo dõi giới hạn database và cân nhắc hạ pool, không tăng tùy ý.
 
-`vercel.json` chọn framework Next.js. Giao diện nằm ở `src/app/page.tsx`, layout/metadata ở `src/app/layout.tsx`; `/api/*` do `src/app/api/[[...path]]/route.ts` xử lý. Không dùng rewrite API hoặc fallback index.html của Vite. Preview/production nên dùng database/bucket tách riêng khi kiểm thử dữ liệu.
+Trong **Database Settings → SSL Configuration**, có thể bật Enforce SSL. Backend hiện xác minh chứng chỉ TLS. Nếu gặp lỗi CA, tải certificate của project và điền `DATABASE_SSL_CA`; không sửa code để tắt `rejectUnauthorized`. [Tài liệu SSL Supabase](https://supabase.com/docs/guides/platform/ssl-enforcement).
 
-## 5. Tài khoản quản lý đầu tiên và nghiệm thu
+## 4. Tạo file cấu hình riêng trên máy
 
-Khi SMS hoạt động, người phụ trách đăng ký tài khoản bằng thông tin/SĐT thật và xác minh OTP. Cấp quyền cho **mã đã xác minh đúng người** bằng `npm run admin:promote -- PHxxxxx`, chạy với DATABASE_URL của project. Không dùng mật khẩu mẫu hoặc tài khoản mẫu local ở production.
+Nếu chưa có `.env.production`, copy `.env.example` và đặt tên bản sao là `.env.production` trong thư mục project. Nếu đã có file thì chỉnh file hiện có, không ghi đè các giá trị đang dùng. Điền trước hai connection strings ở bước trên.
 
-Kiểm tra `/api/health`, đăng ký/đăng nhập/OTP, đăng nhập bằng SĐT dùng chung, đổi mật khẩu, profile, WebP upload/read, đăng ký lớp và quyền chéo tài khoản. Health `ready:false` khi SMS bị tắt. Kiểm tra log Vercel, schema Supabase và object R2 sau một lần lưu hồ sơ; chưa xác nhận triển khai thành công chỉ từ build local.
+File này dùng cho migration/cấp quyền trên máy; Vercel cần được nhập biến riêng ở bước 8. File đã bị Git/Vercel ignore. Không gửi file hoặc mật khẩu qua chat.
 
-## Giới hạn còn lại
+Tạo `OTP_SECRET` bằng lệnh sau trên máy rồi copy kết quả vào file:
 
-Chưa có quên mật khẩu/email, quản lý thêm lớp/phân quyền qua UI, nhắc bổ sung trường bắt buộc, pagination server và dọn ảnh orphan. **Đổi SĐT trên production đang bị chặn** vì chưa có bước xác minh số mới; cập nhật các trường khác vẫn hoạt động. Xác minh kênh mới cần hoàn tất trước khi mở thao tác thay số. Các kiểm thử adapter dùng DB nhúng và fake SMS/R2, không thay thế smoke test trên các dịch vụ thật.
+```sh
+node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))'
+```
 
-## Tài liệu chính thức đã đối chiếu
+Secret này giữ nguyên giữa các lần deploy, tối thiểu 32 ký tự. Đổi secret sẽ làm các OTP đang chờ mất hiệu lực.
 
-- [Vercel Node.js Functions](https://vercel.com/docs/functions/runtimes/node-js)
-- [Supabase database connections](https://supabase.com/docs/guides/database/connecting-to-postgres)
-- [Cloudflare R2 với AWS SDK v3](https://developers.cloudflare.com/r2/examples/aws/aws-sdk-js-v3/)
-- [Twilio Messages API](https://www.twilio.com/docs/messaging/api/message-resource)
+Nếu cần CA, biến có thể dùng PEM một dòng với ký tự `\n`:
+
+```dotenv
+DATABASE_SSL_CA="-----BEGIN CERTIFICATE-----\nNOI_DUNG_CERTIFICATE\n-----END CERTIFICATE-----"
+```
+
+Giữ nguyên nội dung certificate đã tải. Khi nhập vào Vercel có thể paste PEM nhiều dòng; backend xử lý được cả newline thật và `\n`.
+
+## 5. Tạo bảng trên Supabase
+
+Trong Terminal tại thư mục project:
+
+```sh
+npm run db:migrate
+```
+
+Kết quả mong đợi:
+
+```text
+Supabase schema migration completed. No demo members created.
+```
+
+Lệnh đọc `MIGRATION_DATABASE_URL` từ `.env.production` và chạy `supabase/migrations/202610020001_initial.sql`. Chỉ chạy vào đúng project mới dành cho ứng dụng.
+
+Cách khác nếu không kết nối được từ máy: mở **SQL Editor** của đúng Supabase project, tạo query, paste toàn bộ nội dung file migration và Run. Chọn một trong hai cách.
+
+Kiểm tra bằng SQL Editor:
+
+```sql
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'phat_hao'
+ORDER BY table_name;
+
+SELECT id, name, group_id FROM phat_hao.classes;
+SELECT count(*) AS member_count FROM phat_hao.members;
+```
+
+Trước khi có người đăng ký, `member_count` phải là 0. Lớp Tâm Lý Đạo Đức đã được tạo. Migration tạo schema riêng, bật RLS và thu hồi quyền của PUBLIC/anon/authenticated. Không thêm `phat_hao` vào exposed schemas của Data API. Backend hiện kết nối bằng tài khoản postgres có quyền cao và kiểm tra quyền người dùng ở API; connection string phải chỉ nằm ở server.
+
+Không chạy script seed local lên Supabase. Lệnh migration này dùng khởi tạo schema hiện tại; thay đổi schema tương lai cần migration mới.
+
+## 6. Tạo R2 bucket và thông tin S3
+
+1. Mở Cloudflare Dashboard, chọn đúng tài khoản.
+2. Vào **Storage & databases → R2 → Overview**; kích hoạt R2 nếu tài khoản chưa bật, kiểm tra điều kiện thanh toán hiển thị trong dashboard.
+3. Chọn **Create bucket**, tên ví dụ `phat-hao-avatars`.
+4. Dùng bucket thông thường với endpoint toàn cầu; adapter hiện chưa có cấu hình endpoint cho bucket có jurisdiction riêng.
+5. Giữ bucket private: không bật r2.dev/Public Development URL hoặc Custom Domain public.
+6. Quay lại Overview, mục API Tokens chọn **Manage**.
+7. Tạo **Account API token** hoặc **User API token** với quyền **Object Read & Write**, chọn **Apply to specific buckets only** và đúng bucket vừa tạo.
+8. Lưu **Access Key ID**, **Secret Access Key** và **Account ID**. Secret Access Key chỉ hiện lúc tạo. [Hướng dẫn S3](https://developers.cloudflare.com/r2/get-started/s3/), [thông tin xác thực R2](https://developers.cloudflare.com/r2/api/tokens/).
+
+Điền vào `.env.production`:
+
+```dotenv
+R2_ACCOUNT_ID=ACCOUNT_ID_CUA_BAN
+R2_ACCESS_KEY_ID=ACCESS_KEY_ID_CUA_BAN
+R2_SECRET_ACCESS_KEY=SECRET_ACCESS_KEY_CUA_BAN
+R2_BUCKET=phat-hao-avatars
+```
+
+Account ID khác Zone ID và Access Key ID. Không dùng Cloudflare Global API Key thay cho S3 credentials. Backend tự tạo endpoint `https://ACCOUNT_ID.r2.cloudflarestorage.com` và ghi object dưới `avatars/`. Browser tải ảnh qua API có xác thực; kiến trúc này không cần bật bucket public hay cấu hình browser CORS cho R2.
+
+## 7. Cấu hình SMS để mở đăng ký/đăng nhập
+
+Adapter hiện hỗ trợ Twilio. Nếu chọn nhà cung cấp Việt Nam khác thì cần thêm adapter trước.
+
+Trên Twilio, lấy Account SID/Auth Token và cấu hình sender hoặc Messaging Service được phép gửi SMS tới số Việt Nam. Kiểm tra thử khả năng gửi tới SĐT thật trước khi mở website cho huynh đệ. Điều kiện sender/đăng ký phụ thuộc tuyến gửi; không giả định một số Twilio bất kỳ sẽ dùng được. [Hướng dẫn SMS Việt Nam](https://www.twilio.com/en-us/guidelines/vn/sms).
+
+Điền:
+
+```dotenv
+SMS_PROVIDER=twilio
+TWILIO_ACCOUNT_SID=ACCOUNT_SID_CUA_BAN
+TWILIO_AUTH_TOKEN=AUTH_TOKEN_CUA_BAN
+TWILIO_MESSAGING_SERVICE_SID=MESSAGING_SERVICE_SID_CUA_BAN
+```
+
+Hoặc bỏ Messaging Service SID và dùng `TWILIO_FROM` của sender đã được Twilio cho phép. Trong adapter hiện tại, Messaging Service SID được ưu tiên nếu cả hai cùng có giá trị. Adapter gọi Messages API với To/Body và một trong hai cách chọn sender. [Twilio Messages API](https://www.twilio.com/docs/messaging/api/message-resource).
+
+Nếu chưa sẵn sàng, dùng `SMS_PROVIDER=disabled`. Khi đó có thể kiểm tra database và hosting, nhưng không đăng nhập được để xem giao diện bên trong. Production không hiện OTP mô phỏng như local.
+
+## 8. Tạo Vercel project và nhập biến môi trường
+
+Trong Terminal:
+
+```sh
+npx vercel@latest login
+npx vercel@latest link
+```
+
+Chọn đúng tài khoản/team, tạo project mới hoặc link project đã có; thư mục gốc là thư mục hiện tại. `link` chỉ liên kết project, chưa deploy. [Vercel link](https://vercel.com/docs/cli/link).
+
+Mở project trên Vercel Dashboard, kiểm tra **Settings → Build and Deployment**:
+
+| Mục | Giá trị |
+|---|---|
+| Framework Preset | Next.js |
+| Root Directory | Gốc project |
+| Node.js Version | 24.x |
+| Build Command | `npm run build` |
+| Install Command | Mặc định hoặc `npm ci` |
+| Output Directory | Mặc định Next.js, không override thành `dist` |
+
+Vercel hiện hỗ trợ Node.js 24.x; `engines.node` trong project cũng là 24.x. [Node.js trên Vercel](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions), [Next.js trên Vercel](https://vercel.com/docs/frameworks/full-stack/nextjs).
+
+Mở **Settings → Functions → Function Regions**, chọn vùng gần Supabase; nếu database ở Singapore và dashboard cho chọn Singapore thì dùng vùng đó. [Cấu hình vùng Functions](https://vercel.com/docs/functions/configuring-functions/region).
+
+Xác định domain production trong **Settings → Domains**. Dùng domain ổn định đã được Vercel gán hoặc domain riêng, không dùng URL riêng của một deployment làm domain chính nếu nó thay đổi ở lần deploy tiếp.
+
+Mở **Settings → Environment Variables**, thêm các biến sau, chọn môi trường **Production**:
+
+| Biến | Nội dung |
+|---|---|
+| `APP_ORIGIN` | Origin HTTPS chính xác của domain production |
+| `DATABASE_URL` | Transaction pooler 6543 của Supabase |
+| `DATABASE_SSL_CA` | PEM certificate nếu cần; có thể bỏ khi không cần |
+| `OTP_SECRET` | Secret đã tạo ở bước 4 |
+| `R2_ACCOUNT_ID` | Account ID Cloudflare |
+| `R2_ACCESS_KEY_ID` | S3 Access Key ID |
+| `R2_SECRET_ACCESS_KEY` | S3 Secret Access Key |
+| `R2_BUCKET` | Tên bucket chính xác |
+| `SMS_PROVIDER` | `twilio` hoặc `disabled` |
+| `TWILIO_ACCOUNT_SID` | Bắt buộc khi dùng Twilio |
+| `TWILIO_AUTH_TOKEN` | Bắt buộc khi dùng Twilio |
+| `TWILIO_MESSAGING_SERVICE_SID` | Messaging Service SID, hoặc thay bằng `TWILIO_FROM` |
+
+Ví dụ `APP_ORIGIN=https://ten-site-cua-ban.vercel.app`, không có `/` cuối, không có đường dẫn. Đây là giá trị mẫu; thay bằng domain thực tế của bạn. Backend chỉ cho phép mutation từ origin này. Không đưa `MIGRATION_DATABASE_URL` lên Vercel, không thêm tiền tố `NEXT_PUBLIC_` vào secret, không cần đặt `APP_BACKEND` hay `NODE_ENV` trên Vercel.
+
+Các thay đổi biến môi trường cần deployment mới để có hiệu lực. [Quản lý biến môi trường](https://vercel.com/docs/environment-variables/managing-environment-variables).
+
+## 9. Deploy và kiểm tra API
+
+Sau khi migration và environment đã xong:
+
+```sh
+npm test
+npm run build
+npx vercel@latest deploy --prod
+```
+
+CLI upload source, Vercel cài dependencies/build và trả URL. Kiểm tra trạng thái Ready và domain production thực tế. Nếu domain khác `APP_ORIGIN`, sửa biến theo domain đúng rồi deploy lại trước khi thử đăng ký.
+
+Đừng coi `vercel` không có `--prod` là luôn an toàn để tạo Preview: tài liệu hiện tại nói lần deploy đầu của project mới là Production kể cả không có cờ. Với các lần sau, `--prod` chỉ định Production. [Vercel deploy](https://vercel.com/docs/cli/deploy).
+
+Mở `https://DOMAIN_THAT_CUA_BAN/api/health`. Khi SMS đã cấu hình, kết quả mong đợi:
+
+```json
+{
+  "ok": true,
+  "database": "Supabase PostgreSQL",
+  "sms": "configured",
+  "ready": true
+}
+```
+
+Khi SMS disabled, `sms` là `disabled`, `ready` là false. Health chỉ xác nhận query database và trạng thái cấu hình SMS; không chứng minh đã gửi SMS hay upload R2 thành công. Cần thử từng luồng ở bước tiếp theo.
+
+## 10. Tạo quản lý tổng đầu tiên
+
+1. Trên website production, đăng ký tài khoản người phụ trách bằng SĐT thật.
+2. Nhập OTP nhận được, hoàn tất xác minh. Ghi lại mã thành viên của tài khoản vừa đăng ký; không mặc định luôn là PH00001.
+3. Trong `.env.production` trên máy, đảm bảo `DATABASE_URL` là đúng database production.
+4. Chạy, thay mã ví dụ bằng mã đã xác minh:
+
+```sh
+npm run admin:promote -- PH00001
+```
+
+5. Đăng xuất và đăng nhập lại tài khoản, kiểm tra các mục quản lý huynh đệ/cấu hình đăng ký.
+
+Script chỉ cấp quyền cho tài khoản đã xác minh. Không dùng các tài khoản/mật khẩu mẫu local cho production. Nếu SMS disabled, chưa hoàn tất được bước này.
+
+## 11. Nghiệm thu trước khi mời huynh đệ sử dụng
+
+- Đăng ký và đăng nhập tài khoản thật, nhận được SMS có đúng mã thành viên.
+- Đăng ký hai tài khoản cùng SĐT; đăng nhập bằng mã riêng; đăng nhập bằng số chung phải chọn đúng mã. OTP tài khoản A không dùng cho B.
+- Đổi mật khẩu qua OTP, mật khẩu mới có hiệu lực, phiên khác bị thu hồi.
+- Cập nhật hồ sơ và upload ảnh; object `.webp` xuất hiện trong R2, ảnh hiển thị lại sau đăng nhập.
+- Supabase có các bản ghi tương ứng trong schema `phat_hao`.
+- Tài khoản huynh đệ không được truy cập dữ liệu/quyền quản lý tổng.
+- Đăng ký/hủy lớp Tâm Lý Đạo Đức và kiểm tra quyền quản lý lớp.
+
+## 12. Domain riêng và Preview
+
+Nếu dùng domain riêng, mở Vercel **Settings → Domains**, thêm domain, cấu hình đúng A/CNAME được dashboard hiển thị tại nơi quản lý DNS. Không chép IP/CNAME của một hướng dẫn cũ. Khi domain valid/HTTPS hoạt động, đổi `APP_ORIGIN` sang domain chính và deploy lại; cấu hình các domain phụ redirect về domain chính. [Domain Vercel](https://vercel.com/docs/domains/working-with-domains/add-a-domain).
+
+Project chỉ chấp nhận một origin cho mutation. Preview cần môi trường riêng với `APP_ORIGIN` đúng URL được dùng; khuyến nghị staging project/domain ổn định và database/bucket riêng. Không copy toàn bộ production secrets sang mọi Preview theo mặc định, không cho phép wildcard mọi URL vercel.app.
+
+## 13. Lỗi thường gặp
+
+| Hiện tượng | Cách xử lý |
+|---|---|
+| Build báo Vite/dist hoặc không có script | Kiểm tra link đúng thư mục, framework Next.js, bỏ Output Directory override |
+| API 503, log Missing production configuration | Điền đủ biến bắt buộc cho đúng environment rồi redeploy |
+| Login/register 403 | Domain đang mở không khớp `APP_ORIGIN`; dùng domain chính hoặc sửa/redeploy |
+| Relation/table does not exist | Migration chưa chạy hoặc đang trỏ nhầm Supabase project |
+| Password authentication failed | Kiểm tra Database Password, username/host lấy từ Connect và URL-encoding |
+| ENETUNREACH | Direct IPv6 không dùng được trên mạng; dùng shared pooler |
+| Lỗi certificate | Cung cấp CA của project trong `DATABASE_SSL_CA`, giữ TLS verification |
+| OTP không gửi | Kiểm tra SMS_PROVIDER, Twilio credentials/sender, số đích và delivery logs của Twilio |
+| OTP cũ không dùng được | OTP có thời hạn, giới hạn thử và resend vô hiệu mã trước; dùng đúng mã/tài khoản |
+| Upload/read avatar lỗi | Kiểm tra Account ID, bucket, S3 credentials/quyền bucket và endpoint thông thường |
+| Sửa env mà lỗi vẫn còn | Deployment cũ vẫn dùng cấu hình cũ; deploy lại và mở đúng domain |
+
+Vercel Runtime Logs giúp tìm lỗi server; Twilio logs giúp xác minh gửi/phát SMS; R2 Objects giúp xác minh ảnh đã upload.
+
+## 14. Các phần chưa có trong bản hiện tại
+
+Chưa có quên mật khẩu/email, nhắc bổ sung trường bắt buộc, UI tạo thêm lớp/phân quyền, pagination server hoặc tự dọn ảnh orphan. Production đang chặn đổi SĐT vì chưa có luồng xác minh số mới; các trường hồ sơ khác vẫn cập nhật được. Các kiểm thử local/adapter không thay thế nghiệm thu trên dịch vụ thật.
+
+Đây là hướng dẫn triển khai bản đang có. Build local thành công không đồng nghĩa cloud đã sẵn sàng; chỉ xác nhận hoàn tất sau khi kiểm tra database, SMS, R2 và các quyền trên deployment thực tế.
