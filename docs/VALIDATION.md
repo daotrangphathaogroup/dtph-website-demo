@@ -1,5 +1,16 @@
 # Kiểm tra backend local — 02/10/2026
 
+## Kết quả hiện tại: chuyển sang Next.js
+
+- Next.js 16.3.8 App Router; giao diện và `/api/*` chạy cùng tiến trình tại port 5173.
+- `npm run build` đạt, bao gồm TypeScript và kiểm tra tracing không chứa database local, file môi trường hoặc dữ liệu kiểm thử.
+- `npm test`: 18 tests đạt. Test Route Handler xác minh JSON, OTP, cookie HttpOnly, quyền truy cập, OTP dùng một lần, body lỗi và giới hạn dung lượng.
+- Kiểm tra trình duyệt: giao diện tổng quan với logo/màu mới hiển thị, phiên quản lý và hồ sơ PH00037 cùng ảnh đại diện vẫn được giữ lại. `/api/health` trả trạng thái local hoạt động.
+- Vercel dùng framework Next.js. Supabase/R2/SMS thật chưa kết nối hoặc triển khai; kiểm thử cloud adapter hiện dùng tài nguyên giả lập.
+- Ảnh kiểm tra: `docs/previews/nextjs-overview.jpg`.
+
+## Lịch sử kiểm tra trước khi chuyển Next.js
+
 `npm run build` đạt: TypeScript và Vite build thành công.
 
 `npm test` đạt: 10 tests (9 tình huống integration và test bao ngoài), dùng HTTP và database PostgreSQL tạm, không thay đổi dữ liệu local người dùng đang thử.

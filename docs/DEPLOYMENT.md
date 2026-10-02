@@ -4,7 +4,7 @@ Mã nguồn đã có adapter và cấu hình production. Chưa tạo tài nguyê
 
 ## Kiến trúc bản này
 
-Vite build → Vercel static hosting; `/api/*` → Vercel Node.js Function → Supabase PostgreSQL private schema `phat_hao`. Ảnh qua API có xác thực → R2 private. Auth/password/session/OTP hiện do backend ứng dụng quản lý, **không phải Supabase Auth**. SĐT dùng chung vẫn được hỗ trợ.
+Next.js App Router → Vercel; `/api/*` → Next.js Route Handler (Node.js runtime) → Supabase PostgreSQL private schema `phat_hao`. Ảnh qua API có xác thực → R2 private. Auth/password/session/OTP hiện do backend ứng dụng quản lý, **không phải Supabase Auth**. SĐT dùng chung vẫn được hỗ trợ.
 
 Production không chạy PGlite, không tự migrate khi cold start, không seed tài khoản demo, không trả OTP/nội dung SMS ra HTTP. Cookie có Secure/HttpOnly/SameSite=Strict. Rate limit IP, account và SĐT lưu trong PostgreSQL để dùng giữa nhiều instance. SMS đang hỗ trợ Twilio; `SMS_PROVIDER=disabled` chặn đăng ký/OTP, dùng để chuẩn bị hosting trước khi chọn provider.
 
@@ -41,12 +41,12 @@ Nhà cung cấp/sender phải được phép gửi tới Việt Nam; kiểm tra 
 
 ## 4. Vercel
 
-1. Chọn/create project trong tài khoản Vercel. Framework **Vite**, Node **24.x**, build `npm run build`, output `dist`.
-2. Điền các environment server từ `.env.example`: `DATABASE_URL`, `OTP_SECRET`, `APP_ORIGIN`, R2, SMS. Không đưa `MIGRATION_DATABASE_URL` vào Vercel. Không dùng tiền tố `VITE_` cho secret.
+1. Chọn/create project trong tài khoản Vercel. Framework **Next.js**, Node **24.x**, build `npm run build`; giữ mặc định Output Directory của Vercel, không đặt `dist`.
+2. Điền các environment server từ `.env.example`: `DATABASE_URL`, `OTP_SECRET`, `APP_ORIGIN`, R2, SMS. Không đưa `MIGRATION_DATABASE_URL` vào Vercel. Không dùng tiền tố `NEXT_PUBLIC_` cho secret.
 3. `APP_ORIGIN` là URL HTTPS chính xác của site, không có dấu `/` cuối. Nếu dùng domain mới, cập nhật và redeploy. Preview có URL khác phải dùng origin/environment riêng để đăng nhập; không cho phép wildcard toàn bộ vercel.app.
 4. Upload qua Vercel CLI từ thư mục này: `npx vercel login`, `npx vercel link`, `npx vercel` để preview; sau khi kiểm tra, `npx vercel --prod`.
 
-`vercel.json` routing API tới `api/index.mjs`; SPA frontend giữ React/Vite, không cần đổi Next.js. Preview/production nên dùng database/bucket tách riêng khi kiểm thử dữ liệu.
+`vercel.json` chọn framework Next.js. Giao diện nằm ở `src/app/page.tsx`, layout/metadata ở `src/app/layout.tsx`; `/api/*` do `src/app/api/[[...path]]/route.ts` xử lý. Không dùng rewrite API hoặc fallback index.html của Vite. Preview/production nên dùng database/bucket tách riêng khi kiểm thử dữ liệu.
 
 ## 5. Tài khoản quản lý đầu tiên và nghiệm thu
 

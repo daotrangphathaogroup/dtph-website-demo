@@ -1,6 +1,6 @@
 # Cổng thông tin Đạo Tràng Phật Hào
 
-Frontend React + TypeScript + Vite, backend Node.js + Express, database PostgreSQL chạy nhúng bằng PGlite. Dữ liệu được lưu trên ổ đĩa, không còn dùng localStorage. Bản local không cần Docker, Supabase account hoặc dịch vụ SMS.
+Next.js App Router + TypeScript, API Route Handler dùng nghiệp vụ backend Node.js, database PostgreSQL chạy nhúng bằng PGlite. Dữ liệu được lưu trên ổ đĩa, không còn dùng localStorage. Bản local không cần Docker, Supabase account hoặc dịch vụ SMS.
 
 ## Chạy local
 
@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Mở **http://127.0.0.1:5173/**. Lệnh này chạy cả frontend (5173) và API (3001). Nếu cần tách hai terminal: `npm run dev:api` và `npm run dev:web`. Chỉ chạy một tiến trình backend trên cùng database.
+Mở **http://127.0.0.1:5173/**. Lệnh này chạy Next.js tại port 5173, gồm giao diện và `/api/*`. Không cần mở backend port 3001 riêng. Chỉ chạy một tiến trình Next.js trên cùng database local.
 
 ## Tài khoản mẫu
 
@@ -42,12 +42,12 @@ Sau khi đăng ký, dùng mật khẩu đã nhập để đăng nhập lại. Đ
 - `server/migrations/001_initial.sql`: schema, khóa ngoại, index và sequence.
 - `server/seed.mjs`: 36 hồ sơ giả và quyền thử nghiệm; chỉ seed khi database chưa có hồ sơ.
 - `npm test`: integration tests với database tạm riêng; không sửa database đang dùng.
-- `npm run build`: kiểm tra TypeScript và build frontend.
+- `npm run build`: kiểm tra TypeScript, build Next.js và kiểm tra gói API không chứa database local/file môi trường.
 
 Không đưa `.local/` vào Git. Dữ liệu frontend cũ trong localStorage không tự nhập vào database. Khi cần sao lưu local, dừng backend rồi sao chép cả thư mục `.local/`.
 
-Đây là backend để thử local. SMS và lưu ảnh R2 vẫn được mô phỏng; chưa kết nối Supabase Auth/PostgreSQL hay Cloudflare R2 thật. Entrypoint local `server/index.mjs` từ chối `NODE_ENV=production`; Vercel dùng entrypoint production riêng `api/index.mjs`. Xem [kiến trúc đang chạy](docs/ARCHITECTURE.md) và [kế hoạch production](docs/PRODUCTION-PLAN.md).
+Đây là backend để thử local. SMS và lưu ảnh R2 vẫn được mô phỏng; chưa kết nối Supabase Auth/PostgreSQL hay Cloudflare R2 thật. `npm run dev` dùng database local; `npm run build` + `npm start` dùng adapter cloud và cần các biến môi trường Supabase/R2/SMS. Xem [kiến trúc đang chạy](docs/ARCHITECTURE.md) và [kế hoạch production](docs/PRODUCTION-PLAN.md).
 
 ## Chuẩn bị triển khai cloud
 
-Đã có `vercel.json`, API serverless, adapter Supabase PostgreSQL, R2 private và SMS Twilio; cấu hình mẫu ở `.env.example`. Xem [hướng dẫn triển khai](docs/DEPLOYMENT.md). Các tài nguyên cloud chưa được tạo/kết nối; chỉ đã chuẩn bị mã và kiểm thử adapter. Auth vẫn do backend quản lý. Không chuyển dữ liệu local lên cloud tự động.
+Đã có `vercel.json`, Next.js Route Handler, adapter Supabase PostgreSQL, R2 private và SMS Twilio; cấu hình mẫu ở `.env.example`. Xem [hướng dẫn triển khai](docs/DEPLOYMENT.md). Các tài nguyên cloud chưa được tạo/kết nối; chỉ đã chuẩn bị mã và kiểm thử adapter. Auth vẫn do backend quản lý. Không chuyển dữ liệu local lên cloud tự động.

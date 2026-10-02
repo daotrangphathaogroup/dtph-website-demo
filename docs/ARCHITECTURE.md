@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart LR
-  UI[React + TypeScript + Vite :5173] -->|HTTP /api qua Vite proxy| API[Node.js + Express :3001]
+  UI[Next.js App Router :5173] -->|HTTP /api| API[Next.js Route Handler]
   API --> DB[PGlite: PostgreSQL trên ổ đĩa]
   API --> FILE[Ảnh WebP local]
   API --> SMS[SMS mô phỏng có mã thành viên]
@@ -12,7 +12,9 @@ flowchart LR
 
 PGlite là PostgreSQL chạy bằng WebAssembly, hỗ trợ lưu database vào filesystem trong Node.js. Không phải một mảng dữ liệu giả hoặc SQLite. Bản này chạy một tiến trình backend; không dùng cho nhiều server cùng truy cập thư mục database. [Tài liệu PGlite](https://pglite.dev/docs/about), [lưu trên filesystem](https://pglite.dev/docs/filesystems).
 
-- `server/index.mjs`: khởi động API, bind 127.0.0.1, đóng database khi dừng.
+- `server/runtime.mjs`: khởi tạo backend local/cloud, giữ singleton qua HMR và khóa database local.
+- `src/app/api/[[...path]]/route.ts`: API entrypoint Next.js, Node.js runtime, không cache.
+- `server/next-handler.mjs`: chuyển Request/Response của Next sang nghiệp vụ HTTP đã kiểm thử.
 - `server/backend.mjs`: tạo ứng dụng, kiểm tra quyền, Auth, OTP, hồ sơ, lớp, ảnh.
 - `server/migrations/001_initial.sql`: schema PostgreSQL có FK/index/constraints.
 - `server/seed.mjs`: hồ sơ giả, tài khoản mẫu và phân công quản lý lớp.
