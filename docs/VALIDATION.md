@@ -71,3 +71,13 @@ Bổ sung SMS_PROVIDER=preview: không gọi dịch vụ SMS, trả mã OTP có 
 - npm test: 22 tests đạt; bổ sung kiểm tra rollback không ghi đè thay đổi độc lập, chặn bấm lặp, ngày đăng ký không đổi khi đăng ký lặp, một transaction mỗi endpoint và quyền/OTP hiện có.
 - npm run build đạt, bao gồm TypeScript và kiểm tra loại trừ dữ liệu local/secret khỏi gói triển khai.
 - Chưa đo lại production sau thay đổi vì chưa deploy bản này.
+
+## Trang quản lý lớp và học viên
+
+- Trang lớp thông thường giữ bố cục gọn; chỉ admin hoặc quản lý được phân công tldd-01 thấy nút Quản lý lớp học. Bootstrap trả managedClassIds từ database để quyết định phạm vi.
+- Trang quản lý riêng có bảng học viên: mã, tên/ảnh, ngày sinh, SĐT, khu vực, ngày tham gia lớp; tìm kiếm không dấu, bộ lọc, sắp xếp, thu gọn hàng, phân trang và CSV toàn bộ kết quả/những dòng đã chọn.
+- Ngày tham gia lớp lấy từ enrollments.date, không nhầm với members.joined. Hồ sơ chi tiết hiển thị cả hai ngày.
+- Xem/chỉnh sửa học viên dùng hồ sơ chung của huynh đệ. Endpoint PATCH /api/classes/:classId/members/:id kiểm tra quản lý được phân công và học viên đang đăng ký lớp đó. Quản lý lớp không được sửa qua endpoint quản lý tổng, không đổi quyền/mật khẩu. Giới hạn đổi SĐT production vẫn áp dụng.
+- Hủy đăng ký cần xác nhận; giữ hồ sơ chung. Thao tác đăng ký/hủy tiếp tục cập nhật nhanh với rollback khi API thất bại.
+- npm test: 23 tests đạt, gồm kiểm tra phân quyền lớp, học viên ngoài lớp, lớp khác, hồ sơ được lưu và quyền sau hủy đăng ký. Build Next.js/TypeScript và deployment trace đạt.
+- Kiểm tra browser local: mở trang từ nút quản lý, tìm kiếm, mở biểu mẫu chỉnh sửa, xác nhận hủy và chọn giữ đăng ký. Không thay dữ liệu hồ sơ qua kiểm tra giao diện. Screenshot docs/previews/class-management.jpg.
