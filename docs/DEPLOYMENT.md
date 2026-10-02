@@ -13,7 +13,7 @@
 
 Auth do backend ứng dụng quản lý, không dùng Supabase Auth. Không cần Supabase anon/publishable/service-role key, không cần bật Phone Auth trên Supabase. Backend lưu mật khẩu đã hash, phiên đăng nhập và OTP; SĐT không unique, nhiều tài khoản vẫn dùng chung một số. SMS có mã thành viên, OTP chỉ dùng cho đúng tài khoản và mục đích tương ứng.
 
-Có thể deploy hạ tầng với `SMS_PROVIDER=disabled`, nhưng đăng ký/đăng nhập sẽ bị chặn. Muốn sử dụng đầy đủ phải cấu hình SMS thật. Dữ liệu local và tài khoản mẫu không tự chuyển lên cloud.
+Có thể deploy hạ tầng với `SMS_PROVIDER=disabled`, nhưng đăng ký/đăng nhập sẽ bị chặn. Để thử không gửi SMS, dùng `SMS_PROVIDER=preview`: OTP hiển thị ngay trên website, không xác minh quyền sở hữu SĐT và chỉ dùng dữ liệu thử. Muốn sử dụng đầy đủ phải cấu hình SMS thật. Dữ liệu local và tài khoản mẫu không tự chuyển lên cloud.
 
 ## 2. Chuẩn bị máy và mã nguồn
 
@@ -80,6 +80,10 @@ DATABASE_SSL_CA="-----BEGIN CERTIFICATE-----\nNOI_DUNG_CERTIFICATE\n-----END CER
 ```
 
 Giữ nguyên nội dung certificate đã tải. Khi nhập vào Vercel có thể paste PEM nhiều dòng; backend xử lý được cả newline thật và `\n`.
+
+Nếu log báo `SELF_SIGNED_CERT_IN_CHAIN`, kiểm tra `DATABASE_SSL_CA` trên Vercel Production: giá trị phải là toàn bộ PEM của certificate đã tải, gồm BEGIN/END và phần nội dung thật ở giữa. Không nhập đường dẫn file, tên file, dấu ngoặc kép bao ngoài hoặc nội dung placeholder. Lưu biến rồi redeploy.
+
+Project dùng `pg` với cấu hình SSL trong code. Không thêm `sslmode`, `sslrootcert`, `sslcert` hoặc `sslkey` vào query string của DATABASE_URL/MIGRATION_DATABASE_URL: các tham số này có thể ghi đè SSL object và làm mất CA được cung cấp. [Tài liệu SSL node-postgres](https://node-postgres.com/features/ssl).
 
 ## 5. Tạo bảng trên Supabase
 
@@ -154,7 +158,9 @@ TWILIO_MESSAGING_SERVICE_SID=MESSAGING_SERVICE_SID_CUA_BAN
 
 Hoặc bỏ Messaging Service SID và dùng `TWILIO_FROM` của sender đã được Twilio cho phép. Trong adapter hiện tại, Messaging Service SID được ưu tiên nếu cả hai cùng có giá trị. Adapter gọi Messages API với To/Body và một trong hai cách chọn sender. [Twilio Messages API](https://www.twilio.com/docs/messaging/api/message-resource).
 
-Nếu chưa sẵn sàng, dùng `SMS_PROVIDER=disabled`. Khi đó có thể kiểm tra database và hosting, nhưng không đăng nhập được để xem giao diện bên trong. Production không hiện OTP mô phỏng như local.
+Để tạm thử đăng ký/đăng nhập/đổi mật khẩu mà không gửi SMS, đặt `SMS_PROVIDER=preview` trên Vercel Production rồi deploy mã mới. Mã OTP sẽ hiển thị trong bước xác thực cùng thông báo thử nghiệm; không cần Twilio credentials. Mật khẩu, cookie, giới hạn OTP và quyền tài khoản vẫn được kiểm tra, nhưng đây không còn là xác thực hai yếu tố thật. Health trả `sms: "preview"`, `ready: false` để phân biệt với SMS thật. Khi mở sử dụng thật, chuyển lại `twilio` và cung cấp credentials/sender.
+
+Nếu muốn đóng hoàn toàn đăng ký/OTP, dùng `SMS_PROVIDER=disabled`. Khi đó có thể kiểm tra database và hosting, nhưng không đăng nhập được để xem giao diện bên trong. Chế độ `disabled` không hiện OTP; chỉ chế độ `preview` được bật rõ ràng mới trả mã thử nghiệm.
 
 ## 8. Tạo Vercel project và nhập biến môi trường
 
@@ -196,7 +202,7 @@ Mở **Settings → Environment Variables**, thêm các biến sau, chọn môi 
 | `R2_ACCESS_KEY_ID` | S3 Access Key ID |
 | `R2_SECRET_ACCESS_KEY` | S3 Secret Access Key |
 | `R2_BUCKET` | Tên bucket chính xác |
-| `SMS_PROVIDER` | `twilio` hoặc `disabled` |
+| `SMS_PROVIDER` | `twilio`, `preview` (thử nghiệm) hoặc `disabled` |
 | `TWILIO_ACCOUNT_SID` | Bắt buộc khi dùng Twilio |
 | `TWILIO_AUTH_TOKEN` | Bắt buộc khi dùng Twilio |
 | `TWILIO_MESSAGING_SERVICE_SID` | Messaging Service SID, hoặc thay bằng `TWILIO_FROM` |

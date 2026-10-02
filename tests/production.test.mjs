@@ -47,3 +47,23 @@ test('Private production schema, registration, no OTP leak, secure cookies, RLS 
   });
  }finally{await new Promise(resolve=>server.close(resolve));await pg.close();}
 });
+
+test('Explicit SMS preview permits scoped OTP without delivery; disabled remains closed',async()=>{
+ const pg=new PGlite('memory://');await pg.waitReady;await pg.exec('CREATE ROLE anon; CREATE ROLE authenticated;');await pg.exec(await readFile(new URL('../supabase/migrations/202610020001_initial.sql',import.meta.url),'utf8'));
+ const database={query:(sql,params)=>pg.transaction(async tx=>{await tx.query('SET LOCAL search_path TO phat_hao, pg_catalog');return tx.query(sql,params);}),transaction:fn=>pg.transaction(async tx=>{await tx.query('SET LOCAL search_path TO phat_hao, pg_catalog');return fn(tx);})};
+ const env={DATABASE_URL:'postgres://test',OTP_SECRET:'s'.repeat(64),APP_ORIGIN:'https://example.com',R2_ACCOUNT_ID:'test',R2_ACCESS_KEY_ID:'test',R2_SECRET_ACCESS_KEY:'test',R2_BUCKET:'test'};
+ const servers=[];let sends=0;
+ async function backend(mode){const sms=productionConfig({...env,SMS_PROVIDER:mode}).sms;sms.send=async()=>{sends++;throw new Error('Preview must not send SMS');};const {app}=await createBackend({database,production:true,initialize:false,seedData:false,secret:env.OTP_SECRET,origin:env.APP_ORIGIN,storage:{},sms});const server=app.listen(0,'127.0.0.1');servers.push(server);await new Promise(resolve=>server.once('listening',resolve));return async(url,body,cookie)=>{const res=await fetch(`http://127.0.0.1:${server.address().port}/api`+url,{method:body?'POST':'GET',headers:{...(body?{'Content-Type':'application/json',Origin:env.APP_ORIGIN}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined});return {status:res.status,body:await res.json(),cookie:res.headers.get('set-cookie')?.split(';')[0]};};}
+ const member={name:'SMS preview fixture',birthday:'2010-01-01',phone:'0901200000',address:'Địa chỉ thử',area:'Đồng Nai',group:'children',referrer:'',joined:'2026-10-02',avatar:''};
+ try{
+  const disabled=await backend('disabled');assert.equal((await disabled('/auth/register',{member,password:'PreviewTest@123'})).status,503);assert.equal((await database.query('SELECT * FROM accounts')).rows.length,0);
+  const call=await backend('preview');assert.equal((await call('/bootstrap')).body.smsPreview,true);const health=(await call('/health')).body;assert.equal(health.sms,'preview');assert.equal(health.ready,false);
+  const first=await call('/auth/register',{member,password:'PreviewTest@123'});assert.equal(first.status,201);assert.match(first.body.code,/^\d{6}$/);assert.equal(first.body.phone,'090••••000');assert.match(first.body.message,/PH00001/);
+  const second=await call('/auth/register',{member,password:'PreviewTest@123'});assert.equal(second.status,201);assert.equal((await call('/auth/verify',{...first.body,memberId:second.body.memberId})).status,400);
+  const verified=await call('/auth/verify',first.body);assert.equal(verified.status,200);assert.equal((await call('/auth/verify',first.body)).status,400);
+  assert.equal((await call('/auth/login',{identity:first.body.memberId,password:'WrongTest@123'})).status,401);
+  const login=await call('/auth/login',{identity:first.body.memberId,password:'PreviewTest@123'});assert.match(login.body.code,/^\d{6}$/);assert.equal((await call('/auth/verify',login.body)).status,200);
+  const password=await call('/auth/password-challenge',{},verified.cookie);assert.match(password.body.code,/^\d{6}$/);assert.equal((await call('/auth/verify',password.body)).status,400);const grant=await call('/auth/verify',password.body,verified.cookie);assert.equal(grant.status,200);assert.equal((await call('/auth/password',{grant:grant.body.grant,password:'ChangedTest@123'},verified.cookie)).status,200);
+  assert.equal((await disabled('/auth/login',{identity:first.body.memberId,password:'ChangedTest@123'})).status,503);assert.equal(sends,0);
+ }finally{for(const server of servers)await new Promise(resolve=>server.close(resolve));await pg.close();}
+});

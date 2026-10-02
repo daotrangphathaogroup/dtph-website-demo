@@ -56,3 +56,7 @@ SMS thật, Supabase Auth/RLS và Cloudflare R2 chưa tích hợp. Thử giao di
 - R2 adapter fake: key avatars/, WebP, private; Twilio adapter fake: SĐT +84 và nội dung có mã thành viên.
 - Rate limits production ghi DB; health kiểm tra được schema/connection qua query.
 - Chưa deploy thật, chưa chạy migration trên Supabase thật, chưa tạo bucket/key R2 hoặc gửi SMS thật: chưa có tài khoản/project/kết nối cloud.
+
+## SMS tạm tắt để thử nghiệm trên cloud
+
+Bổ sung SMS_PROVIDER=preview: không gọi dịch vụ SMS, trả mã OTP có giới hạn cho UI và thông báo chỉ dùng dữ liệu thử. Disabled vẫn đóng đăng ký/OTP, Twilio không trả mã OTP qua API. Kiểm thử riêng dùng database tạm xác minh đăng ký, đăng nhập, mật khẩu bắt buộc, OTP không dùng chéo tài khoản/phiên, chống replay, đổi mật khẩu và chuyển về disabled.
