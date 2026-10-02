@@ -1,0 +1,102 @@
+import express from 'express';
+import { randomBytes, randomInt, randomUUID, createHash, createHmac, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import sharp from 'sharp';
+import { seed } from './seed.mjs';
+const scrypt = promisify(scryptCallback);
+const hash = value => createHash('sha256').update(value).digest('hex');
+const token = () => randomBytes(32).toString('hex');
+const fail = (status,message,extra={}) => { throw Object.assign(new Error(message),{status,...extra}); };
+export async function passwordHash(password) { const salt=token(); return `${salt}:${(await scrypt(password,salt,64)).toString('hex')}`; }
+async function passwordMatches(password,encoded) { const [salt,key]=encoded.split(':'); const value=await scrypt(password,salt,64); return value.length===Buffer.from(key,'hex').length && timingSafeEqual(value,Buffer.from(key,'hex')); }
+const fields=['name','birthday','phone','address','area','group','referrer','joined','avatar'];
+function profile(row) {return Object.fromEntries(['id',...fields].map(k=>[k,row[k] instanceof Date?row[k].toISOString().slice(0,10):row[k]??'']));}
+export async function createBackend({dataDir='./.local/postgres',uploadDir='./.local/avatars',seedData=true,now=()=>Date.now(),rateLimits=true,database,production=false,initialize=true,secret:configuredSecret,origin,storage,sms}={}) {
+ if(process.env.NODE_ENV==='production'&&!production)throw new Error('Use createProductionBackend for production.');
+ if(production&&(!database||initialize||seedData||!configuredSecret||!origin||!storage||!sms))throw new Error('Production requires external database/storage/SMS, stable secret, no local seeding.');
+ let db=database;
+ if(!db){const {PGlite}=await import('@electric-sql/pglite');if(dataDir!=='memory://')await mkdir(path.dirname(path.resolve(dataDir)),{recursive:true});db=new PGlite(dataDir);await db.waitReady;}
+ if(initialize)await db.exec(await readFile(new URL('./migrations/001_initial.sql',import.meta.url),'utf8'));
+ let secret=configuredSecret;
+ if(!secret){const existing=await db.query("SELECT value FROM app_meta WHERE key='otp_secret'");secret=existing.rows[0]?.value??token();if(!existing.rows.length)await db.query("INSERT INTO app_meta VALUES ('otp_secret',$1)",[secret]);}
+ if(seedData && !(await db.query('SELECT id FROM members LIMIT 1')).rows.length) {
+  const encoded=await passwordHash('PhatHao@123');
+  await db.transaction(async tx=>{
+   for(const member of seed.members) { const m={...member,phone:member.id==='PH00003'?seed.members[0].phone:member.phone};
+    await tx.query('INSERT INTO members (id,name,birthday,phone,address,area,"group",referrer,joined,avatar) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',[m.id,m.name,m.birthday,m.phone,m.address,m.area,m.group,m.referrer||null,m.joined,m.avatar]);
+    await tx.query('INSERT INTO accounts VALUES ($1,$2,$3,true)',[m.id,encoded,m.id==='PH00001'?'admin':m.id==='PH00002'?'class_manager':'member']);
+   }
+   await tx.query("INSERT INTO classes VALUES ('tldd-01','Tâm Lý Đạo Đức','children')");
+   await tx.query("INSERT INTO class_managers VALUES ('PH00002','tldd-01')");
+   for(const e of seed.enrollments)await tx.query('INSERT INTO enrollments VALUES ($1,$2,$3)',[e.memberId,e.classId,e.date]);
+   for(const [field,required]of Object.entries(seed.requirements))await tx.query('INSERT INTO registration_fields VALUES ($1,$2)',[field,required]);
+  });
+ }
+ const app=express(); app.disable('x-powered-by'); app.use(express.json({limit:'2mb'}));
+ const buckets=new Map();
+ async function limit(scope,maximum,windowMs){const key=createHmac('sha256',secret).update(scope).digest('hex');const window=Math.floor(now()/windowMs);const result=await db.query('INSERT INTO rate_limits (scope_key,window_id,hits) VALUES ($1,$2,1) ON CONFLICT (scope_key) DO UPDATE SET hits=CASE WHEN rate_limits.window_id=EXCLUDED.window_id THEN rate_limits.hits+1 ELSE 1 END,window_id=EXCLUDED.window_id RETURNING hits',[key,window]);if(result.rows[0].hits>maximum)fail(429,'Quá nhiều yêu cầu. Vui lòng thử lại sau.');}
+ app.use('/api',async(req,res,next)=>{try{
+  res.set('Cache-Control','no-store');res.set('X-Content-Type-Options','nosniff');
+  if(!['GET','HEAD'].includes(req.method)&&req.headers.origin&&!(production?req.headers.origin===origin:/^http:\/\/(127\.0\.0\.1|localhost):(5173|4173|3001)$/.test(req.headers.origin)))return res.status(403).json({error:'Nguồn yêu cầu không hợp lệ.'});
+  if(production&&rateLimits&&req.path.startsWith('/auth')){await limit('ip:'+String(req.headers['x-vercel-forwarded-for']??req.ip),30,60000);}
+  if(!production&&rateLimits&&req.path.startsWith('/auth')) {const key=req.ip;const b=buckets.get(key)??{count:0,until:now()+60000};if(now()>b.until){b.count=0;b.until=now()+60000;}b.count++;buckets.set(key,b);if(b.count>30)return res.status(429).json({error:'Quá nhiều yêu cầu. Vui lòng đợi một phút.'});}
+  next();}catch(e){next(e);}
+ });
+ const route=(method,url,fn)=>app[method](url,async(req,res,next)=>{try{await fn(req,res);}catch(e){next(e);}});
+ async function session(req,required=true){ const raw=(req.headers.cookie??'').split(';').map(x=>x.trim()).find(x=>x.startsWith('ph_session='))?.slice(11);if(!raw){if(required)fail(401,'Vui lòng đăng nhập.');return null;}const result=await db.query('SELECT a.member_id AS id,a.role,s.token_hash FROM sessions s JOIN accounts a ON a.member_id=s.member_id WHERE s.token_hash=$1 AND s.expires_at>$2',[hash(raw),now()]);const s=result.rows[0];if(!s&&required)fail(401,'Phiên đăng nhập đã hết hạn.');return s??null; }
+ async function issueSession(res,id){const raw=token();await db.query('INSERT INTO sessions VALUES ($1,$2,$3)',[hash(raw),id,now()+8*3600000]);res.cookie('ph_session',raw,{httpOnly:true,secure:production,sameSite:'strict',maxAge:8*3600000,path:'/api'});}
+ const requireAdmin=s=>{if(s.role!=='admin')fail(403,'Chỉ quản lý tổng có quyền thực hiện.');};
+ async function managed(s,classId){return s.role==='admin'||(s.role==='class_manager'&&(await db.query('SELECT 1 FROM class_managers WHERE member_id=$1 AND class_id=$2',[s.id,classId])).rows.length>0);}
+ async function bootstrap(req){const s=await session(req,false);const requirements=Object.fromEntries((await db.query('SELECT * FROM registration_fields')).rows.map(r=>[r.field,r.required]));if(!s)return {session:null,store:{members:[],enrollments:[],requirements}};
+  const all=(await db.query('SELECT m.* FROM members m JOIN accounts a ON a.member_id=m.id WHERE a.verified=true')).rows.map(profile);
+  const full=new Set([s.id]);if(s.role==='class_manager')for(const r of (await db.query('SELECT e.member_id FROM enrollments e JOIN class_managers c ON c.class_id=e.class_id WHERE c.member_id=$1',[s.id])).rows)full.add(r.member_id);
+  const members=all.map(m=>s.role==='admin'||full.has(m.id)?m:{...m,birthday:'',phone:'',address:'',referrer:'',joined:''});
+  const enrollments=(await db.query(s.role==='admin'?'SELECT member_id AS "memberId",class_id AS "classId",date FROM enrollments':'SELECT e.member_id AS "memberId",e.class_id AS "classId",e.date FROM enrollments e WHERE e.member_id=$1 OR e.class_id IN (SELECT class_id FROM class_managers WHERE member_id=$1)',s.role==='admin'?[]:[s.id])).rows;
+  return {session:{id:s.id,role:s.role,demo:false},store:{members,enrollments:enrollments.map(e=>({...e,date:e.date instanceof Date?e.date.toISOString().slice(0,10):e.date})),requirements}};
+ }
+ async function validate(data,registration=false,id){const requirements=Object.fromEntries((await db.query('SELECT * FROM registration_fields')).rows.map(r=>[r.field,r.required]));
+  if(!data||typeof data!=='object')fail(400,'Thông tin hồ sơ không hợp lệ.');const result={};for(const field of fields){if(typeof data[field]!=='string')fail(400,'Thiếu thông tin hồ sơ.');result[field]=data[field].trim();if(result[field].length>(field==='avatar'?1500000:500))fail(400,'Thông tin vượt độ dài cho phép.');}
+  for(const field of fields)if(requirements[field]&&!result[field])fail(400,`Vui lòng cung cấp ${field}.`);
+  // Phone and password are activation prerequisites, even when optional in profile configuration.
+  if(!/^0[35789]\d{8}$/.test(result.phone))fail(400,'SĐT Việt Nam cần 10 chữ số để xác thực tài khoản.');
+  if(!['children','youth','congregation'].includes(result.group))fail(400,'Nhóm sinh hoạt không hợp lệ.');
+  for(const field of ['birthday','joined'])if(result[field]&&(!/^\d{4}-\d{2}-\d{2}$/.test(result[field])||Number.isNaN(Date.parse(result[field]))||new Date(result[field]).toISOString().slice(0,10)!==result[field]))fail(400,'Ngày tháng không hợp lệ.');
+  if(result.birthday>new Date(now()).toISOString().slice(0,10))fail(400,'Ngày sinh không thể ở tương lai.');
+  if(result.referrer&&(result.referrer===id||!(await db.query('SELECT 1 FROM accounts WHERE member_id=$1 AND verified=true',[result.referrer])).rows.length))fail(400,'Mã người giới thiệu không hợp lệ.');
+  return result;
+ }
+ async function avatar(value,old=''){if(!value)return '';if(value===old)return old;if(!/^data:image\/(webp|png|jpeg);base64,/.test(value))fail(400,'Ảnh đại diện không hợp lệ.');let buffer;try{buffer=await sharp(Buffer.from(value.split(',')[1],'base64'),{limitInputPixels:20000000}).rotate().resize(480,480,{fit:'inside',withoutEnlargement:true}).webp({quality:80}).toBuffer();}catch{fail(400,'Không đọc được ảnh đại diện.');}const key=randomUUID()+'.webp';if(storage)await storage.put(key,buffer);else{await mkdir(uploadDir,{recursive:true});await writeFile(path.join(uploadDir,key),buffer);}return '/api/avatars/'+key;}
+ const codeHash=(id,code)=>createHmac('sha256',secret).update(id+':'+code).digest('hex');
+ async function challenge(id,purpose,sessionHash=null){if(production&&!sms.canSend)fail(503,'OTP SMS chưa được cấu hình. Đăng ký và đăng nhập chưa mở.');const m=(await db.query('SELECT phone FROM members WHERE id=$1',[id])).rows[0];if(!m?.phone)fail(400,'Cần cung cấp SĐT để xác thực.');if(production&&rateLimits){await limit('otp-account:'+id,6,900000);await limit('otp-phone:'+m.phone,20,900000);}const cid=randomUUID(),raw=token(),code=String(randomInt(100000,1000000)),expiresAt=now()+300000;
+  await db.transaction(async tx=>{await tx.query('UPDATE challenges SET consumed=true WHERE member_id=$1 AND purpose=$2 AND consumed=false',[id,purpose]);await tx.query('DELETE FROM password_grants WHERE member_id=$1',[id]);await tx.query('INSERT INTO challenges (id,token_hash,member_id,phone,purpose,code_hash,expires_at,session_hash,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',[cid,hash(raw),id,m.phone,purpose,codeHash(cid,code),expiresAt,sessionHash,now()]);});
+  const message=`Đạo Tràng Phật Hào: Mã thành viên ${id}. Mã xác thực ${code}. Chỉ sử dụng cho tài khoản ${id}, hiệu lực 5 phút. Không chia sẻ mã này.`;
+  if(production){try{await sms.send({phone:m.phone,message});}catch(e){await db.query('UPDATE challenges SET consumed=true WHERE id=$1',[cid]);throw e;}return {id:cid,token:raw,memberId:id,phone:m.phone.slice(0,3)+'••••'+m.phone.slice(-3),purpose,expiresAt};}
+  return {id:cid,token:raw,memberId:id,phone:m.phone,purpose,code,expiresAt,message};
+ }
+ function checkPassword(value){if(typeof value!=='string'||value.length<8||value.length>128)fail(400,'Mật khẩu cần từ 8 đến 128 ký tự.');}
+ route('get','/api/health',async(_,res)=>{await db.query('SELECT field FROM registration_fields LIMIT 1');res.json({ok:true,database:production?'Supabase PostgreSQL':'PostgreSQL / PGlite',sms:production?(sms.canSend?'configured':'disabled'):'local simulation',ready:!production||sms.canSend});});
+ route('get','/api/bootstrap',async(req,res)=>res.json(await bootstrap(req)));
+ route('post','/api/auth/login',async(req,res)=>{const {identity,memberCode,password}=req.body;checkPassword(password);if(typeof identity!=='string')fail(400,'Vui lòng nhập mã thành viên hoặc SĐT.');const identifier=identity.trim().toUpperCase();const byCode=identifier.startsWith('PH');const rows=(await db.query('SELECT m.id,a.password_hash,a.verified FROM members m JOIN accounts a ON a.member_id=m.id WHERE '+(byCode?'m.id=$1':'m.phone=$1'),[identifier])).rows;
+  if(!byCode&&rows.length>1&&!memberCode)return res.status(409).json({error:'SĐT dùng cho nhiều tài khoản. Vui lòng nhập mã thành viên.',requiresMemberCode:true});
+  const account=rows.find(r=>!memberCode||r.id===String(memberCode).trim().toUpperCase());if(!account||!await passwordMatches(password,account.password_hash))fail(401,'Thông tin đăng nhập không đúng.');res.json(await challenge(account.id,account.verified?'login':'registration'));});
+ route('post','/api/auth/register',async(req,res)=>{if(production&&!sms.canSend)fail(503,'OTP SMS chưa được cấu hình. Đăng ký chưa mở.');const {member,password}=req.body;checkPassword(password);const m=await validate(member,true);m.avatar=await avatar(m.avatar);const encoded=await passwordHash(password);let id;await db.transaction(async tx=>{id=(await tx.query('INSERT INTO members (name,birthday,phone,address,area,"group",referrer,joined,avatar) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id',[m.name,m.birthday||null,m.phone,m.address,m.area,m.group,m.referrer||null,m.joined||new Date(now()).toISOString().slice(0,10),m.avatar])).rows[0].id;await tx.query('INSERT INTO accounts (member_id,password_hash) VALUES ($1,$2)',[id,encoded]);});res.status(201).json(await challenge(id,'registration'));});
+ route('post','/api/auth/password-challenge',async(req,res)=>{const s=await session(req);res.json(await challenge(s.id,'password_change',s.token_hash));});
+ route('post','/api/auth/resend',async(req,res)=>{const c=(await db.query('SELECT * FROM challenges WHERE id=$1',[req.body.id])).rows[0];if(!c||c.token_hash!==hash(String(req.body.token??'')))fail(400,'Phiên xác thực không hợp lệ.');if(c.consumed)fail(400,'Mã cũ đã được sử dụng hoặc thay thế.');if(c.purpose==='password_change'){const s=await session(req);if(s.token_hash!==c.session_hash)fail(403,'Phiên xác thực không thuộc tài khoản này.');}if(now()-Number(c.created_at)<30000)fail(429,'Vui lòng đợi 30 giây trước khi gửi lại mã.');res.json(await challenge(c.member_id,c.purpose,c.session_hash));});
+ route('post','/api/auth/verify',async(req,res)=>{const {id,token:raw,code,memberId,purpose}=req.body;const s=await session(req,false);let error;let account;let grant;
+  await db.transaction(async tx=>{const c=(await tx.query('SELECT * FROM challenges WHERE id=$1 FOR UPDATE',[id])).rows[0];if(!c||c.token_hash!==hash(String(raw??''))||c.member_id!==memberId||c.purpose!==purpose||(c.session_hash&&c.session_hash!==s?.token_hash)){error='Mã xác thực không thuộc tài khoản hoặc phiên này.';return;}if(c.consumed||Number(c.expires_at)<=now()||c.attempts>=5){error='Mã đã hết hạn, được sử dụng hoặc vượt số lần thử.';return;}if(typeof code!=='string'||!/^\d{6}$/.test(code)||codeHash(id,code)!==c.code_hash){await tx.query('UPDATE challenges SET attempts=attempts+1 WHERE id=$1',[id]);error='Mã xác thực chưa đúng.';return;}
+   await tx.query('UPDATE challenges SET consumed=true WHERE id=$1',[id]);account=c.member_id;
+   if(purpose==='registration')await tx.query('UPDATE accounts SET verified=true WHERE member_id=$1',[account]);
+   if(purpose==='password_change'){grant=token();await tx.query('INSERT INTO password_grants VALUES ($1,$2,$3,$4)',[hash(grant),account,s.token_hash,now()+300000]);}
+  });if(error)fail(400,error);if(grant)return res.json({grant});await issueSession(res,account);res.json({ok:true});});
+ route('post','/api/auth/password',async(req,res)=>{const s=await session(req);const {grant,password}=req.body;checkPassword(password);const encoded=await passwordHash(password);await db.transaction(async tx=>{const g=(await tx.query('DELETE FROM password_grants WHERE token_hash=$1 AND member_id=$2 AND session_hash=$3 AND expires_at>$4 RETURNING member_id',[hash(String(grant??'')),s.id,s.token_hash,now()])).rows[0];if(!g)fail(400,'Phiên đổi mật khẩu không hợp lệ hoặc hết hạn.');await tx.query('UPDATE accounts SET password_hash=$1 WHERE member_id=$2',[encoded,s.id]);await tx.query('DELETE FROM sessions WHERE member_id=$1 AND token_hash<>$2',[s.id,s.token_hash]);await tx.query('UPDATE challenges SET consumed=true WHERE member_id=$1',[s.id]);await tx.query("INSERT INTO audit_log(actor,action,target) VALUES ($1,'password_change',$1)",[s.id]);});res.json({ok:true});});
+ route('post','/api/auth/logout',async(req,res)=>{const s=await session(req,false);if(s)await db.query('DELETE FROM sessions WHERE token_hash=$1',[s.token_hash]);res.clearCookie('ph_session',{path:'/api'});res.json({ok:true});});
+ route('patch','/api/members/:id',async(req,res)=>{const s=await session(req);if(s.role!=='admin'&&s.id!==req.params.id)fail(403,'Không có quyền chỉnh sửa hồ sơ này.');const old=(await db.query('SELECT * FROM members WHERE id=$1',[req.params.id])).rows[0];if(!old)fail(404,'Không tìm thấy hồ sơ.');const m=await validate(req.body,false,old.id);if(production&&m.phone!==old.phone)fail(403,'Đổi SĐT cần xác minh số mới. Tính năng này đang được chuẩn bị.');m.avatar=await avatar(m.avatar,old.avatar);await db.transaction(async tx=>{await tx.query('UPDATE members SET name=$2,birthday=$3,phone=$4,address=$5,area=$6,"group"=$7,referrer=$8,joined=$9,avatar=$10 WHERE id=$1',[old.id,m.name,m.birthday||null,m.phone,m.address,m.area,m.group,m.referrer||null,m.joined||old.joined,m.avatar]);if(m.phone!==old.phone){await tx.query('UPDATE challenges SET consumed=true WHERE member_id=$1',[old.id]);await tx.query('DELETE FROM password_grants WHERE member_id=$1',[old.id]);}await tx.query("INSERT INTO audit_log(actor,action,target) VALUES ($1,'profile_update',$2)",[s.id,old.id]);});res.json({ok:true});});
+ route('patch','/api/requirements/:field',async(req,res)=>{const s=await session(req);requireAdmin(s);if(!Object.keys(seed.requirements).includes(req.params.field)||typeof req.body.required!=='boolean')fail(400,'Cấu hình không hợp lệ.');await db.query('UPDATE registration_fields SET required=$1 WHERE field=$2',[req.body.required,req.params.field]);res.json({ok:true});});
+ route('put','/api/enrollments/:classId/:memberId',async(req,res)=>{const s=await session(req);if(s.id!==req.params.memberId)fail(403,'Chỉ đăng ký cho tài khoản đang đăng nhập.');if(!(await db.query('SELECT 1 FROM classes WHERE id=$1',[req.params.classId])).rows.length)fail(404,'Không tìm thấy lớp.');await db.query('INSERT INTO enrollments (member_id,class_id) VALUES ($1,$2) ON CONFLICT DO NOTHING',[s.id,req.params.classId]);res.json({ok:true});});
+ route('delete','/api/enrollments/:classId/:memberId',async(req,res)=>{const s=await session(req);if(s.id!==req.params.memberId&&!await managed(s,req.params.classId))fail(403,'Không có quyền quản lý lớp này.');await db.query('DELETE FROM enrollments WHERE member_id=$1 AND class_id=$2',[req.params.memberId,req.params.classId]);res.json({ok:true});});
+ route('get','/api/avatars/:key',async(req,res)=>{await session(req);if(!/^[a-f0-9-]{36}\.webp$/.test(req.params.key))fail(404,'Không tìm thấy ảnh.');const known=(await db.query('SELECT 1 FROM members m JOIN accounts a ON a.member_id=m.id WHERE avatar=$1 AND a.verified=true',['/api/avatars/'+req.params.key])).rows.length;if(!known)fail(404,'Không tìm thấy ảnh.');res.type('webp').send(storage?await storage.get(req.params.key):await readFile(path.join(uploadDir,req.params.key)));});
+ app.use((err,req,res,next)=>{if(res.headersSent)return next(err);const status=err.status??(err.code==='23503'||err.code==='22008'?400:500);if(status===500)console.error('API request failed:',err.code??'internal');res.status(status).json({error:status===500?'Không thể xử lý yêu cầu. Vui lòng thử lại.':err.message,...(err.requiresMemberCode?{requiresMemberCode:true}:{})});});
+ return {app,db};
+}
