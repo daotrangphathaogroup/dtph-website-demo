@@ -13,7 +13,7 @@
 
 Auth do backend ứng dụng quản lý, không dùng Supabase Auth. Không cần Supabase anon/publishable/service-role key, không cần bật Phone Auth trên Supabase. Backend lưu mật khẩu đã hash, phiên đăng nhập và OTP; SĐT không unique, nhiều tài khoản vẫn dùng chung một số. SMS có mã thành viên, OTP chỉ dùng cho đúng tài khoản và mục đích tương ứng.
 
-Có thể deploy hạ tầng với `SMS_PROVIDER=disabled`, nhưng đăng ký/đăng nhập sẽ bị chặn. Để thử không gửi SMS, dùng `SMS_PROVIDER=preview`: OTP hiển thị ngay trên website, không xác minh quyền sở hữu SĐT và chỉ dùng dữ liệu thử. Muốn sử dụng đầy đủ phải cấu hình SMS thật. Dữ liệu local và tài khoản mẫu không tự chuyển lên cloud.
+Mặc định các công tắc xác thực SMS, email và Google đều tắt. Đăng ký/đăng nhập dùng mật khẩu, không cần mua API gửi tin. Quản lý tổng có thể thay đổi trong **Cấu hình đăng ký → Tính năng xác thực**; cấu hình lưu trong `app_meta`, không cần migration riêng cho công tắc. Email vẫn unique, SĐT vẫn được dùng chung; cả hai là thông tin liên hệ/chỉ danh đăng nhập, chưa được xác minh quyền sở hữu khi công tắc tắt. Dữ liệu local và tài khoản mẫu không tự chuyển lên cloud.
 
 ## 2. Chuẩn bị máy và mã nguồn
 
@@ -158,9 +158,9 @@ TWILIO_MESSAGING_SERVICE_SID=MESSAGING_SERVICE_SID_CUA_BAN
 
 Hoặc bỏ Messaging Service SID và dùng `TWILIO_FROM` của sender đã được Twilio cho phép. Trong adapter hiện tại, Messaging Service SID được ưu tiên nếu cả hai cùng có giá trị. Adapter gọi Messages API với To/Body và một trong hai cách chọn sender. [Twilio Messages API](https://www.twilio.com/docs/messaging/api/message-resource).
 
-Để tạm thử đăng ký/đăng nhập/đổi mật khẩu mà không gửi SMS, đặt `SMS_PROVIDER=preview` trên Vercel Production rồi deploy mã mới. Mã OTP sẽ hiển thị trong bước xác thực cùng thông báo thử nghiệm; không cần Twilio credentials. Mật khẩu, cookie, giới hạn OTP và quyền tài khoản vẫn được kiểm tra, nhưng đây không còn là xác thực hai yếu tố thật. Health trả `sms: "preview"`, `ready: false` để phân biệt với SMS thật. Khi mở sử dụng thật, chuyển lại `twilio` và cung cấp credentials/sender.
+Để tạm thử đăng ký/đăng nhập/đổi mật khẩu mà không gửi SMS, đặt `SMS_PROVIDER=preview` trên Vercel Production rồi deploy mã mới, sau đó bật công tắc SMS trong Cấu hình đăng ký. Mã OTP sẽ hiển thị trong bước xác thực cùng thông báo thử nghiệm; không cần Twilio credentials. Mật khẩu, cookie, giới hạn OTP và quyền tài khoản vẫn được kiểm tra, nhưng đây không còn là xác thực hai yếu tố thật. Health trả `sms: "preview"`, `ready: false` để phân biệt với SMS thật. Khi mở sử dụng thật, chuyển lại `twilio` và cung cấp credentials/sender.
 
-Nếu muốn đóng hoàn toàn đăng ký/OTP, dùng `SMS_PROVIDER=disabled`. Khi đó có thể kiểm tra database và hosting, nhưng không đăng nhập được để xem giao diện bên trong. Chế độ `disabled` không hiện OTP; chỉ chế độ `preview` được bật rõ ràng mới trả mã thử nghiệm.
+`SMS_PROVIDER=disabled` tắt dịch vụ gửi SMS. Khi công tắc SMS tắt (mặc định), đăng ký/đăng nhập hoạt động trực tiếp bằng mật khẩu; đổi mật khẩu yêu cầu mật khẩu hiện tại. Khi công tắc SMS bật mà provider không sẵn sàng, OTP bị chặn. Tắt công tắc sẽ vô hiệu các challenge/grant chưa sử dụng và ẩn UI OTP.
 
 ## 8. Tạo Vercel project và nhập biến môi trường
 
@@ -236,7 +236,7 @@ Mở `https://DOMAIN_THAT_CUA_BAN/api/health`. Khi SMS đã cấu hình, kết q
 }
 ```
 
-Khi SMS disabled, `sms` là `disabled`, `ready` là false. Health chỉ xác nhận query database và trạng thái cấu hình SMS; không chứng minh đã gửi SMS hay upload R2 thành công. Cần thử từng luồng ở bước tiếp theo.
+Khi công tắc SMS tắt, `sms` là `disabled`, `ready` là true vì đăng nhập dùng mật khẩu. Health chỉ xác nhận query database và trạng thái cấu hình SMS; không chứng minh đã gửi SMS hay upload R2 thành công. Cần thử từng luồng ở bước tiếp theo.
 
 ## 10. Tạo quản lý tổng đầu tiên
 
@@ -251,7 +251,7 @@ npm run admin:promote -- PH00001
 
 5. Đăng xuất và đăng nhập lại tài khoản, kiểm tra các mục quản lý huynh đệ/cấu hình đăng ký.
 
-Script chỉ cấp quyền cho tài khoản đã xác minh. Không dùng các tài khoản/mật khẩu mẫu local cho production. Nếu SMS disabled, chưa hoàn tất được bước này.
+Script chỉ cấp quyền cho tài khoản đã xác minh. Không dùng các tài khoản/mật khẩu mẫu local cho production. Khi công tắc SMS tắt, tài khoản hoàn tất đăng ký trực tiếp bằng mật khẩu; trường verified trong schema hiện tại biểu thị tài khoản đã kích hoạt, không chứng minh SĐT/email đã xác minh.
 
 ## 11. Nghiệm thu trước khi mời huynh đệ sử dụng
 
@@ -289,7 +289,7 @@ Vercel Runtime Logs giúp tìm lỗi server; Twilio logs giúp xác minh gửi/p
 
 ## 14. Các phần chưa có trong bản hiện tại
 
-Chưa có quên mật khẩu/email, nhắc bổ sung trường bắt buộc, UI tạo thêm lớp/phân quyền, pagination server hoặc tự dọn ảnh orphan. Production đang chặn đổi SĐT vì chưa có luồng xác minh số mới; các trường hồ sơ khác vẫn cập nhật được. Các kiểm thử local/adapter không thay thế nghiệm thu trên dịch vụ thật.
+Chưa có quên mật khẩu/email, nhắc bổ sung trường bắt buộc, UI tạo thêm lớp/phân quyền, pagination server hoặc tự dọn ảnh orphan. Khi bật công tắc SMS, production chặn đổi SĐT vì chưa có luồng xác minh số mới; khi tắt, cho phép cập nhật SĐT liên hệ; các trường hồ sơ khác vẫn cập nhật được. Các kiểm thử local/adapter không thay thế nghiệm thu trên dịch vụ thật.
 
 Đây là hướng dẫn triển khai bản đang có. Build local thành công không đồng nghĩa cloud đã sẵn sàng; chỉ xác nhận hoàn tất sau khi kiểm tra database, SMS, R2 và các quyền trên deployment thực tế.
 
@@ -303,4 +303,8 @@ Trước khi deploy mã có email, chạy migration `supabase/migrations/2026100
 
 Migration thêm members.email, unique index cho email không rỗng không phân biệt hoa/thường/khoảng trắng đầu cuối, và cấu hình email mặc định tùy chọn. Nhiều tài khoản cũ không có email vẫn hoạt động; SĐT dùng chung không thay đổi. Không cần biến môi trường email mới. Sau migration mới commit/push để Vercel tự deploy.
 
-Đăng nhập hỗ trợ email + mật khẩu, SĐT + mật khẩu hoặc mã huynh đệ + mật khẩu. OTP vẫn dùng SMS hoặc SMS_PROVIDER=preview hiện tại; chưa có gửi/xác minh email hay khôi phục mật khẩu qua email. Email là thông tin riêng tư, chỉ người có quyền xem hồ sơ đầy đủ được nhận từ API.
+Đăng nhập hỗ trợ email + mật khẩu, SĐT + mật khẩu hoặc mã huynh đệ + mật khẩu. Khi bật công tắc SMS, OTP dùng SMS hoặc SMS_PROVIDER=preview; mặc định công tắc tắt nên không yêu cầu OTP; chưa có gửi/xác minh email hay khôi phục mật khẩu qua email. Email là thông tin riêng tư, chỉ người có quyền xem hồ sơ đầy đủ được nhận từ API.
+
+## Đăng nhập Google
+
+Xem [GOOGLE_LOGIN.md](./GOOGLE_LOGIN.md) để cấu hình Google Auth Platform, callback, hai biến môi trường server-only và migration Google. Không cần Gmail SMTP hoặc chuyển sang Supabase Auth.

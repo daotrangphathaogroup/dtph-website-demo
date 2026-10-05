@@ -8,7 +8,7 @@ import { createBackend } from '../server/backend.mjs';
 
 test('Backend local: PostgreSQL persistence, shared phone, scoped OTP, roles and class enrollment',async t=>{
  const dir=await mkdtemp(path.join(os.tmpdir(),'phat-hao-test-'));let clock=Date.now();
- let backend=await createBackend({dataDir:path.join(dir,'db'),uploadDir:path.join(dir,'avatars'),now:()=>clock,rateLimits:false});
+ let backend=await createBackend({authDefaults:{smsOtp:true,googleLogin:true},dataDir:path.join(dir,'db'),uploadDir:path.join(dir,'avatars'),now:()=>clock,rateLimits:false});
  let server=backend.app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));
  let base=`http://127.0.0.1:${server.address().port}`;
  const client=()=>({cookie:'',async request(url,method='GET',body){const response=await fetch(base+'/api'+url,{method,headers:{...(body?{'Content-Type':'application/json'}:{}),...(this.cookie?{cookie:this.cookie}:{})},body:body?JSON.stringify(body):undefined});const cookie=response.headers.get('set-cookie');if(cookie)this.cookie=cookie.split(';')[0];return {status:response.status,body:await response.json()};}});
@@ -80,7 +80,7 @@ test('Backend local: PostgreSQL persistence, shared phone, scoped OTP, roles and
    assert.equal((await admin.request('/requirements/birthday','PATCH',{required:true})).status,200);
   });
   await new Promise(resolve=>server.close(resolve));await backend.db.close();
-  backend=await createBackend({dataDir:path.join(dir,'db'),uploadDir:path.join(dir,'avatars'),now:()=>clock,rateLimits:false});server=backend.app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));base=`http://127.0.0.1:${server.address().port}`;
+  backend=await createBackend({authDefaults:{smsOtp:true,googleLogin:true},dataDir:path.join(dir,'db'),uploadDir:path.join(dir,'avatars'),now:()=>clock,rateLimits:false});server=backend.app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));base=`http://127.0.0.1:${server.address().port}`;
   await t.test('restart retains profiles, configuration, sessions, new accounts and password changes',async()=>{
    const state=(await member.request('/bootstrap')).body;assert.equal(state.store.requirements.birthday,true);assert.equal(state.store.members.find(m=>m.id==='PH00003').name,'Hồ sơ lưu PostgreSQL');assert.ok(state.store.members.some(m=>m.id===registered));await login(client(),'PH00003','ChangedLocal@123');
   });

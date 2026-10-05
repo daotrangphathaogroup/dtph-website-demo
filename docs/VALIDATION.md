@@ -89,3 +89,14 @@ Thêm email tùy chọn vào đăng ký/hồ sơ, bảng quản lý huynh đệ/
 Kiểm thử mới xác minh đăng ký trùng, khác hoa/thường/khoảng trắng, cùng SĐT với email khác, định dạng sai, đăng nhập email + mật khẩu, cập nhật email trùng, email cũ không đăng nhập sau đổi, ẩn email khỏi người không có quyền, email trống và toggle bắt buộc. Kiểm tra trực tiếp constraint database và chạy lại migration không làm mất email đã lưu. Production fixtures áp dụng cả migration email.
 
 Backend local áp dụng migration vào database cũ khi khởi động; API bootstrap xác nhận emailRequired=false. Kiểm tra UI browser chưa thực hiện được do chính sách truy cập URL của browser session chặn. Cloud chưa áp dụng migration hoặc deploy trong lượt này; cần migration trước khi push mã để tránh thiếu cột.
+
+## Đăng nhập Google — 05/10/2026
+
+- `npm test`: 27 tests đạt. Kiểm tra state/cookie, PKCE, nonce/email_verified sau xác minh SDK, callback và liên kết dùng một lần, giới hạn mật khẩu, chống liên kết theo email đơn thuần, giữ quyền và định danh Google khi đổi email hồ sơ. Migration production bật RLS cho bảng OAuth mới.
+- `npm run build` đạt, gồm TypeScript và kiểm tra deployment trace.
+- Chưa thử đăng nhập Google thật vì chưa có GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET. Các kiểm tra OAuth sử dụng provider/token verifier giả lập; không gọi Google bằng tài khoản người dùng.
+- Hướng dẫn cấu hình và phạm vi tính năng: `docs/GOOGLE_LOGIN.md`.
+
+## Tạm tắt dịch vụ xác thực — 05/10/2026
+
+Mặc định ba công tắc SMS/email/Google tắt; cấu hình chỉ quản lý tổng được thay đổi và lưu trong app_meta. Test production kiểm tra đăng ký/đăng nhập không gửi tin hoặc tạo OTP, email unique/SĐT dùng chung, đổi mật khẩu cần mật khẩu hiện tại và thu hồi phiên khác, cập nhật SĐT, bật lại OTP, vô hiệu mã cũ khi tắt và không cho bật dịch vụ chưa sẵn sàng. Bộ kiểm tra hiện có 28 tests. Xác thực email chưa tích hợp nên công tắc chưa cho bật. Không cần migration bổ sung cho công tắc.

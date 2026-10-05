@@ -4,7 +4,7 @@ import {createBackend} from '../server/backend.mjs';
 import {handleRequest} from '../server/next-handler.mjs';
 
 test('Class management is scoped to assigned classes and currently enrolled learners',async()=>{
- const {app,db}=await createBackend({dataDir:'memory://',rateLimits:false});
+ const {app,db}=await createBackend({authDefaults:{smsOtp:true,googleLogin:true},dataDir:'memory://',rateLimits:false});
  async function call(path,method='GET',body,cookie){const response=await handleRequest(app,new Request('http://127.0.0.1:5173/api'+path,{method,headers:{...(body?{'Content-Type':'application/json',Origin:'http://127.0.0.1:5173'}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined}));return {status:response.status,body:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0]};}
  async function login(identity){const started=await call('/auth/login','POST',{identity,password:'PhatHao@123'});return (await call('/auth/verify','POST',started.body)).cookie;}
  try{

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {createBackend} from '../server/backend.mjs';
 import {handleRequest} from '../server/next-handler.mjs';
 test('Unique normalized emails support login, profile changes, optional values and privacy',async()=>{
- const {app,db}=await createBackend({dataDir:'memory://',rateLimits:false});
+ const {app,db}=await createBackend({authDefaults:{smsOtp:true,googleLogin:true},dataDir:'memory://',rateLimits:false});
  async function call(path,method='GET',body,cookie){const res=await handleRequest(app,new Request('http://127.0.0.1:5173/api'+path,{method,headers:{...(body?{'Content-Type':'application/json',Origin:'http://127.0.0.1:5173'}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined}));return {status:res.status,body:await res.json(),cookie:res.headers.get('set-cookie')?.split(';')[0]};}
  const member={name:'Email fixture',birthday:'2015-01-01',phone:'0901200000',email:'  First@Example.com  ',address:'Địa chỉ thử',area:'Đồng Nai',group:'children',referrer:'',joined:'2026-10-05',avatar:''};
  try{

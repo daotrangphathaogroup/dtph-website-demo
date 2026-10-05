@@ -4,7 +4,7 @@ import {createBackend} from '../server/backend.mjs';
 import {handleRequest} from '../server/next-handler.mjs';
 
 test('Next Web Request/Response preserves JSON, OTP, cookies and permissions',async()=>{
- const {app,db}=await createBackend({dataDir:'memory://',rateLimits:false});
+ const {app,db}=await createBackend({authDefaults:{smsOtp:true,googleLogin:true},dataDir:'memory://',rateLimits:false});
  const call=(path,method='GET',body,cookie)=>handleRequest(app,new Request('http://127.0.0.1:5173/api'+path,{method,headers:{...(body?{'Content-Type':'application/json',Origin:'http://127.0.0.1:5173'}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined}));
  try{
   const bootstrap=await call('/bootstrap');assert.equal(bootstrap.status,200);assert.equal((await bootstrap.json()).session,null);assert.equal(bootstrap.headers.get('cache-control'),'no-store');
