@@ -24,7 +24,7 @@ test('Production rejects incomplete configuration and a mock SMS provider',()=>{
  assert.throws(()=>productionConfig(env),/Unsupported SMS_PROVIDER/);
 });
 test('Private production schema, registration, no OTP leak, secure cookies, RLS and persistent limits',async t=>{
- const pg=new PGlite('memory://');await pg.waitReady;await pg.exec('CREATE ROLE anon; CREATE ROLE authenticated;');await pg.exec(await readFile(new URL('../supabase/migrations/202610020001_initial.sql',import.meta.url),'utf8'));
+ const pg=new PGlite('memory://');await pg.waitReady;await pg.exec('CREATE ROLE anon; CREATE ROLE authenticated;');await pg.exec(await readFile(new URL('../supabase/migrations/202610020001_initial.sql',import.meta.url),'utf8'));await pg.exec(await readFile(new URL('../supabase/migrations/202610050001_member_email.sql',import.meta.url),'utf8'));
  const database={query:(sql,params)=>pg.transaction(async tx=>{await tx.query('SET LOCAL search_path TO phat_hao, pg_catalog');return tx.query(sql,params);}),transaction:fn=>pg.transaction(async tx=>{await tx.query('SET LOCAL search_path TO phat_hao, pg_catalog');return fn(tx);})};
  const outbox=[];const {app}=await createBackend({database,production:true,initialize:false,seedData:false,secret:'s'.repeat(64),origin:'https://example.com',storage:{async put(){},async get(){return Buffer.from('');}},sms:{canSend:true,async send(message){outbox.push(message);}}});
  const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));const base=`http://127.0.0.1:${server.address().port}/api`;
@@ -49,7 +49,7 @@ test('Private production schema, registration, no OTP leak, secure cookies, RLS 
 });
 
 test('Explicit SMS preview permits scoped OTP without delivery; disabled remains closed',async()=>{
- const pg=new PGlite('memory://');await pg.waitReady;await pg.exec('CREATE ROLE anon; CREATE ROLE authenticated;');await pg.exec(await readFile(new URL('../supabase/migrations/202610020001_initial.sql',import.meta.url),'utf8'));
+ const pg=new PGlite('memory://');await pg.waitReady;await pg.exec('CREATE ROLE anon; CREATE ROLE authenticated;');await pg.exec(await readFile(new URL('../supabase/migrations/202610020001_initial.sql',import.meta.url),'utf8'));await pg.exec(await readFile(new URL('../supabase/migrations/202610050001_member_email.sql',import.meta.url),'utf8'));
  const database={query:(sql,params)=>pg.transaction(async tx=>{await tx.query('SET LOCAL search_path TO phat_hao, pg_catalog');return tx.query(sql,params);}),transaction:fn=>pg.transaction(async tx=>{await tx.query('SET LOCAL search_path TO phat_hao, pg_catalog');return fn(tx);})};
  const env={DATABASE_URL:'postgres://test',OTP_SECRET:'s'.repeat(64),APP_ORIGIN:'https://example.com',R2_ACCOUNT_ID:'test',R2_ACCESS_KEY_ID:'test',R2_SECRET_ACCESS_KEY:'test',R2_BUCKET:'test'};
  const servers=[];let sends=0;

@@ -296,3 +296,11 @@ Chưa có quên mật khẩu/email, nhắc bổ sung trường bắt buộc, UI 
 ## Vùng chạy hiện tại của project
 
 `vercel.json` hiện đặt `regions: ["hnd1"]` (Tokyo) để gần database được cấu hình ở `ap-northeast-1`. Nếu chuyển Supabase sang vùng khác, đổi vùng Functions tương ứng rồi deploy lại. Tránh để Functions ở Mỹ khi database ở châu Á: từng lượt truy vấn sẽ phải đi xa. [Bảng vùng Vercel](https://vercel.com/docs/regions).
+
+## Bổ sung email — 05/10/2026
+
+Trước khi deploy mã có email, chạy migration `supabase/migrations/202610050001_member_email.sql` trong SQL Editor của đúng project, hoặc chạy `npm run db:migrate` trên máy với `.env.production` đúng. Script migration hiện chạy các file SQL theo thứ tự tên; các migration đang có được viết idempotent để không xóa/reset dữ liệu.
+
+Migration thêm members.email, unique index cho email không rỗng không phân biệt hoa/thường/khoảng trắng đầu cuối, và cấu hình email mặc định tùy chọn. Nhiều tài khoản cũ không có email vẫn hoạt động; SĐT dùng chung không thay đổi. Không cần biến môi trường email mới. Sau migration mới commit/push để Vercel tự deploy.
+
+Đăng nhập hỗ trợ email + mật khẩu, SĐT + mật khẩu hoặc mã huynh đệ + mật khẩu. OTP vẫn dùng SMS hoặc SMS_PROVIDER=preview hiện tại; chưa có gửi/xác minh email hay khôi phục mật khẩu qua email. Email là thông tin riêng tư, chỉ người có quyền xem hồ sơ đầy đủ được nhận từ API.

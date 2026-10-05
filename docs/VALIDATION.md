@@ -81,3 +81,11 @@ Bổ sung SMS_PROVIDER=preview: không gọi dịch vụ SMS, trả mã OTP có 
 - Hủy đăng ký cần xác nhận; giữ hồ sơ chung. Thao tác đăng ký/hủy tiếp tục cập nhật nhanh với rollback khi API thất bại.
 - npm test: 23 tests đạt, gồm kiểm tra phân quyền lớp, học viên ngoài lớp, lớp khác, hồ sơ được lưu và quyền sau hủy đăng ký. Build Next.js/TypeScript và deployment trace đạt.
 - Kiểm tra browser local: mở trang từ nút quản lý, tìm kiếm, mở biểu mẫu chỉnh sửa, xác nhận hủy và chọn giữ đăng ký. Không thay dữ liệu hồ sơ qua kiểm tra giao diện. Screenshot docs/previews/class-management.jpg.
+
+## Email và đăng nhập bằng email — 05/10/2026
+
+Thêm email tùy chọn vào đăng ký/hồ sơ, bảng quản lý huynh đệ/học viên, hồ sơ chi tiết và CSV. Cấu hình đăng ký có toggle bắt buộc email. Backend trim/lowercase và PostgreSQL unique index đảm bảo mỗi email không rỗng thuộc tối đa một tài khoản; nhiều email trống được phép, SĐT dùng chung giữ nguyên. API báo 409 rõ ràng khi trùng email.
+
+Kiểm thử mới xác minh đăng ký trùng, khác hoa/thường/khoảng trắng, cùng SĐT với email khác, định dạng sai, đăng nhập email + mật khẩu, cập nhật email trùng, email cũ không đăng nhập sau đổi, ẩn email khỏi người không có quyền, email trống và toggle bắt buộc. Kiểm tra trực tiếp constraint database và chạy lại migration không làm mất email đã lưu. Production fixtures áp dụng cả migration email.
+
+Backend local áp dụng migration vào database cũ khi khởi động; API bootstrap xác nhận emailRequired=false. Kiểm tra UI browser chưa thực hiện được do chính sách truy cập URL của browser session chặn. Cloud chưa áp dụng migration hoặc deploy trong lượt này; cần migration trước khi push mã để tránh thiếu cột.
