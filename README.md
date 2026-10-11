@@ -1,53 +1,39 @@
-# Cổng thông tin Đạo Tràng Phật Hào
+# Đạo Tràng Phật Hào — Cổng thông tin và quản trị
 
-Next.js App Router + TypeScript, API Route Handler dùng nghiệp vụ backend Node.js, database PostgreSQL chạy nhúng bằng PGlite. Dữ liệu được lưu trên ổ đĩa, không còn dùng localStorage. Bản local không cần Docker, Supabase account hoặc dịch vụ SMS.
+Kiến trúc từ 11/10/2026 hướng đến nhân sự quản lý Đạo Tràng. Next.js App Router, TypeScript, backend Node.js; PostgreSQL local bằng PGlite, production bằng Supabase, ảnh private trên R2.
 
-## Chạy local
+## Trang công khai
 
-Yêu cầu Node.js 24 trở lên.
+- `/`: trang chủ, luôn mở trực tiếp; nội dung sẽ chốt sau.
+- `/dang-ky-thong-tin`: lựa chọn Chúng thiếu nhi / Chúng thanh niên / Đạo tràng.
+- `/dang-ky-thong-tin/chung-thieu-nhi`
+- `/dang-ky-thong-tin/chung-thanh-nien`
+- `/dang-ky-thong-tin/dao-trang`
+
+Ba trang con hiện là khung biểu mẫu riêng. Chưa có form gửi dữ liệu vì các trường sẽ được cung cấp sau. Không có tài khoản, mật khẩu, mã đăng nhập hay xác thực dành cho người điền form.
+
+## Quản trị
+
+- `/quan-tri/dang-nhap`: tên đăng nhập + mật khẩu dành riêng cho nhân sự.
+- `/quan-tri`: quản lý hồ sơ và lớp học hiện có.
+- `/quan-tri/tai-khoan`: quản lý tổng tạo tài khoản và phân công lớp; không tự đăng ký quyền quản trị công khai.
+
+Tài khoản quản trị ở `staff_accounts`, độc lập với hồ sơ `members`. Các API auth huynh đệ/OTP/Google và thư viện gửi SMS đã gỡ. Không dùng Supabase Auth.
+
+## Local
 
 ```sh
 npm install
 npm run dev
 ```
 
-Mở **http://127.0.0.1:5173/**. Lệnh này chạy Next.js tại port 5173, gồm giao diện và `/api/*`. Không cần mở backend port 3001 riêng. Chỉ chạy một tiến trình Next.js trên cùng database local.
+Mở http://127.0.0.1:5173. Database giữ trên `.local/postgres`, ảnh ở `.local/avatars`; không reset dữ liệu.
 
-## Tài khoản mẫu
+Database **mới** có tài khoản mẫu `admin` và `manager`, mật khẩu `PhatHao@123`. Database **đã có tài khoản quản lý từ phiên bản cũ**: migration giữ mật khẩu hiện tại và chuyển tên đăng nhập thành `admin-1`, `admin-2`… hoặc `manager-1`, `manager-2`… theo thứ tự mã nội bộ cũ. Người dùng thông thường không được chuyển sang tài khoản quản trị.
 
-| Mã | Vai trò | Mật khẩu ban đầu |
-|---|---|---|
-| PH00001 | Quản lý tổng | PhatHao@123 |
-| PH00002 | Quản lý lớp Tâm Lý Đạo Đức | PhatHao@123 |
-| PH00003 | Huynh đệ | PhatHao@123 |
+```sh
+npm test
+npm run build
+```
 
-PH00001 và PH00003 cùng SĐT **0901200000**. Đăng nhập bằng số này phải nhập thêm mã thành viên. Có thể đăng nhập trực tiếp bằng mã. OTP do backend tạo và được hiển thị trên màn xác thực để thử; nội dung SMS có mã thành viên. Chưa gửi SMS thật.
-
-Sau khi đăng ký, dùng mật khẩu đã nhập để đăng nhập lại. Đổi mật khẩu có hiệu lực thật trong database local; mật khẩu mẫu cũ không còn dùng được cho tài khoản đã đổi. Không có bộ chọn vai trò hay nút bỏ qua đăng nhập.
-
-## Các luồng hoạt động
-
-- Đăng ký sinh hoạt → cấp mã bằng sequence → xác thực OTP → kích hoạt tài khoản và đăng nhập.
-- Đăng nhập mã/SĐT + mật khẩu → OTP riêng của tài khoản → cookie phiên HttpOnly.
-- Cập nhật hồ sơ, ảnh đại diện được backend chuyển lại thành WebP và lưu trên máy.
-- Đổi mật khẩu qua OTP mới và grant một lần; đăng xuất các phiên khác.
-- Đăng ký/hủy lớp; quản lý lớp xem liên hệ học viên lớp được phân công, hủy đăng ký của học viên.
-- Quản lý tổng xem/sửa hồ sơ, lọc/sắp xếp/CSV và cấu hình trường bắt buộc.
-- Ba nhóm: Chúng thiếu nhi, Chúng thanh niên, Đạo tràng. Lớp Tâm Lý Đạo Đức thuộc Chúng thiếu nhi.
-
-## Dữ liệu và kiểm thử
-
-- `.local/postgres/`: database PostgreSQL, giữ lại khi tắt/mở backend.
-- `.local/avatars/`: ảnh WebP local, mô phỏng nơi lưu object trên R2.
-- `server/migrations/001_initial.sql`: schema, khóa ngoại, index và sequence.
-- `server/seed.mjs`: 36 hồ sơ giả và quyền thử nghiệm; chỉ seed khi database chưa có hồ sơ.
-- `npm test`: integration tests với database tạm riêng; không sửa database đang dùng.
-- `npm run build`: kiểm tra TypeScript, build Next.js và kiểm tra gói API không chứa database local/file môi trường.
-
-Không đưa `.local/` vào Git. Dữ liệu frontend cũ trong localStorage không tự nhập vào database. Khi cần sao lưu local, dừng backend rồi sao chép cả thư mục `.local/`.
-
-Đây là backend để thử local. SMS và lưu ảnh R2 vẫn được mô phỏng; chưa kết nối Supabase Auth/PostgreSQL hay Cloudflare R2 thật. `npm run dev` dùng database local; `npm run build` + `npm start` dùng adapter cloud và cần các biến môi trường Supabase/R2/SMS. Xem [kiến trúc đang chạy](docs/ARCHITECTURE.md) và [kế hoạch production](docs/PRODUCTION-PLAN.md).
-
-## Chuẩn bị triển khai cloud
-
-Đã có `vercel.json`, Next.js Route Handler, adapter Supabase PostgreSQL, R2 private và SMS Twilio; cấu hình mẫu ở `.env.example`. Xem [hướng dẫn triển khai](docs/DEPLOYMENT.md). Các tài nguyên cloud chưa được tạo/kết nối; chỉ đã chuẩn bị mã và kiểm thử adapter. Auth vẫn do backend quản lý. Không chuyển dữ liệu local lên cloud tự động.
+Xem [kiến trúc](docs/ARCHITECTURE.md) và [triển khai](docs/DEPLOYMENT.md). Mô hình dữ liệu huynh đệ hiện giữ để chờ yêu cầu mới, không tự sửa/xóa dữ liệu cũ.

@@ -100,3 +100,18 @@ Backend local áp dụng migration vào database cũ khi khởi động; API boo
 ## Tạm tắt dịch vụ xác thực — 05/10/2026
 
 Mặc định ba công tắc SMS/email/Google tắt; cấu hình chỉ quản lý tổng được thay đổi và lưu trong app_meta. Test production kiểm tra đăng ký/đăng nhập không gửi tin hoặc tạo OTP, email unique/SĐT dùng chung, đổi mật khẩu cần mật khẩu hiện tại và thu hồi phiên khác, cập nhật SĐT, bật lại OTP, vô hiệu mã cũ khi tắt và không cho bật dịch vụ chưa sẵn sàng. Bộ kiểm tra hiện có 28 tests. Xác thực email chưa tích hợp nên công tắc chưa cho bật. Không cần migration bổ sung cho công tắc.
+
+## Khu vực và Tổ — 08/10/2026
+
+- 30 tests đạt, gồm ánh xạ đủ 20 khu vực, không trùng phường, phân đủ ba Tổ, lọc Tổ và dữ liệu cũ chưa phân tổ.
+- API registration/profile tests xác nhận backend tính lại Tổ theo phường, bỏ qua Tổ client gửi, thay phường đổi Tổ, từ chối khu vực mới không có trong danh sách và giữ hồ sơ cũ.
+- TypeScript đạt. Không cần migration mới; Tổ suy ra từ phường. Danh sách và giới hạn đọc ảnh ở `docs/AREAS_AND_TEAMS.md`.
+
+## Tái cấu trúc cổng nhân sự — 11/10/2026 (kết quả hiện tại)
+
+Các kết quả OTP/Google/tài khoản huynh đệ bên trên là lịch sử, không còn mô tả kiến trúc hiện hành.
+
+- 16 tests mới/được giữ lại đạt. Bộ test cũ cho auth huynh đệ đã thay bằng kiểm tra tài khoản staff độc lập, quyền quản lý tổng/lớp, từ chối phiên cũ, các endpoint cũ trả 404, tạo tài khoản không tạo hồ sơ, rate limit, Origin, cookie, logout/hết hạn, migration giữ dữ liệu và credentials một lần, persistence local, TLS và quyền bảng production.
+- `npm run build` đạt với các route public và quản trị thực, gồm TypeScript và deployment trace không chứa dữ liệu/secret local.
+- HTTP local: /, /dang-ky-thong-tin, ba trang nhóm, /quan-tri/dang-nhap, /quan-tri/tai-khoan trả 200. Các trang đăng ký không chứa trường mật khẩu. Bootstrap công khai không trả hồ sơ.
+- Migration local tự áp dụng và giữ database hiện có; migration Supabase chưa chạy trên cloud trong tác vụ này. Các form public chưa nhận dữ liệu vì trường dữ liệu sẽ chốt sau.

@@ -1,8 +1,5 @@
-import type { Role, Store } from './types';
-export type Session={id:string;role:Role;demo:boolean};
-export type AuthFeatures={smsOtp:boolean;emailOtp:boolean;googleLogin:boolean};
-export type AuthResult=Challenge|{ok:true};
-export type Bootstrap={authFeatures:AuthFeatures;authCapabilities:AuthFeatures;googleEnabled:boolean;smsPreview:boolean;managedClassIds:string[];session:Session|null;store:Store};
-export type Challenge={id:string;token:string;memberId:string;phone:string;purpose:'login'|'registration'|'password_change';code?:string;expiresAt:number;message?:string};
-export class ApiError extends Error {requiresMemberCode:boolean;constructor(message:string,requiresMemberCode=false){super(message);this.requiresMemberCode=requiresMemberCode;}}
-export async function api<T= {ok:boolean}>(path:string,method='GET',body?:unknown):Promise<T>{const response=await fetch('/api'+path,{method,credentials:'same-origin',headers:body?{'Content-Type':'application/json'}:undefined,body:body?JSON.stringify(body):undefined});const data=await response.json().catch(()=>({error:'Backend chưa sẵn sàng. Vui lòng chạy npm run dev.'}));if(!response.ok)throw new ApiError(data.error??'Không thể xử lý yêu cầu.',!!data.requiresMemberCode);return data as T;}
+import type {Role,Store} from './types';
+export type Session={id:string;username:string;displayName:string;role:Role};
+export type ClassInfo={id:string;name:string;group_id:string};
+export type Bootstrap={managedClassIds:string[];classes:ClassInfo[];session:Session|null;store:Store};
+export async function api<T={ok:boolean}>(path:string,method='GET',body?:unknown):Promise<T>{const response=await fetch('/api'+path,{method,credentials:'same-origin',headers:body?{'Content-Type':'application/json'}:undefined,body:body?JSON.stringify(body):undefined});const data=await response.json().catch(()=>({error:'Dịch vụ chưa sẵn sàng.'}));if(!response.ok)throw new Error(data.error??'Không thể xử lý yêu cầu.');return data as T;}
