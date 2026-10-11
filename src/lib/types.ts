@@ -1,4 +1,4 @@
-export type Role = 'admin' | 'class_manager';
+export type Role = 'dev' | 'admin' | 'manager';
 export type MemberGroup = 'children' | 'youth' | 'congregation';
 export const groupLabels: Record<MemberGroup, string> = { children: 'Chúng thiếu nhi', youth: 'Chúng thanh niên', congregation: 'Đạo tràng' };
 export type Member = { id: string; name: string; birthday: string; phone: string; email: string; address: string; area: string; team?: 1 | 2 | 3 | null; group: MemberGroup; referrer: string; joined: string; avatar: string };

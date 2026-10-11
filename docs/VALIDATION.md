@@ -115,3 +115,7 @@ Các kết quả OTP/Google/tài khoản huynh đệ bên trên là lịch sử,
 - `npm run build` đạt với các route public và quản trị thực, gồm TypeScript và deployment trace không chứa dữ liệu/secret local.
 - HTTP local: /, /dang-ky-thong-tin, ba trang nhóm, /quan-tri/dang-nhap, /quan-tri/tai-khoan trả 200. Các trang đăng ký không chứa trường mật khẩu. Bootstrap công khai không trả hồ sơ.
 - Migration local tự áp dụng và giữ database hiện có; migration Supabase chưa chạy trên cloud trong tác vụ này. Các form public chưa nhận dữ liệu vì trường dữ liệu sẽ chốt sau.
+
+## 11/10/2026 — Dev/Admin/Manager và trang chính chung
+
+18 tests: kiểm tra public chỉ nhận tên/nhóm, Manager xem tất cả nhưng không ghi, Admin ghi hồ sơ nhưng không quản lý tài khoản, Dev tạo/list/reset/delete; đổi mật khẩu riêng cần mật khẩu hiện tại; thu hồi phiên khi reset/delete/change; singleton Dev, giữ dữ liệu migration, TLS/RLS/origin/rate limit và persistence. Mô hình quyền này thay thế kiểm tra quản lý theo lớp trước đó.

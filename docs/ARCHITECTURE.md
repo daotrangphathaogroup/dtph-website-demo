@@ -1,29 +1,28 @@
-# Kiến trúc cổng quản trị — 11/10/2026
+# Kiến trúc — 11/10/2026
 
-## Hai khu vực độc lập
+## Trang chính dùng chung
 
-Public: trang chủ và ba trang điền form theo nhóm sinh hoạt, không có tài khoản huynh đệ. Nội dung và trường biểu mẫu chưa được chốt nên chỉ dựng các route/khung trang, chưa mở endpoint nhận đăng ký. Sau khi chốt form, endpoint tiếp nhận thông tin sẽ tạo hồ sơ/phiếu đăng ký, tuyệt đối không tạo tài khoản đăng nhập.
+`src/App.tsx` mở tại `/`, thanh bên hiện theo phiên: public có Tổng quát/Tìm kiếm nhanh; staff thêm ba nhóm; Dev thêm hai mục cấu hình. Khách không thấy liên kết hoặc UI tài khoản. Mục đăng ký trong Tổng quát dẫn tới `/dang-ky-thong-tin` và ba biểu mẫu con đang chờ đặc tả. Không tạo tài khoản cho người điền form.
 
-Staff: nhân sự có tên đăng nhập/mật khẩu riêng. Quản lý tổng tạo tài khoản, quản lý toàn bộ hồ sơ và lớp học; quản lý lớp chỉ nhận hồ sơ học viên và thao tác trong lớp được phân công. Mọi quyền được kiểm tra ở API, không dựa vào việc ẩn nút trên giao diện.
+`/quan-tri` là trang đăng nhập riêng, đăng nhập xong trở về `/`. Menu tài khoản góc phải chứa đổi mật khẩu/đăng xuất, Dev thêm quản lý tài khoản ngay trong trang chính. URL /quan-tri/dang-nhap giữ tương thích; /quan-tri/tai-khoan chuyển về trang chính.
 
-## Dữ liệu
+## Quyền ở server
 
-- `members`: hồ sơ huynh đệ cũ được giữ nguyên, chỉ là bản ghi dữ liệu, không phải tài khoản.
-- `classes`, `enrollments`: lớp và danh sách học viên hiện có được giữ nguyên.
-- `staff_accounts`: định danh nhân sự, username unique, display_name, password_hash, role, active.
-- `staff_class_managers`: phân công lớp cho nhân sự.
-- `staff_sessions`: phiên quản trị opaque, lưu hash, hết hạn 8 giờ.
-- `registration_fields`: cấu hình quản lý hồ sơ tạm, không còn mật khẩu/người giới thiệu qua mã. Sau này tách schema biểu mẫu theo từng nhóm khi có đặc tả.
-- Tổ sinh hoạt tiếp tục suy ra từ phường theo cấu hình chung.
+- Dev: singleton khai báo server-only, toàn quyền hồ sơ, cấu hình, tạo/list/reset/delete Admin/Manager. Không thể tạo Dev qua API hoặc xóa Dev; partial unique index ngăn thêm Dev.
+- Admin: xem/chỉnh sửa hồ sơ của mọi nhóm; không có quyền tài khoản khác hoặc cấu hình Dev.
+- Manager: xem toàn bộ danh sách/hồ sơ của ba nhóm, không ghi hồ sơ, đăng ký lớp hoặc cấu hình.
+- Public: bootstrap không có dữ liệu cá nhân, quick search giới hạn 20 tên/nhóm, không trả ID/địa chỉ/điện thoại/email.
 
-ID hồ sơ cũ chỉ giữ làm khóa nội bộ để không phá liên kết dữ liệu. Không dùng làm tên đăng nhập, không hiển thị mã huynh đệ trên giao diện. Schema trường hồ sơ sẽ được thay đổi sau khi người dùng cung cấp yêu cầu.
+Mọi API ghi kiểm tra quyền và Origin. Tài khoản mới chỉ cần ID chữ/số và mật khẩu, không họ tên hay phân công lớp. ID mới chuẩn hóa lowercase và unique. Username cũ có dấu gạch giữ khả năng đăng nhập để không khóa người quản lý hiện có.
 
-Migration `202610110001_staff_portal.sql` sao chép một lần các tài khoản quản lý đang hoạt động từ schema cũ sang staff_accounts, giữ mật khẩu hash và phân công lớp. Không chuyển tài khoản member. Bảng legacy accounts/sessions/challenges/grants/Google và migration lịch sử được giữ để không xóa dữ liệu khi chưa chốt chuyển đổi; runtime không còn đọc chúng và các API cũ trả 404. Không có luồng OTP, email/SMS login, OAuth hay công tắc xác thực.
+## Mật khẩu và phiên
 
-## Bảo vệ quản trị
+Scrypt hash, không đọc lại mật khẩu/hash từ API. Dev chỉ đặt mật khẩu mới. Mọi staff đổi mật khẩu riêng phải nhập mật khẩu hiện tại; đổi/reset mật khẩu thu hồi toàn bộ phiên. Xóa tài khoản cũng thu hồi phiên, giữ hồ sơ huynh đệ và audit log.
 
-Scrypt mật khẩu; cookie ph_staff_session HttpOnly, Secure trong production, SameSite=Strict; rate limit theo IP/tên đăng nhập lưu PostgreSQL; POST/PATCH/PUT/DELETE kiểm tra Origin. Các bảng staff production bật RLS và thu hồi quyền anon/authenticated. Phiên huynh đệ cũ không thể vào khu vực quản trị.
+Dev `dev` có mật khẩu ban đầu khai báo server/dev-account.mjs, tạo một lần và không ghi đè hash đã đổi khi redeploy. Cookie ph_staff_session HttpOnly, Secure production, SameSite Strict, 8 giờ. Rate limit lưu database, kiểm tra Origin cho mọi mutation. Bảng staff bật RLS, revoke anon/authenticated.
 
-## Cấu trúc
+## Dữ liệu và migration
 
-`src/app/` chứa route thực; public pages không cần gọi database để hiện trang chủ. `src/components/PublicShell.tsx` là vỏ trang công khai. `src/App.tsx` là workspace quản trị hiện có, được mở tại /quan-tri. Backend được Next Route Handler bridge tới `server/backend.mjs`. Bố cục chi tiết của cả hai khu vực còn chờ yêu cầu tiếp theo.
+members/classes/enrollments hiện giữ nguyên chờ đặc tả. ID huynh đệ cũ chỉ làm khóa nội bộ, không dùng đăng nhập và không hiển thị. Tổ vẫn suy ra từ phường.
+
+004 chuyển các quản lý cũ thành staff một lần; 005 đổi class_manager thành manager và thêm Dev/singleton index. Cloud dùng hai migration 202610110001_staff_portal.sql và 202610110002_staff_roles.sql. Không xóa hồ sơ hoặc mật khẩu đã có. Bảng legacy member auth và staff_class_managers được giữ để bảo toàn dữ liệu; chúng không quyết định quyền Manager nữa. Các API member auth/OTP/Google đã gỡ.

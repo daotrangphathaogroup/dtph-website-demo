@@ -1,2 +1,2 @@
-import StaffAccounts from '../../../components/StaffAccounts';
-export default function Page(){return <StaffAccounts/>;}
+import {redirect} from 'next/navigation';
+export default function Page(){redirect('/');}

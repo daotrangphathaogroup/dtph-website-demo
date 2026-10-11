@@ -4,7 +4,7 @@ Hạ tầng giữ Next.js trên Vercel, PostgreSQL Supabase và ảnh private tr
 
 ## Database trước khi deploy
 
-Áp dụng các migration còn thiếu theo thứ tự trong `supabase/migrations/`, đặc biệt `202610110001_staff_portal.sql`. Có thể mở SQL trong Supabase SQL Editor hoặc dùng:
+Áp dụng các migration còn thiếu theo thứ tự trong `supabase/migrations/`, đặc biệt `202610110001_staff_portal.sql` và `202610110002_staff_roles.sql`. Có thể mở SQL trong Supabase SQL Editor hoặc dùng:
 
 ```sh
 npm run db:migrate
@@ -32,17 +32,15 @@ Giữ liên kết GitHub. Environment Variables Production:
 
 Không dùng NEXT_PUBLIC_ cho secrets, không commit `.env.production`. Trong giai đoạn đổi tên biến, backend chấp nhận secret cũ OTP_SECRET nếu chưa đặt ADMIN_SESSION_SECRET; đây chỉ là secret server cho rate limit, không còn tính năng OTP. Có thể chuyển cùng giá trị sang tên mới rồi xóa biến cũ. Các biến SMS_PROVIDER/TWILIO_*/GOOGLE_* không còn được sử dụng, có thể xóa trên Vercel.
 
-Sau migration, commit/push mã để Vercel build. Domain chính: https://dtph-website-demo.vercel.app. Trang chủ hiện công khai, quản trị tại /quan-tri/dang-nhap.
+Sau migration, commit/push mã để Vercel build. Domain chính: https://dtph-website-demo.vercel.app. Trang chủ hiện công khai, đăng nhập quản trị trực tiếp tại /quan-tri; khách không thấy link này trên trang chủ.
 
-## Quản trị đầu tiên khi database không có tài khoản cũ
+## Tài khoản Dev
 
-Trên máy quản lý có `.env.production` chứa DATABASE_URL:
+Sau khi áp dụng migration và deploy, backend tự tạo một tài khoản Dev duy nhất từ mã nguồn, ID `dev`, mật khẩu ban đầu `1@345678`. Vào `/quan-tri`, đăng nhập rồi đổi mật khẩu qua menu góc phải. Mật khẩu đã đổi được giữ trong database qua redeploy. Không đưa mã nguồn server hoặc secrets vào client bundle.
 
-```sh
-npm run admin:create -- admin-name "Họ tên quản lý"
-```
+Dev tạo Admin/Manager bằng ID + mật khẩu tại menu Quản lý tài khoản. Admin/Manager không được tự tạo tài khoản hoặc xóa chính mình. Dev có thể đặt mật khẩu mới/xóa các tài khoản này; mọi phiên của tài khoản bị đặt lại mật khẩu/xóa sẽ bị thu hồi. Mật khẩu/hash không có trong API danh sách.
 
-Lệnh yêu cầu mật khẩu qua prompt ẩn trong terminal; không đưa mật khẩu vào argument/Git. Chỉ chạy sau migration. Sau đó đăng nhập /quan-tri/dang-nhap và tạo tài khoản khác tại /quan-tri/tai-khoan. Trang tạo tài khoản kiểm tra quyền quản lý tổng, không cho người truy cập tự cấp quyền.
+Migration mới đổi class_manager sang manager, giữ mật khẩu và hồ sơ. Manager được xem danh sách cả ba nhóm nhưng không chỉnh sửa. Không chạy CLI admin:create của phiên bản trước; lệnh đã được gỡ.
 
 ## Kiểm tra
 
@@ -51,6 +49,6 @@ Lệnh yêu cầu mật khẩu qua prompt ẩn trong terminal; không đưa mậ
 - /api/bootstrap khi chưa đăng nhập không trả hồ sơ.
 - /api/auth/login, register, verify, Google… trả 404.
 - /api/admin/login chỉ dùng username + mật khẩu nhân sự.
-- Quản lý lớp chỉ xem/cập nhật học viên trong lớp được giao.
+- Manager xem cả ba nhóm, không cập nhật. Admin chỉnh sửa hồ sơ. Chỉ Dev cấu hình đăng ký và tạo/xóa/đặt mật khẩu tài khoản khác.
 - /api/health xác nhận database và mode staff-portal, không thay thế kiểm tra upload R2.
 - Backend local giữ dữ liệu trên ổ đĩa; không tự đưa dữ liệu local lên cloud.

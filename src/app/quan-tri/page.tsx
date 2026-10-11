@@ -1,2 +1,2 @@
-import App from '../../App';
-export default function Page(){return <App/>;}
+import AdminLogin from '../../components/AdminLogin';
+export default function Page(){return <AdminLogin/>;}

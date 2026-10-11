@@ -1,0 +1,7 @@
+'use client';
+import {useState} from 'react';
+import {api} from '../lib/api';
+import {groupLabels} from '../lib/types';
+import type {MemberGroup} from '../lib/types';
+type Result={name:string;group:MemberGroup};
+export default function QuickSearch(){const [query,setQuery]=useState(''),[results,setResults]=useState<Result[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[searched,setSearched]=useState(false);return <section className="panel public-placeholder"><h2>Tìm kiếm huynh đệ</h2><form onSubmit={async e=>{e.preventDefault();setBusy(true);setError('');setSearched(false);setResults([]);try{const response=await api<{results:Result[]}>(`/search?q=${encodeURIComponent(query.trim())}`);setResults(response.results);setSearched(true);}catch(e){setError((e as Error).message);}finally{setBusy(false);}}}><label className="field">Họ tên<input value={query} onChange={e=>setQuery(e.target.value)} required minLength={2} maxLength={100} placeholder="Nhập họ tên huynh đệ"/></label><button className="button primary" disabled={busy}>{busy?'Đang tìm…':'Tìm kiếm'}</button></form>{error&&<p className="error" role="alert">{error}</p>}{searched&&<div className="quick-results">{results.map((r,i)=><div className="staff-class-row" key={i}><b>{r.name}</b><span className="badge neutral">{groupLabels[r.group]}</span></div>)}{!results.length&&<p>Không tìm thấy huynh đệ phù hợp.</p>}</div>}</section>;}
