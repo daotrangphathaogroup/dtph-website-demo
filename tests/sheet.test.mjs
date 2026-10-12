@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {filterSheet,sortSheet,sheetCsv,sheetValue} from '../src/lib/sheet.ts';
+const fields=[{key:'name',label:'Họ tên',type:'text'},{key:'birthYear',label:'Năm sinh',type:'year'},{key:'phone',label:'SĐT',type:'phone'},{key:'team',label:'Tổ',type:'team'}];
+const rows=[{id:'a',name:'Đặng An',team:1,profileData:{name:'Đặng An',birthYear:2010,phone:'0901234567'}},{id:'b',name:'Nguyễn Bình',profileData:{name:'Nguyễn Bình',birthYear:2002,team:2}},{id:'c',name:'Trần Cúc',profileData:{name:'Trần Cúc'}}];
+test('sheet search handles Vietnamese accents and combines words across fields',()=>{assert.deepEqual(filterSheet(rows,'dang 090',{},fields).map(m=>m.id),['a']);assert.deepEqual(filterSheet(rows,'Nguyen',{team:'2'},fields).map(m=>m.id),['b']);assert.equal(filterSheet(rows,'dang',{team:'2'},fields).length,0);});
+test('sheet filters empty values, uses legacy team fallback, and retains zero values',()=>{assert.deepEqual(filterSheet(rows,'',{team:'__empty'},fields).map(m=>m.id),['c']);assert.equal(sheetValue(rows[0],'team'),1);assert.equal(sheetValue({name:'A',profileData:{attendance:0}},'attendance'),0);});
+test('numeric sorting leaves missing data last in both directions without mutating source',()=>{assert.deepEqual(sortSheet(rows,fields[1],'asc').map(m=>m.id),['b','a','c']);assert.deepEqual(sortSheet(rows,fields[1],'desc').map(m=>m.id),['a','b','c']);assert.deepEqual(rows.map(m=>m.id),['a','b','c']);});
+test('CSV includes only supplied columns and protects formulas, quotes and newlines',()=>{const csv=sheetCsv([{name:' =SUM(1,2)',profileData:{phone:'0901234567',notes:'a"b\nc'}}],[fields[0],fields[2],{key:'notes',label:'Ghi chú',type:'textarea'}]);assert.ok(csv.startsWith('\ufeff"Họ tên","SĐT","Ghi chú"'));assert.ok(csv.includes('"\' =SUM(1,2)"'));assert.ok(csv.includes('"0901234567"'));assert.ok(csv.includes('"a""b\nc"'));assert.ok(!csv.includes('Năm sinh'));});

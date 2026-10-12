@@ -38,3 +38,29 @@ test('Registration approval separates public submissions and trusted staff regis
   assert.equal((await call('/bootstrap')).body.pendingRegistrations,undefined);
  }finally{await db.close();}
 });
+
+test('Rejecting a registration requires Admin/Dev and retains an audited, terminal record',async()=>{
+ const {app,db}=await createBackend({dataDir:'memory://',rateLimits:false});const call=client(app);
+ try{
+  const dev=(await call('/admin/login','POST',{username:'dev',password:'1@345678'})).cookie;
+  for(const role of ['admin','manager'])await call('/admin/accounts','POST',{username:role,password:'Password@123',role},dev);
+  const admin=(await call('/admin/login','POST',{username:'admin',password:'Password@123'})).cookie,manager=(await call('/admin/login','POST',{username:'manager',password:'Password@123'})).cookie;
+  for(const group of ['children','youth','congregation']){
+   const payload={values:{name:'Rejected '+group},requestId:randomUUID()};await call('/registrations/'+group,'POST',payload);
+   const member=(await call('/bootstrap','GET',undefined,manager)).body.pendingRegistrations.find(m=>m.name===payload.values.name);
+   const path='/registrations/'+member.id;
+   assert.equal((await call(path+'/reject','POST',{})).status,401);
+   assert.equal((await call(path+'/reject','POST',{},manager)).status,403);
+   const rejected=await call(path+'/reject','POST',{},group==='children'?dev:admin);assert.equal(rejected.status,200);assert.equal(rejected.body.member.registrationStatus,'rejected');
+   assert.equal((await call(path+'/reject','POST',{},admin)).status,200);
+   assert.equal((await call(path+'/approve','POST',{},admin)).status,409);
+   assert.equal((await db.query('SELECT registration_status FROM members WHERE id=$1',[member.id])).rows[0].registration_status,'rejected');
+   assert.equal((await db.query("SELECT count(*)::int AS n FROM audit_log WHERE target=$1 AND action='registration_reject'",[member.id])).rows[0].n,1);
+   const state=(await call('/bootstrap','GET',undefined,manager)).body;assert.ok(!state.pendingRegistrations.some(m=>m.id===member.id));assert.ok(!state.store.members.some(m=>m.id===member.id));
+   assert.deepEqual((await call('/search?q='+encodeURIComponent(payload.values.name))).body.results,[]);
+   assert.equal((await call('/registrations/'+group,'POST',payload)).body.status,'rejected');
+  }
+  const approved=(await call('/bootstrap','GET',undefined,dev)).body.store.members[0];assert.equal((await call('/registrations/'+approved.id+'/reject','POST',{},dev)).status,409);
+  assert.equal((await call('/registrations/not-found/reject','POST',{},admin)).status,404);
+ }finally{await db.close();}
+});
