@@ -1,7 +1,7 @@
 export type Role = 'dev' | 'admin' | 'manager';
 export type MemberGroup = 'children' | 'youth' | 'congregation';
 export const groupLabels: Record<MemberGroup, string> = { children: 'Chúng thiếu nhi', youth: 'Chúng thanh niên', congregation: 'Đạo tràng' };
-export type Member = { profileData?:import('./registration').ProfileValues; profileVersion?:number; id: string; name: string; birthday: string; phone: string; email: string; address: string; area: string; team?: 1 | 2 | 3 | null; group: MemberGroup; referrer: string; joined: string; avatar: string };
+export type Member = { registrationStatus?:'pending'|'approved'; submittedAt?:string; profileData?:import('./registration').ProfileValues; profileVersion?:number; id: string; name: string; birthday: string; phone: string; email: string; address: string; area: string; team?: 1 | 2 | 3 | null; group: MemberGroup; referrer: string; joined: string; avatar: string };
 export type Field = 'avatar' | 'name' | 'birthday' | 'phone' | 'email' | 'address' | 'joined' | 'group';
 export type Requirements = Record<Field, boolean>;
 export type Enrollment = { memberId: string; classId: string; date: string };

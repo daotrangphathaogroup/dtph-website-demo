@@ -14,7 +14,7 @@ Ba trang con là biểu mẫu hoạt động, lưu hồ sơ theo từng nhóm. C
 
 ## Trang chính và quyền
 
-Trang `/` dùng chung thanh bên. Công khai chỉ hiện Tổng quát / Tìm kiếm nhanh, có mục Đăng ký thông tin trong Tổng quát. Không hiển thị nút quản trị, đăng nhập hoặc tài khoản cho khách.
+Trang `/` dùng chung thanh bên. Công khai chỉ hiện Tổng quát / Tìm kiếm nhanh, có mục Đăng ký thông tin trong Tổng quát. Tổng quát có nút Đăng nhập quản trị bên cạnh Đăng ký thông tin khi chưa đăng nhập; khách không thấy menu tài khoản hoặc các mục quản lý.
 
 - `/quan-tri`: đăng nhập quản trị bằng ID + mật khẩu; `/quan-tri/dang-nhap` giữ tương thích.
 - Đăng nhập xong quay về `/`, hiển thị thêm Chúng thiếu nhi / Chúng thanh niên / Đạo tràng.
@@ -52,3 +52,11 @@ Xem [kiến trúc](docs/ARCHITECTURE.md) và [triển khai](docs/DEPLOYMENT.md).
 Migration 202610120001_group_profiles.sql giữ dữ liệu cũ, lấy năm sinh từ ngày sinh, mã số thiếu nhi từ khóa hồ sơ cũ. Email/ngày sinh đầy đủ/phường/liên kết người giới thiệu cũ còn trong database, không nằm trong biểu mẫu mới. Tổ ở form mới chọn 1–3; hồ sơ cũ chưa có lựa chọn Tổ thì vẫn suy ra từ phường. Người giới thiệu nhập họ tên, không yêu cầu mã hoặc tài khoản.
 
 API public GET /api/registration-schemas/:group và POST /api/registrations/:group, server kiểm tra đúng bộ trường, loại bỏ quyền gửi trường theo dõi thiếu nhi, chuyển ảnh sang WebP/R2, giới hạn số lần gửi theo IP. Request ID ngăn tạo trùng khi gửi lại yêu cầu đã thành công. Không trả ID/hồ sơ qua API đăng ký, không tạo tài khoản.
+
+## Duyệt đăng ký — 12/10/2026
+
+Đăng ký không có phiên nhân sự hợp lệ lưu trạng thái pending. Trong ba tab quản lý, badge hiển thị số đăng ký chờ duyệt và bảng chờ có nút xem hồ sơ. Chỉ Admin/Dev duyệt, Manager chỉ xem. Hồ sơ pending không nằm trong danh sách chính, CSV danh sách chính, tìm kiếm công khai hoặc đăng ký lớp. Khi duyệt, trạng thái approved, lưu approved_at/approved_by và audit trong transaction; duyệt lại không tạo audit trùng.
+
+Phiên Manager/Admin/Dev hợp lệ khi gửi form được ghi nhận approved ngay. Quyền lấy từ cookie server, không tin role/status/actor trong payload. Retry giữ trạng thái của yêu cầu gốc, không tự nâng pending thành approved khi gửi lại dưới phiên Manager. Màn hình thành công phân biệt chờ duyệt/đã ghi nhận. UI quản lý làm mới thông báo mỗi 30 giây khi tab hiện và khi focus lại.
+
+Migration 007/202610120002_registration_approval.sql giữ hồ sơ hiện có ở approved và chỉ áp dụng chờ duyệt cho các đăng ký công khai mới. Không có thao tác từ chối/xóa vì chưa được yêu cầu.

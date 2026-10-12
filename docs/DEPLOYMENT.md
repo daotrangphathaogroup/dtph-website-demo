@@ -4,7 +4,7 @@ Hạ tầng giữ Next.js trên Vercel, PostgreSQL Supabase và ảnh private tr
 
 ## Database trước khi deploy
 
-Áp dụng các migration còn thiếu theo thứ tự trong `supabase/migrations/`, đặc biệt `202610110001_staff_portal.sql` `202610110002_staff_roles.sql` và `202610120001_group_profiles.sql`. Có thể mở SQL trong Supabase SQL Editor hoặc dùng:
+Áp dụng các migration còn thiếu theo thứ tự trong `supabase/migrations/`, đặc biệt `202610110001_staff_portal.sql` `202610110002_staff_roles.sql` `202610120001_group_profiles.sql` và `202610120002_registration_approval.sql`. Có thể mở SQL trong Supabase SQL Editor hoặc dùng:
 
 ```sh
 npm run db:migrate
@@ -32,7 +32,7 @@ Giữ liên kết GitHub. Environment Variables Production:
 
 Không dùng NEXT_PUBLIC_ cho secrets, không commit `.env.production`. Trong giai đoạn đổi tên biến, backend chấp nhận secret cũ OTP_SECRET nếu chưa đặt ADMIN_SESSION_SECRET; đây chỉ là secret server cho rate limit, không còn tính năng OTP. Có thể chuyển cùng giá trị sang tên mới rồi xóa biến cũ. Các biến SMS_PROVIDER/TWILIO_*/GOOGLE_* không còn được sử dụng, có thể xóa trên Vercel.
 
-Sau migration, commit/push mã để Vercel build. Domain chính: https://dtph-website-demo.vercel.app. Trang chủ hiện công khai, đăng nhập quản trị trực tiếp tại /quan-tri; khách không thấy link này trên trang chủ.
+Sau migration, commit/push mã để Vercel build. Domain chính: https://dtph-website-demo.vercel.app. Trang chủ hiện công khai, đăng nhập quản trị trực tiếp tại /quan-tri; khách có nút Đăng nhập quản trị ở Tổng quát.
 
 ## Tài khoản Dev
 

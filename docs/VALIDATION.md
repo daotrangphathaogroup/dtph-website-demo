@@ -123,3 +123,7 @@ Các kết quả OTP/Google/tài khoản huynh đệ bên trên là lịch sử,
 ## 12/10/2026 — Biểu mẫu riêng theo nhóm
 
 26 tests: 18 kiểm tra quyền/cấu hình cũ và 8 kiểm tra đăng ký, schema độc lập, trường thiếu nhi chỉ Admin/Dev ghi, số/năm/ngày/điện thoại/Tổ, retry không tạo trùng, không tạo tài khoản, WebP và ảnh private, lưu qua migration rerun và thêm trường JSONB không đổi cấu trúc bảng. Build/typecheck thành công. Kiểm tra trực quan form thiếu nhi và thanh niên, không gửi hồ sơ thử vào dữ liệu local thật.
+
+## 12/10/2026 — Duyệt đăng ký
+
+27 tests và build/typecheck: đăng ký công khai pending theo cả ba nhóm, không hiện trong danh sách chính/tìm kiếm/đăng ký lớp; Admin/Dev duyệt và lưu audit một lần, Manager không có quyền duyệt; mọi staff đăng ký được approved ngay; payload giả role/status không vượt quyền; retry bằng Manager không tự duyệt yêu cầu public, retry sau duyệt trả trạng thái mới; migration rerun không tự duyệt pending.

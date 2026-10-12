@@ -2,7 +2,7 @@
 
 ## Trang chính dùng chung
 
-`src/App.tsx` mở tại `/`, thanh bên hiện theo phiên: public có Tổng quát/Tìm kiếm nhanh; staff thêm ba nhóm; Dev thêm hai mục cấu hình. Khách không thấy liên kết hoặc UI tài khoản. Mục đăng ký trong Tổng quát dẫn tới `/dang-ky-thong-tin` và ba biểu mẫu con có schema riêng và nhận dữ liệu đăng ký. Không tạo tài khoản cho người điền form.
+`src/App.tsx` mở tại `/`, thanh bên hiện theo phiên: public có Tổng quát/Tìm kiếm nhanh; staff thêm ba nhóm; Dev thêm hai mục cấu hình. Tổng quát có liên kết Đăng nhập quản trị tới /quan-tri khi chưa đăng nhập; khách không thấy menu tài khoản hoặc các mục quản lý. Mục đăng ký trong Tổng quát dẫn tới `/dang-ky-thong-tin` và ba biểu mẫu con có schema riêng và nhận dữ liệu đăng ký. Không tạo tài khoản cho người điền form.
 
 `/quan-tri` là trang đăng nhập riêng, đăng nhập xong trở về `/`. Menu tài khoản góc phải chứa đổi mật khẩu/đăng xuất, Dev thêm quản lý tài khoản ngay trong trang chính. URL /quan-tri/dang-nhap giữ tương thích; /quan-tri/tai-khoan chuyển về trang chính.
 
@@ -36,3 +36,11 @@ Core columns vẫn giữ cho quan hệ/tìm kiếm: id/name/phone/address/avatar
 Form công khai trẻ em chỉ có 11 trường đầu; 3 trường cuối (attendance2026/studyDate/remarks) chỉ Admin/Dev ghi. Manager xem hồ sơ đủ trường nhưng không ghi. Staff sửa dữ liệu và ghi audit trong cùng transaction. API yêu cầu mutation Origin hợp lệ, rate limit, validation ảnh/năm/giới tính/số điện thoại/Tổ. Public đăng ký không cần mật khẩu, không tạo staff/member account và không trả dữ liệu hồ sơ. registration_submissions giữ request_id + fingerprint để xử lý retry đã thành công mà không tạo hồ sơ trùng.
 
 Migration 006/202610120001_group_profiles.sql thêm JSONB/schema/index và backfill một lần. Các giá trị mới không bị ghi đè khi chạy lại migration. Bảng schema/submission production bật RLS và revoke anon/authenticated; Next server dùng kết nối PG riêng.
+
+## Duyệt đăng ký — 12/10/2026
+
+Đăng ký không có phiên nhân sự hợp lệ lưu trạng thái pending. Trong ba tab quản lý, badge hiển thị số đăng ký chờ duyệt và bảng chờ có nút xem hồ sơ. Chỉ Admin/Dev duyệt, Manager chỉ xem. Hồ sơ pending không nằm trong danh sách chính, CSV danh sách chính, tìm kiếm công khai hoặc đăng ký lớp. Khi duyệt, trạng thái approved, lưu approved_at/approved_by và audit trong transaction; duyệt lại không tạo audit trùng.
+
+Phiên Manager/Admin/Dev hợp lệ khi gửi form được ghi nhận approved ngay. Quyền lấy từ cookie server, không tin role/status/actor trong payload. Retry giữ trạng thái của yêu cầu gốc, không tự nâng pending thành approved khi gửi lại dưới phiên Manager. Màn hình thành công phân biệt chờ duyệt/đã ghi nhận. UI quản lý làm mới thông báo mỗi 30 giây khi tab hiện và khi focus lại.
+
+Migration 007/202610120002_registration_approval.sql giữ hồ sơ hiện có ở approved và chỉ áp dụng chờ duyệt cho các đăng ký công khai mới. Không có thao tác từ chối/xóa vì chưa được yêu cầu.
