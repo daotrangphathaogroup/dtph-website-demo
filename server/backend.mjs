@@ -29,6 +29,7 @@ export async function createBackend({dataDir='./.local/postgres',uploadDir='./.l
   await db.exec(await readFile(new URL('./migrations/006_group_profiles.sql',import.meta.url),'utf8'));
   await db.exec(await readFile(new URL('./migrations/007_registration_approval.sql',import.meta.url),'utf8'));
   await db.exec(await readFile(new URL('./migrations/008_registration_rejection.sql',import.meta.url),'utf8'));
+  await db.exec(await readFile(new URL('./migrations/009_adult_registration_fields.sql',import.meta.url),'utf8'));
  }
  let secret=configuredSecret;
  if(!secret){const existing=await db.query("SELECT value FROM app_meta WHERE key='staff_session_secret'");secret=existing.rows[0]?.value??token();if(!existing.rows.length)await db.query("INSERT INTO app_meta VALUES ('staff_session_secret',$1)",[secret]);}

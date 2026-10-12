@@ -1646,3 +1646,23 @@ tbody tr:hover td {
  .registration-choice{min-height:100px;flex-direction:row;align-items:center;gap:20px;padding:22px}
  .registration-choice h2{font-size:20px}
 }
+
+.profile-form-simple .profile-section{border:0;padding:0;margin:0}
+.profile-form-simple .form-grid{gap:20px 24px}
+.profile-form-simple .form-actions{margin-top:24px;padding-top:20px}
+
+/* Public registration: compact one-field rows. */
+.registration-form-page .public-main{max-width:620px;padding:32px 24px 48px}
+.registration-form-page .page-heading h1{font-size:24px;line-height:1.35}
+.registration-form-page .public-placeholder{padding:24px;border-radius:18px}
+.registration-form-page .profile-form .form-grid{grid-template-columns:minmax(0,1fr);gap:16px}
+.registration-form-page .profile-form .span-two{grid-column:auto}
+.registration-form-page .field{gap:7px;min-width:0}
+.registration-form-page .field-title{font-size:13px}
+.registration-form-page .field input,.registration-form-page .field select{min-height:40px;height:40px;padding:9px 12px;background:white;border:1px solid var(--line);border-radius:10px;width:100%;box-sizing:border-box}
+.registration-form-page .field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2380756c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.registration-form-page .upload-row{flex-wrap:wrap;gap:10px}
+.registration-form-page .upload-row .avatar.large{width:48px;height:48px}
+.registration-form-page .upload-row small{width:100%;font-size:11px}
+.registration-form-page .form-actions{margin-top:20px;padding-top:16px}
+@media(max-width:760px){.registration-form-page .public-main{padding:24px 16px 40px}.registration-form-page .public-placeholder{padding:20px}.registration-form-page .field input,.registration-form-page .field select{font-size:16px}}

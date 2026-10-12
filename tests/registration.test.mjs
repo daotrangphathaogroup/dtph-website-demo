@@ -16,7 +16,7 @@ test('Separate registration schemas, anonymous submissions and managed group pro
    assert.equal(children.fields.length,11);assert.ok(!children.fields.some(f=>f.staffOnly));assert.ok(children.fields.some(f=>f.key==='parentPhone'));assert.ok(!children.fields.some(f=>f.key==='phone'));
    const staff=(await call('/registration-schemas/children','GET',undefined,dev)).body.schema;assert.equal(staff.fields.length,14);
    const youth=(await call('/registration-schemas/youth')).body.schema,congregation=(await call('/registration-schemas/congregation')).body.schema;
-   assert.equal(youth.fields.length,10);assert.deepEqual(youth.fields,congregation.fields);assert.notEqual(youth.group,congregation.group);
+   assert.equal(youth.fields.length,10);assert.deepEqual(youth.fields.filter(f=>f.key!=='clubSinceYear'),congregation.fields.filter(f=>f.key!=='clubSinceYear'));assert.equal(youth.fields.find(f=>f.key==='clubSinceYear').label,'Tham gia Chúng thanh niên từ năm');assert.equal(congregation.fields.find(f=>f.key==='clubSinceYear').label,'Tham gia Đạo tràng từ năm');assert.deepEqual(youth.fields.find(f=>f.key==='gender').options,['Nam','Nữ']);assert.notEqual(youth.group,congregation.group);
   });
   await t.test('submit all three groups without account creation; repeat phone allowed; retries do not duplicate',async()=>{
    const accountCount=(await db.query('SELECT count(*)::int AS n FROM staff_accounts')).rows[0].n;
