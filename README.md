@@ -10,7 +10,7 @@ Kiến trúc từ 11/10/2026 hướng đến nhân sự quản lý Đạo Tràng
 - `/dang-ky-thong-tin/chung-thanh-nien`
 - `/dang-ky-thong-tin/dao-trang`
 
-Ba trang con hiện là khung biểu mẫu riêng. Chưa có form gửi dữ liệu vì các trường sẽ được cung cấp sau. Không có tài khoản, mật khẩu, mã đăng nhập hay xác thực dành cho người điền form.
+Ba trang con là biểu mẫu hoạt động, lưu hồ sơ theo từng nhóm. Chúng thanh niên và Đạo tràng có bộ trường ban đầu giống nhau nhưng cấu hình độc lập. Chúng thiếu nhi có bộ trường riêng; số lần học 2026, ngày học và nhận xét chỉ Admin/Dev cập nhật. Không có tài khoản, mật khẩu, mã đăng nhập hay xác thực dành cho người điền form.
 
 ## Trang chính và quyền
 
@@ -44,3 +44,11 @@ npm run build
 ```
 
 Xem [kiến trúc](docs/ARCHITECTURE.md) và [triển khai](docs/DEPLOYMENT.md). Mô hình dữ liệu huynh đệ hiện giữ để chờ yêu cầu mới, không tự sửa/xóa dữ liệu cũ.
+
+## Bộ trường hồ sơ — 12/10/2026
+
+Định nghĩa trường và version lưu riêng theo nhóm ở registration_schemas; giá trị mở rộng lưu JSONB ở members.profile_data. Tên/điện thoại/địa chỉ/ảnh được đồng bộ sang cột cơ bản để tìm kiếm tiện lợi. Thêm/bỏ trường sau này không cần thêm hàng loạt cột SQL; giao diện tạo/sửa cấu trúc trường chưa làm. Dev hiện có thể bật bắt buộc/tùy chọn độc lập ở mỗi nhóm. Mặc định chỉ họ tên bắt buộc, các trường khác tùy chọn.
+
+Migration 202610120001_group_profiles.sql giữ dữ liệu cũ, lấy năm sinh từ ngày sinh, mã số thiếu nhi từ khóa hồ sơ cũ. Email/ngày sinh đầy đủ/phường/liên kết người giới thiệu cũ còn trong database, không nằm trong biểu mẫu mới. Tổ ở form mới chọn 1–3; hồ sơ cũ chưa có lựa chọn Tổ thì vẫn suy ra từ phường. Người giới thiệu nhập họ tên, không yêu cầu mã hoặc tài khoản.
+
+API public GET /api/registration-schemas/:group và POST /api/registrations/:group, server kiểm tra đúng bộ trường, loại bỏ quyền gửi trường theo dõi thiếu nhi, chuyển ảnh sang WebP/R2, giới hạn số lần gửi theo IP. Request ID ngăn tạo trùng khi gửi lại yêu cầu đã thành công. Không trả ID/hồ sơ qua API đăng ký, không tạo tài khoản.

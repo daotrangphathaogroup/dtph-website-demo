@@ -119,3 +119,7 @@ Các kết quả OTP/Google/tài khoản huynh đệ bên trên là lịch sử,
 ## 11/10/2026 — Dev/Admin/Manager và trang chính chung
 
 18 tests: kiểm tra public chỉ nhận tên/nhóm, Manager xem tất cả nhưng không ghi, Admin ghi hồ sơ nhưng không quản lý tài khoản, Dev tạo/list/reset/delete; đổi mật khẩu riêng cần mật khẩu hiện tại; thu hồi phiên khi reset/delete/change; singleton Dev, giữ dữ liệu migration, TLS/RLS/origin/rate limit và persistence. Mô hình quyền này thay thế kiểm tra quản lý theo lớp trước đó.
+
+## 12/10/2026 — Biểu mẫu riêng theo nhóm
+
+26 tests: 18 kiểm tra quyền/cấu hình cũ và 8 kiểm tra đăng ký, schema độc lập, trường thiếu nhi chỉ Admin/Dev ghi, số/năm/ngày/điện thoại/Tổ, retry không tạo trùng, không tạo tài khoản, WebP và ảnh private, lưu qua migration rerun và thêm trường JSONB không đổi cấu trúc bảng. Build/typecheck thành công. Kiểm tra trực quan form thiếu nhi và thanh niên, không gửi hồ sơ thử vào dữ liệu local thật.

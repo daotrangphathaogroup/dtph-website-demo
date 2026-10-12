@@ -4,7 +4,7 @@ Hạ tầng giữ Next.js trên Vercel, PostgreSQL Supabase và ảnh private tr
 
 ## Database trước khi deploy
 
-Áp dụng các migration còn thiếu theo thứ tự trong `supabase/migrations/`, đặc biệt `202610110001_staff_portal.sql` và `202610110002_staff_roles.sql`. Có thể mở SQL trong Supabase SQL Editor hoặc dùng:
+Áp dụng các migration còn thiếu theo thứ tự trong `supabase/migrations/`, đặc biệt `202610110001_staff_portal.sql` `202610110002_staff_roles.sql` và `202610120001_group_profiles.sql`. Có thể mở SQL trong Supabase SQL Editor hoặc dùng:
 
 ```sh
 npm run db:migrate
@@ -45,7 +45,7 @@ Migration mới đổi class_manager sang manager, giữ mật khẩu và hồ s
 ## Kiểm tra
 
 - Trang chủ, trang chọn nhóm và ba trang con mở không cần đăng nhập.
-- Ba form chưa nhận dữ liệu, chờ chốt trường; giao diện hiển thị trạng thái chuẩn bị.
+- Ba form nhận thông tin và lưu hồ sơ vào đúng nhóm. Form thiếu nhi công khai không hiển thị số lần học/ngày học/nhận xét; Admin/Dev cập nhật sau.
 - /api/bootstrap khi chưa đăng nhập không trả hồ sơ.
 - /api/auth/login, register, verify, Google… trả 404.
 - /api/admin/login chỉ dùng username + mật khẩu nhân sự.

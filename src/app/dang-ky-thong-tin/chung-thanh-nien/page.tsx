@@ -1,2 +1,2 @@
-import RegistrationPlaceholder from '../../../components/RegistrationPlaceholder';
-export default function Page(){return <RegistrationPlaceholder title="Chúng thanh niên"/>;}
+import RegistrationForm from '../../../components/RegistrationForm';
+export default function Page(){return <RegistrationForm group="youth"/>;}

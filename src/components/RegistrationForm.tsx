@@ -1,0 +1,10 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import Link from 'next/link';
+import PublicShell from './PublicShell';
+import ProfileForm from './ProfileForm';
+import {api} from '../lib/api';
+import {groupLabels} from '../lib/types';
+import type {MemberGroup} from '../lib/types';
+import type {RegistrationSchema} from '../lib/registration';
+export default function RegistrationForm({group}:{group:MemberGroup}){const [schema,setSchema]=useState<RegistrationSchema|null>(null),[error,setError]=useState(''),[success,setSuccess]=useState(false),[generation,setGeneration]=useState(0);const requestId=useRef('');useEffect(()=>{let live=true;void api<{schema:RegistrationSchema}>(`/registration-schemas/${group}`).then(result=>{if(live){setSchema(result.schema);setError('');}}).catch(e=>{if(live)setError((e as Error).message);});return()=>{live=false;};},[group,generation]);return <PublicShell><Link className="text-button" href="/dang-ky-thong-tin">← Chọn nhóm sinh hoạt</Link><div className="page-heading"><div><h1>Đăng ký thông tin · {groupLabels[group]}</h1><p>Điền thông tin để Đạo Tràng ghi nhận hồ sơ sinh hoạt.</p></div></div>{success?<section className="panel public-placeholder" role="status"><h2>Đã nhận thông tin đăng ký</h2><p>Cảm ơn huynh đệ đã gửi thông tin.</p><div className="form-actions"><Link className="button secondary" href="/">Về Tổng quát</Link><button className="button primary" onClick={()=>{requestId.current='';setSuccess(false);setGeneration(n=>n+1);}}>Điền thông tin cho người khác</button></div></section>:<section className="panel public-placeholder">{error?<p className="error" role="alert">{error}<button className="text-button" onClick={()=>setGeneration(n=>n+1)}>Thử lại</button></p>:!schema?<p>Đang mở biểu mẫu…</p>:<ProfileForm key={generation} schema={schema} publicForm onSave={async values=>{requestId.current||=crypto.randomUUID();await api(`/registrations/${group}`,'POST',{values,requestId:requestId.current});setSuccess(true);}}/>}</section>}</PublicShell>;}
