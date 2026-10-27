@@ -9,7 +9,8 @@
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "db:migrate": "node --env-file=.env.production scripts/migrate.mjs",
     "start": "next start --hostname 127.0.0.1 --port 5173",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:demo": "node --experimental-strip-types scripts/seed-local-demo.mjs --local --execute"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1145.0",

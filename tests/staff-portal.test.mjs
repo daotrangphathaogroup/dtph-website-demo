@@ -1,4 +1,6 @@
 import {test} from 'node:test';
+import {seed} from './fixtures/seed.mjs';
+import {validValues,memoryStorage} from './profile-fixtures.mjs';
 import assert from 'node:assert/strict';
 import {readFile,mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
@@ -10,7 +12,7 @@ import {createPostgresDatabase} from '../server/postgres.mjs';
 import {productionConfig,createR2Storage} from '../server/providers.mjs';
 function client(app,origin='http://127.0.0.1:5173'){return async(url,method='GET',body,cookie,requestOrigin=origin)=>{const response=await handleRequest(app,new Request(origin+'/api'+url,{method,headers:{...(body?{'Content-Type':'application/json'}:{}),...(method!=='GET'&&requestOrigin?{Origin:requestOrigin}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined}));return {status:response.status,body:response.headers.get('content-type')?.includes('application/json')?await response.json():null,cookie:response.headers.getSetCookie().find(c=>c.startsWith('ph_staff_session='))?.split(';')[0],cookies:response.headers.getSetCookie()};};}
 test('Public portal and Dev/Admin/Manager permissions',async t=>{
- let time=Date.now();const {app,db}=await createBackend({dataDir:'memory://',rateLimits:false,now:()=>time});const call=client(app);let dev,admin,manager;
+ let time=Date.now();const {app,db}=await createBackend({dataDir:'memory://',seedData:seed,rateLimits:false,storage:memoryStorage(),now:()=>time});const call=client(app);let dev,admin,manager;
  try{
   dev=(await call('/admin/login','POST',{username:'dev',password:'1@345678'})).cookie;
   for(const role of ['admin','manager'])assert.equal((await call('/admin/accounts','POST',{username:role,password:'PhatHao@123',role},dev)).status,201);
@@ -31,13 +33,13 @@ test('Public portal and Dev/Admin/Manager permissions',async t=>{
   });
   await t.test('manager sees all three groups but cannot edit profiles, enrollment, configuration, or accounts',async()=>{
    const state=(await call('/bootstrap','GET',undefined,manager)).body;assert.equal(state.store.members.length,36);assert.equal(state.session.role,'manager');assert.equal(new Set(state.store.members.map(m=>m.group)).size,3);
-   for(const [url,method,body]of [['/members/PH00001','PATCH',{name:'Wrong'}],['/classes/tldd-01/members/PH00001','PATCH',{name:'Wrong'}],['/requirements/email','PATCH',{required:true}],['/enrollments/tldd-01/PH00001','DELETE',{}],['/enrollments/tldd-01/PH00001','PUT',{}],['/admin/accounts','POST',{username:'other',password:'Password@123',role:'admin'}],['/admin/accounts/'+state.session.id,'DELETE',{}]])assert.equal((await call(url,method,body,manager)).status,403);
+   for(const [url,method,body]of [['/members/PH00001','PATCH',{name:'Wrong'}],['/classes/tldd-01/members/PH00001','PATCH',{name:'Wrong'}],['/enrollments/tldd-01/PH00001','DELETE',{}],['/enrollments/tldd-01/PH00001','PUT',{}],['/admin/accounts','POST',{username:'other',password:'Password@123',role:'admin'}],['/admin/accounts/'+state.session.id,'DELETE',{}]])assert.equal((await call(url,method,body,manager)).status,403);
    assert.equal((await call('/admin/accounts','GET',undefined,manager)).status,403);
   });
   await t.test('admin edits any group but cannot manage accounts or developer configuration',async()=>{
-   const changed=await call('/members/PH00001','PATCH',{name:'Học viên cập nhật',area:'Tân Phong',team:1},admin);assert.equal(changed.status,200);assert.equal(changed.body.member.team,2);
+   const changed=await call('/members/PH00001','PATCH',{profileData:validValues({name:'Học viên cập nhật',address:'Tân Phong',team:2})},admin);assert.equal(changed.status,200);assert.equal(changed.body.member.team,2);
    assert.equal((await call('/members/PH00001','PATCH',{area:'Không có'},admin)).status,400);
-   assert.equal((await call('/requirements/email','PATCH',{required:true},admin)).status,403);
+   assert.equal((await call('/requirements/email','PATCH',{required:true},admin)).status,404);
    assert.equal((await call('/admin/accounts','GET',undefined,admin)).status,403);
    assert.equal((await call('/admin/accounts','POST',{username:'other',password:'Password@123',role:'admin'},admin)).status,403);
    const id=(await call('/bootstrap','GET',undefined,admin)).body.session.id;
@@ -46,7 +48,7 @@ test('Public portal and Dev/Admin/Manager permissions',async t=>{
    const joined=await call('/enrollments/tldd-01/PH00001','PUT',{},admin);assert.equal(joined.status,200);assert.equal((await call('/enrollments/tldd-01/PH00001','PUT',{},admin)).body.enrollment.date,joined.body.enrollment.date);
   });
   await t.test('only Dev creates, lists, resets and deletes accounts; passwords cannot be read',async()=>{
-   assert.equal((await call('/requirements/password','PATCH',{required:true},dev)).status,400);assert.equal((await call('/requirements/avatar','PATCH',{required:false},dev)).status,200);
+   assert.equal((await call('/requirements/password','PATCH',{required:true},dev)).status,404);assert.equal((await call('/requirements/avatar','PATCH',{required:false},dev)).status,404);
    const before=(await db.query('SELECT count(*)::int AS n FROM members')).rows[0].n;
    for(const username of ['with space','with-dash','special@',''])assert.equal((await call('/admin/accounts','POST',{username,password:'Password@123',role:'manager'},dev)).status,400);
    assert.equal((await call('/admin/accounts','POST',{username:'anotherDev',password:'Password@123',role:'dev'},dev)).status,400);
@@ -100,7 +102,7 @@ test('Login rate limits survive new backend instances',async()=>{
  const {app,db}=await createBackend({dataDir:'memory://'});try{const call=client(app);for(let i=0;i<10;i++)await call('/admin/login','POST',{username:'unknown',password:'Wrong@123'});const next=await createBackend({database:db,initialize:false,seedData:false});assert.equal((await client(next.app)('/admin/login','POST',{username:'unknown',password:'Wrong@123'})).status,429);}finally{await db.close();}
 });
 test('Staff sessions and member edits persist across local database restarts',async()=>{
- const dir=await mkdtemp(path.join(tmpdir(),'ph-staff-'));let db;try{let result=await createBackend({dataDir:path.join(dir,'db'),rateLimits:false});db=result.db;const call=client(result.app),login=await call('/admin/login','POST',{username:'dev',password:'1@345678'});await call('/members/PH00001','PATCH',{name:'Hồ sơ được giữ'},login.cookie);await db.close();result=await createBackend({dataDir:path.join(dir,'db'),rateLimits:false});db=result.db;assert.equal((await client(result.app)('/bootstrap','GET',undefined,login.cookie)).body.store.members.find(m=>m.id==='PH00001').name,'Hồ sơ được giữ');}finally{if(db&&!db.closed)await db.close();await rm(dir,{recursive:true,force:true});}
+ const dir=await mkdtemp(path.join(tmpdir(),'ph-staff-'));let db;try{let result=await createBackend({dataDir:path.join(dir,'db'),seedData:seed,rateLimits:false,storage:memoryStorage()});db=result.db;const call=client(result.app),login=await call('/admin/login','POST',{username:'dev',password:'1@345678'});await call('/members/PH00001','PATCH',{profileData:validValues({name:'Hồ sơ được giữ'})},login.cookie);await db.close();result=await createBackend({dataDir:path.join(dir,'db'),seedData:seed,rateLimits:false,storage:memoryStorage()});db=result.db;assert.equal((await client(result.app)('/bootstrap','GET',undefined,login.cookie)).body.store.members.find(m=>m.id==='PH00001').name,'Hồ sơ được giữ');}finally{if(db&&!db.closed)await db.close();await rm(dir,{recursive:true,force:true});}
 });
 test('Source Dev remains singleton and keeps changed password across backend restart',async()=>{
  const {app,db}=await createBackend({dataDir:'memory://',seedData:false,rateLimits:false});try{

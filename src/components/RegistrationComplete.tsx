@@ -6,6 +6,6 @@ export default function RegistrationComplete({status}:{status:'pending'|'approve
   <div className="eyebrow">ĐẠO TRÀNG PHẬT HÀO</div>
   <h1 id="registration-complete-title">Đã hoàn thành đăng ký</h1>
   <p>{status==='pending'?'Thông tin đã được gửi thành công và đang chờ phía quản lý Đạo Tràng duyệt.':'Hồ sơ đã được ghi nhận vào danh sách huynh đệ.'}</p>
-  <Link className="button primary" href="/"><ArrowLeft size={17}/>Quay về Tổng quát</Link>
+  <Link className="button primary" href="/"><ArrowLeft size={17}/>Quay về Trang chủ</Link>
  </section>;
 }

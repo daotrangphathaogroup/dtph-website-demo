@@ -1,72 +1,72 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
+import sharp from 'sharp';
 import {createBackend} from '../server/backend.mjs';
 import {handleRequest} from '../server/next-handler.mjs';
-import sharp from 'sharp';
-function client(app){return async(path,method='GET',body,cookie)=>{const response=await handleRequest(app,new Request('http://127.0.0.1:5173/api'+path,{method,headers:{...(body?{'Content-Type':'application/json',Origin:'http://127.0.0.1:5173'}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined}));return {status:response.status,body:await response.json(),cookie:response.headers.getSetCookie()[0]?.split(';')[0]};};}
-test('Separate registration schemas, anonymous submissions and managed group profiles',async t=>{
- const images=new Map();const {app,db}=await createBackend({dataDir:'memory://',rateLimits:false,storage:{async put(key,bytes){images.set(key,bytes);},async get(key){return images.get(key);}}});const call=client(app);let dev,manager;
+import {validValues,memoryStorage} from './profile-fixtures.mjs';
+function client(app){return async(path,method='GET',body,cookie)=>{const response=await handleRequest(app,new Request('http://127.0.0.1:5173/api'+path,{method,headers:{...(body?{'Content-Type':'application/json',Origin:'http://127.0.0.1:5173'}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined}));return {status:response.status,body:response.headers.get('content-type')?.includes('application/json')?await response.json():null,bytes:!response.headers.get('content-type')?.includes('application/json')?Buffer.from(await response.arrayBuffer()):null,cookie:response.headers.getSetCookie()[0]?.split(';')[0]};};}
+test('Workbook profiles: exact public fields, full staff data, image and linked identities',async t=>{
+ const storage=memoryStorage();const {app,db}=await createBackend({dataDir:'memory://',rateLimits:false,storage});const call=client(app);
  try{
-  dev=(await call('/admin/login','POST',{username:'dev',password:'1@345678'})).cookie;
-  await call('/admin/accounts','POST',{username:'viewonly',password:'ViewOnly@123',role:'manager'},dev);
-  manager=(await call('/admin/login','POST',{username:'viewonly',password:'ViewOnly@123'})).cookie;
-  await t.test('public schema is group-specific and hides three child tracking fields',async()=>{
-   const children=(await call('/registration-schemas/children')).body.schema;
-   assert.equal(children.fields.length,11);assert.ok(!children.fields.some(f=>f.staffOnly));assert.ok(children.fields.some(f=>f.key==='parentPhone'));assert.ok(!children.fields.some(f=>f.key==='phone'));
-   const staff=(await call('/registration-schemas/children','GET',undefined,dev)).body.schema;assert.equal(staff.fields.length,14);
-   const youth=(await call('/registration-schemas/youth')).body.schema,congregation=(await call('/registration-schemas/congregation')).body.schema;
-   assert.equal(youth.fields.length,10);assert.deepEqual(youth.fields.filter(f=>f.key!=='clubSinceYear'),congregation.fields.filter(f=>f.key!=='clubSinceYear'));assert.equal(youth.fields.find(f=>f.key==='clubSinceYear').label,'Tham gia Chúng thanh niên từ năm');assert.equal(congregation.fields.find(f=>f.key==='clubSinceYear').label,'Tham gia Đạo tràng từ năm');assert.deepEqual(youth.fields.find(f=>f.key==='gender').options,['Nam','Nữ']);assert.notEqual(youth.group,congregation.group);
-  });
-  await t.test('submit all three groups without account creation; repeat phone allowed; retries do not duplicate',async()=>{
-   const accountCount=(await db.query('SELECT count(*)::int AS n FROM staff_accounts')).rows[0].n;
+  const dev=(await call('/admin/login','POST',{username:'dev',password:'1@345678'})).cookie;
+  await call('/admin/accounts','POST',{username:'viewer',password:'ViewOnly@123',role:'manager'},dev);const manager=(await call('/admin/login','POST',{username:'viewer',password:'ViewOnly@123'})).cookie;
+  await t.test('empty database starts with no demo people or classes',async()=>{assert.equal((await db.query('SELECT count(*)::int AS n FROM members')).rows[0].n,0);assert.equal((await db.query('SELECT count(*)::int AS n FROM classes')).rows[0].n,0);});
+  const expected=['avatar','name','dharmaName','gender','birthday','occupation','job','address','team','hometown','phone'];
+  await t.test('sheet 2 determines public order and required fields; sheet 1 adds staff fields',async()=>{
    for(const group of ['children','youth','congregation']){
-    const values=group==='children'?{name:'Thiếu nhi thử',studentCode:'HS2026',dharmaName:'Tâm An',birthYear:2015,gender:'Nữ',schoolClass:'6A',studentPhone:'0901234567',parentName:'Phụ huynh thử',parentPhone:'0901234567',address:'Biên Hòa'}:{name:group+' thử',dharmaName:'Tâm An',birthYear:1990,gender:'Nam',phone:'0901234567',address:'Biên Hòa',team:2,clubSinceYear:2020,introducedBy:'Huynh đệ Minh Tâm'};
-    const requestId=randomUUID();assert.equal((await call('/registrations/'+group,'POST',{values,requestId})).status,201);assert.equal((await call('/registrations/'+group,'POST',{values,requestId})).status,200);
-    const rows=(await db.query('SELECT * FROM members WHERE name=$1',[values.name])).rows;assert.equal(rows.length,1);assert.equal(rows[0].profile_data.birthYear,values.birthYear);assert.equal(rows[0].group,group);
-    assert.equal((await call('/registrations/'+group,'POST',{values:{...values,name:'Changed'},requestId})).status,409);
+    const schema=(await call('/registration-schemas/'+group)).body.schema;
+    assert.deepEqual(schema.fields.map(f=>f.key),[...expected,...(group==='children'?['parentName']:[]),'relativePhone','introducedBy']);
+    assert.deepEqual(schema.fields.filter(f=>f.required).map(f=>f.key),['avatar','name','gender','birthday','address','team',...(group!=='children'?['phone']:[])]);
+    assert.deepEqual(schema.fields.find(f=>f.key==='gender').options,['Nam','Nữ']);
+    const staff=(await call('/registration-schemas/'+group,'GET',undefined,dev)).body.schema;assert.equal(staff.fields.length,group==='children'?20:19);
+    assert.ok(staff.fields.find(f=>f.key==='id').readOnly);assert.ok(staff.fields.find(f=>f.key==='joined').readOnly);
+    for(const old of ['birthYear','studentCode','clubSinceYear','attendance2026','studyDate','remarks','parentPhone','studentPhone'])assert.ok(!staff.fields.some(f=>f.key===old));
    }
-   assert.equal((await db.query('SELECT count(*)::int AS n FROM staff_accounts')).rows[0].n,accountCount);assert.equal((await db.query('SELECT count(*)::int AS n FROM accounts')).rows[0].n,0);
-   assert.deepEqual((await call('/bootstrap')).body.store.members,[]);
   });
-  await t.test('server rejects cross-group/staff fields, invalid years, phones, dates and teams',async()=>{
-   for(const [group,values]of [['children',{name:'Reject',attendance2026:1}],['children',{name:'Reject',remarks:'Forged'}],['children',{name:'Reject',studyDate:'2026-10-12'}],['youth',{name:'Reject',parentName:'Wrong group'}],['youth',{name:'Reject',birthYear:2099}],['youth',{name:'Reject',clubSinceYear:2020.5}],['youth',{name:'Reject',phone:'123'}],['youth',{name:'Reject',team:4}],['children',{name:'Reject',studentPhone:'wrong'}],['youth',{name:''}]])assert.equal((await call('/registrations/'+group,'POST',{values,requestId:randomUUID()})).status,400);
-   assert.equal((await call('/registrations/not-a-group','POST',{values:{name:'Invalid'},requestId:randomUUID()})).status,400);
-   assert.equal((await call('/registrations/youth','POST',{values:{name:'Invalid'},requestId:'bad'})).status,400);
+  const ids={};
+  await t.test('all groups register without accounts; shared phone allowed; retry is idempotent; dates and IDs generated',async()=>{
+   for(const group of ['children','youth','congregation']){
+    const values=validValues({name:group+' mới',hometown:'Đồng Nai',relativePhone:'0901234567',...(group==='children'?{phone:'',parentName:'Phụ huynh'}:{})}),requestId=randomUUID();
+    const r=await call('/registrations/'+group,'POST',{values,requestId},manager);assert.equal(r.status,201);assert.equal(r.body.status,'approved');assert.equal((await call('/registrations/'+group,'POST',{values,requestId},manager)).status,200);
+    const row=(await db.query('SELECT * FROM members WHERE name=$1',[values.name])).rows[0];ids[group]=row.id;assert.equal(row.profile_data.birthday,'2000-02-29');assert.ok(row.joined);assert.ok(row.id);assert.equal(row.profile_data.relativePhone,'0901234567');
+    assert.equal((await call('/registrations/'+group,'POST',{values:{...values,name:'Changed'},requestId},manager)).status,409);
+   }
+   assert.equal((await db.query('SELECT count(*)::int AS n FROM staff_accounts')).rows[0].n,2);assert.deepEqual((await call('/bootstrap')).body.store.members,[]);
   });
-  await t.test('Dev and Admin update tracking fields; manager cannot; group fields stay isolated',async()=>{
-   const child=(await db.query('SELECT * FROM members WHERE name=$1',['Thiếu nhi thử'])).rows[0];
-   assert.equal((await call('/members/'+child.id,'PATCH',{profileData:{attendance2026:15,studyDate:'2026-10-12',remarks:'Chăm học'}},manager)).status,403);
-   const result=await call('/members/'+child.id,'PATCH',{profileData:{attendance2026:15,studyDate:'2026-10-12',remarks:'Chăm học'}},dev);assert.equal(result.status,200);assert.equal(result.body.member.profileData.parentName,'Phụ huynh thử');assert.equal(result.body.member.profileData.attendance2026,15);
-   assert.equal((await call('/members/'+child.id,'PATCH',{profileData:{studyDate:'2026-02-30'}},dev)).status,400);assert.equal((await call('/members/'+child.id,'PATCH',{profileData:{attendance2026:-1}},dev)).status,400);assert.equal((await call('/members/'+child.id,'PATCH',{profileData:{clubSinceYear:2020}},dev)).status,400);
-   await call('/admin/accounts','POST',{username:'editor',password:'Editor@123',role:'admin'},dev);const admin=(await call('/admin/login','POST',{username:'editor',password:'Editor@123'})).cookie;
-   assert.equal((await call('/members/'+child.id,'PATCH',{profileData:{remarks:'Admin cập nhật'}},admin)).status,200);
+  await t.test('required, old, staff-only, impossible/future dates and invalid options rejected on server',async()=>{
+   for(const values of [validValues({avatar:''}),validValues({phone:''}),validValues({gender:'Khác'}),validValues({birthday:'2001-02-29'}),validValues({birthday:'2999-01-01'}),validValues({address:'Sai phường'}),validValues({hometown:'Sai tỉnh'}),validValues({team:4}),validValues({occupation:'Nghề không có'}),validValues({notes:'Forged'}),validValues({caregiver:ids.children}),validValues({id:'fake'}),validValues({joined:'2000-01-01'}),validValues({birthYear:2000})])assert.equal((await call('/registrations/youth','POST',{values,requestId:randomUUID()})).status,400);
+   assert.equal((await call('/registrations/youth','POST',{values:validValues({parentName:'Sai nhóm'}),requestId:randomUUID()})).status,400);
+   assert.equal((await call('/members/'+ids.youth,'PATCH',{name:'Legacy bypass'},dev)).status,400);
   });
-  await t.test('required toggles are separate for youth/congregation and enforced on server',async()=>{
-   assert.equal((await call('/registration-schemas/youth/fields/dharmaName','PATCH',{required:true},manager)).status,403);
-   assert.equal((await call('/registration-schemas/youth/fields/dharmaName','PATCH',{required:true},dev)).status,200);
-   assert.equal((await call('/registration-schemas/congregation')).body.schema.fields.find(f=>f.key==='dharmaName').required,false);
-   assert.equal((await call('/registrations/youth','POST',{values:{name:'Missing dharma'},requestId:randomUUID()})).status,400);
-   assert.equal((await call('/registrations/congregation','POST',{values:{name:'Separate form'},requestId:randomUUID()})).status,201);
-   // A required staff-only field must not block public registration.
-   await call('/registration-schemas/children/fields/attendance2026','PATCH',{required:true},dev);
-   assert.equal((await call('/registrations/children','POST',{values:{name:'Still public'},requestId:randomUUID()})).status,201);
+  await t.test('personal and relative phone share keys; team override persists; no occupation clears job',async()=>{
+   assert.equal((await call('/registrations/youth','POST',{values:validValues({occupation:'Không',job:'Must clear'}),requestId:randomUUID()})).status,201);
+   const result=await call('/members/'+ids.youth,'PATCH',{profileData:{occupation:'Không',job:'Must clear',team:3}},dev);assert.equal(result.status,200);assert.equal(result.body.member.profileData.job,'');assert.equal(result.body.member.team,3);
+   assert.equal((await call('/members/'+ids.youth,'PATCH',{profileData:{occupation:'Khác: Thợ may',job:'Xưởng may'}},dev)).status,200);
+   assert.equal((await call('/members/'+ids.children,'PATCH',{profileData:{personality:'Điềm tĩnh',nickname:'Mây',notes:'Ghi chú'}},manager)).status,403);
+   assert.equal((await call('/members/'+ids.children,'PATCH',{profileData:{personality:'Điềm tĩnh',nickname:'Mây',notes:'Ghi chú'}},dev)).status,200);
   });
-  await t.test('avatar converts to WebP, remains private, and invalid images do not create profiles',async()=>{
-   const png=await sharp({create:{width:600,height:600,channels:3,background:'#ab2933'}}).png().toBuffer();
-   assert.equal((await call('/registrations/youth','POST',{requestId:randomUUID(),values:{name:'With avatar',dharmaName:'Tâm An',avatar:'data:image/png;base64,'+png.toString('base64')} })).status,201);
-   const member=(await db.query('SELECT avatar FROM members WHERE name=$1',['With avatar'])).rows[0];assert.match(member.avatar,/\.webp$/);const key=member.avatar.split('/').at(-1),meta=await sharp(images.get(key)).metadata();assert.equal(meta.format,'webp');assert.equal(meta.width,480);
-   assert.equal((await call(member.avatar.replace('/api',''))).status,401);
-   assert.equal((await call('/registrations/congregation','POST',{requestId:randomUUID(),values:{name:'Bad image',avatar:'data:image/png;base64,bm90YW5pbWFnZQ=='}})).status,400);
-   assert.equal((await db.query('SELECT id FROM members WHERE name=$1',['Bad image'])).rows.length,0);
+  await t.test('linked member picker exposes minimal approved identities and portrait; links store ID, not name',async()=>{
+   const data=validValues({name:'Đồng tên',introducedBy:ids.children});await call('/registrations/youth','POST',{values:data,requestId:randomUUID()},manager);await call('/registrations/congregation','POST',{values:validValues({name:'Đồng tên'}),requestId:randomUUID()},manager);
+   const options=(await call('/member-options?q='+encodeURIComponent('Đồng tên'))).body.results;assert.equal(options.length,2);assert.notEqual(options[0].id,options[1].id);assert.deepEqual(Object.keys(options[0]).sort(),['avatar','group','id','name']);
+   const pending=await call('/registrations/youth','POST',{values:validValues({name:'Pending identity'}),requestId:randomUUID()});assert.equal(pending.status,201);assert.deepEqual((await call('/member-options?q=Pending')).body.results,[]);
+   const pendingId=(await db.query('SELECT id FROM members WHERE name=$1',['Pending identity'])).rows[0].id;
+   for(const introducedBy of ['Raw name',pendingId])assert.equal((await call('/registrations/youth','POST',{values:validValues({introducedBy}),requestId:randomUUID()})).status,400);
+   const result=await call('/members/'+ids.youth,'PATCH',{profileData:{caregiver:ids.children,introducedBy:ids.congregation}},dev);assert.equal(result.status,200);assert.equal(result.body.member.profileData.caregiver,ids.children);assert.equal(result.body.member.references.caregiver.id,ids.children);
+   assert.equal((await call('/members/'+ids.youth,'PATCH',{profileData:{caregiver:ids.youth}},dev)).status,400);
+   assert.equal((await call('/member-portraits/'+pendingId)).status,404);assert.equal((await call('/member-portraits/'+ids.children)).status,200);
+   const image=(await call('/member-portraits/'+ids.children)).bytes,meta=await sharp(image).metadata();assert.equal(meta.width,360);assert.equal(meta.height,480);assert.equal(meta.format,'webp');
+   const portrait=(await db.query('SELECT avatar FROM members WHERE id=$1',[ids.children])).rows[0].avatar;assert.equal((await call(portrait.replace('/api',''))).status,401);
   });
-  await t.test('schema and values persist through migration rerun; fields can be added without SQL columns',async()=>{
-   const before=(await db.query('SELECT profile_data FROM members WHERE name=$1',['Thiếu nhi thử'])).rows[0].profile_data;
-   await createBackend({database:db,seedData:false,rateLimits:false});assert.deepEqual((await db.query('SELECT profile_data FROM members WHERE name=$1',['Thiếu nhi thử'])).rows[0].profile_data,before);
-   assert.equal((await call('/registration-schemas/youth')).body.schema.fields.find(f=>f.key==='dharmaName').required,true);
-   const extra={key:'additionalNote',label:'Ghi chú bổ sung',type:'text',required:false};await db.query('UPDATE registration_schemas SET fields=fields || $2::jsonb WHERE group_id=$1',['congregation',JSON.stringify([extra])]);
-   assert.equal((await call('/registrations/congregation','POST',{values:{name:'Flexible data',additionalNote:'Thông tin mới'},requestId:randomUUID()})).status,201);
-   assert.equal((await db.query('SELECT profile_data FROM members WHERE name=$1',['Flexible data'])).rows[0].profile_data.additionalNote,'Thông tin mới');
+  await t.test('configuration APIs are retired; schema, records and future fields survive migration rerun',async()=>{
+   assert.equal((await call('/registration-schemas/youth/fields/dharmaName','PATCH',{required:true},dev)).status,404);
+   assert.equal((await call('/registration-schemas/youth/fields/id','PATCH',{required:true},dev)).status,404);
+   assert.equal((await call('/registration-schemas/youth/fields/phone','PATCH',{required:false},manager)).status,404);
+   const before=(await db.query('SELECT count(*)::int AS n FROM members')).rows[0].n;
+   await createBackend({database:db,seedData:false,rateLimits:false,storage});assert.equal((await db.query('SELECT count(*)::int AS n FROM members')).rows[0].n,before);assert.equal((await call('/registration-schemas/youth')).body.schema.fields.find(f=>f.key==='dharmaName').required,false);
+   assert.equal((await call('/registrations/youth','POST',{values:validValues({name:''}),requestId:randomUUID()})).status,400);
+   assert.equal((await call('/registrations/congregation','POST',{values:validValues(),requestId:randomUUID()})).status,201);
+   const extra={key:'additionalNote',label:'Ghi chú bổ sung',type:'text',required:false};await db.query('UPDATE registration_schemas SET fields=fields || $2::jsonb WHERE group_id=$1',['congregation',JSON.stringify([extra])]);assert.equal((await call('/registrations/congregation','POST',{values:validValues({additionalNote:'Mới'}),requestId:randomUUID()})).status,201);
   });
  }finally{await db.close();}
 });
