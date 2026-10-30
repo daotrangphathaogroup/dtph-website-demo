@@ -1,25 +1,37 @@
-'use client';
-import {useEffect, useMemo, useRef, useState} from 'react';
-import type {Member} from '../lib/types';
-import type {RegistrationSchema} from '../lib/registration';
-import {filterSheet, sortSheet, sheetValue, sheetCsv} from '../lib/sheet';
-export type SheetPreferences = {hidden: string[]; widths: Record<string, number>; density: string};
-export function useMemberSheet(members: Member[], schema: RegistrationSchema) {
+"use client";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { Member } from "../lib/types";
+import type { RegistrationSchema } from "../lib/registration";
+import { filterSheet, sortSheet, sheetValue, sheetCsv } from "../lib/sheet";
+export type SheetPreferences = {
+  hidden: string[];
+  widths: Record<string, number>;
+  density: string;
+};
+export function useMemberSheet(
+  members: Member[],
+  schema: RegistrationSchema,
+  preferenceScope: string = schema.group,
+) {
   const fields = useMemo(
     () => [
-      ...schema.fields.filter((f) => f.key === 'name'),
-      ...schema.fields.filter((f) => f.type !== 'image' && f.key !== 'name'),
+      ...schema.fields.filter((f) => f.key === "name"),
+      ...schema.fields.filter((f) => f.type !== "image" && f.key !== "name"),
     ],
     [schema],
   );
   const [showFilters, setShowFilters] = useState(false),
-    [query, setQuery] = useState(''),
+    [query, setQuery] = useState(""),
     [filters, setFilters] = useState<Record<string, string>>({}),
-    [sort, setSort] = useState<{key: string; direction: 'asc' | 'desc'}>({
-      key: 'name',
-      direction: 'asc',
+    [sort, setSort] = useState<{ key: string; direction: "asc" | "desc" }>({
+      key: "name",
+      direction: "asc",
     }),
-    [prefs, setPrefs] = useState<SheetPreferences>({hidden: [], widths: {}, density: 'standard'}),
+    [prefs, setPrefs] = useState<SheetPreferences>({
+      hidden: [],
+      widths: {},
+      density: "standard",
+    }),
     [ready, setReady] = useState(false),
     [page, setPage] = useState(1),
     [size, setSize] = useState(25),
@@ -28,34 +40,41 @@ export function useMemberSheet(members: Member[], schema: RegistrationSchema) {
     resizeCleanup = useRef<() => void>(() => {}),
     latestPrefs = useRef(prefs);
   latestPrefs.current = prefs;
-  const preferenceKey = `ph-sheet-v${schema.version}-${schema.group}`;
+  const preferenceKey = `ph-sheet-v${schema.version}-${preferenceScope}`;
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem(preferenceKey) ?? 'null');
+      const saved = JSON.parse(localStorage.getItem(preferenceKey) ?? "null");
       if (saved)
         setPrefs({
           hidden: Array.isArray(saved.hidden)
-            ? saved.hidden.filter((v: unknown) => typeof v === 'string' && v !== 'name')
+            ? saved.hidden.filter(
+                (v: unknown) => typeof v === "string" && v !== "name",
+              )
             : [],
           widths: Object.fromEntries(
             Object.entries(saved.widths ?? {}).filter(
               ([key, value]) =>
                 fields.some((f) => f.key === key) &&
-                typeof value === 'number' &&
+                typeof value === "number" &&
                 value >= 120 &&
                 value <= 600,
             ),
           ) as Record<string, number>,
-          density: ['compact', 'standard', 'comfortable'].includes(saved.density)
+          density: ["compact", "standard", "comfortable"].includes(
+            saved.density,
+          )
             ? saved.density
-            : 'standard',
+            : "standard",
         });
     } catch {}
     setReady(true);
     return () => {
       resizeCleanup.current();
       try {
-        localStorage.setItem(preferenceKey, JSON.stringify(latestPrefs.current));
+        localStorage.setItem(
+          preferenceKey,
+          JSON.stringify(latestPrefs.current),
+        );
       } catch {}
     };
   }, [preferenceKey]);
@@ -94,7 +113,10 @@ export function useMemberSheet(members: Member[], schema: RegistrationSchema) {
       allCheckbox.current.indeterminate = checked > 0 && checked < rows.length;
   }, [checked, rows.length]);
   const filterFields = useMemo(
-    () => fields.filter((f) => ['select', 'team', 'ward', 'province', 'year'].includes(f.type)),
+    () =>
+      fields.filter((f) =>
+        ["select", "team", "ward", "province", "year"].includes(f.type),
+      ),
     [fields],
   );
   const filterOptions = useMemo(
@@ -104,16 +126,20 @@ export function useMemberSheet(members: Member[], schema: RegistrationSchema) {
           f.key,
           [
             ...new Set(
-              members.map((m) => sheetValue(m, f.key)).filter((v) => v !== undefined && v !== ''),
+              members
+                .map((m) => sheetValue(m, f.key))
+                .filter((v) => v !== undefined && v !== ""),
             ),
-          ].sort((a, b) => String(a).localeCompare(String(b), 'vi', {numeric: true})),
+          ].sort((a, b) =>
+            String(a).localeCompare(String(b), "vi", { numeric: true }),
+          ),
         ]),
       ),
     [members, filterFields],
   );
   const width = (key: string) =>
     prefs.widths[key] ??
-    (key === 'name' ? 240 : key === 'address' || key === 'remarks' ? 300 : 180);
+    (key === "name" ? 240 : key === "address" || key === "remarks" ? 300 : 180);
   function resize(key: string, startX: number) {
     resizeCleanup.current();
     const initial = width(key);
@@ -121,7 +147,10 @@ export function useMemberSheet(members: Member[], schema: RegistrationSchema) {
       lastWidth = initial;
     const flush = () => {
       frame = 0;
-      setPrefs((old) => ({...old, widths: {...old.widths, [key]: lastWidth}}));
+      setPrefs((old) => ({
+        ...old,
+        widths: { ...old.widths, [key]: lastWidth },
+      }));
     };
     const move = (e: PointerEvent) => {
       lastWidth = Math.max(120, Math.min(600, initial + e.clientX - startX));
@@ -132,23 +161,27 @@ export function useMemberSheet(members: Member[], schema: RegistrationSchema) {
         cancelAnimationFrame(frame);
         flush();
       }
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerup', stop);
-      window.removeEventListener('pointercancel', stop);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
     };
     resizeCleanup.current = stop;
-    window.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', stop);
-    window.addEventListener('pointercancel', stop);
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
   }
   function exportRows() {
-    const exported = selected.size ? members.filter((m) => selected.has(m.id)) : filtered;
+    const exported = selected.size
+      ? members.filter((m) => selected.has(m.id))
+      : filtered;
     const url = URL.createObjectURL(
-      new Blob([sheetCsv(exported, visible)], {type: 'text/csv;charset=utf-8'}),
+      new Blob([sheetCsv(exported, visible)], {
+        type: "text/csv;charset=utf-8",
+      }),
     );
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${schema.group}-huynh-de.csv`;
+    a.download = `${preferenceScope}-huynh-de.csv`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
@@ -162,7 +195,9 @@ export function useMemberSheet(members: Member[], schema: RegistrationSchema) {
   function togglePage() {
     setSelected((old) => {
       const next = new Set(old);
-      rows.forEach((m) => (checked === rows.length ? next.delete(m.id) : next.add(m.id)));
+      rows.forEach((m) =>
+        checked === rows.length ? next.delete(m.id) : next.add(m.id),
+      );
       return next;
     });
   }

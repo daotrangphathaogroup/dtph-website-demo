@@ -3,7 +3,7 @@ import { ChartNoAxesCombined, ChartColumn, ChartLine } from "lucide-react";
 import MonthlyAreaChart from "./MonthlyAreaChart";
 import { EmptyState, SegmentedControl } from "../../components/ui/primitives";
 import type { Distribution } from "../../lib/dashboard";
-const palette = ["#3695b4", "#8ca4b5", "#d4b775", "#596b7a"];
+const palette = ["#d1a55f", "#48a58f", "#a480c8", "#6696b2"];
 export type Dimension = "ward" | "age" | "gender";
 function Donut({ items, total }: { items: Distribution[]; total: number }) {
   let angle = 0;

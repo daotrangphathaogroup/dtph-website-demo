@@ -11,7 +11,7 @@ The former Trang chủ tab is now Đăng ký thông tin. The public entry and `/
 5. Children only: optional nickname.
 6. Optional referrer selected by stored ID from approved members. Results show portrait, name and dharma name if present. For adults this is step 5.
 
-Each valid cluster advances with Tiếp tục. Revealed clusters remain fully visible and editable; earlier clusters use subdued neutral surfaces while the active cluster has a white surface and stronger border. A 240ms fade/slide introduces each new cluster, disabled for reduced-motion preferences. The form and page heading are centered within the content area. Editing earlier inputs makes that cluster active without unmounting the other revealed clusters. Subsequent steps are revalidated, including personal-phone requirements after a birth-date change. The final submit button exists only at the last step. Drafts stay in React memory and are not stored in localStorage.
+Only the newest revealed cluster has the Tiếp tục button, regardless of which cluster is being edited. Advancing revalidates all revealed information. Revealed clusters remain fully visible and editable; earlier clusters use subdued neutral surfaces while the active cluster has a white surface and stronger border. A 240ms fade/slide introduces each new cluster, disabled for reduced-motion preferences. The form and page heading are centered within the content area. Editing earlier inputs makes that cluster active without unmounting the other revealed clusters. Subsequent steps are revalidated, including personal-phone requirements after a birth-date change. The final submit button exists only at the last step. Optional labels include “(nếu có)”; required labels have no asterisk. The first submit opens a centered confirmation dialog with “Quay lại kiểm tra” and Escape to return without submitting; only the subsequent “Xác nhận gửi phiếu” sends the request. Editing a value resets that confirmation. Drafts stay in React memory and are not stored in localStorage.
 
 Shared frontend/server policy (`src/lib/registration-flow.ts`), calculated using today's date in Asia/Ho_Chi_Minh:
 
@@ -25,7 +25,7 @@ The server derives the group for `POST /api/registrations/auto`; no client role 
 
 The nickname uses the existing `profile_data.nickname` field; no duplicate member columns are introduced. Migration 011 makes the existing children's nickname field available to public registration, preserves all records and schema extensions, and runs once. Local initialization applies it automatically.
 
-Before deploying against Supabase, apply the included `supabase/migrations/202610300001_guided_intake_nickname.sql` using the project's normal migration process. This change prepares that migration; it does not execute migrations against the cloud database.
+Before deploying against Supabase, apply the included `supabase/migrations/202610300001_guided_intake_nickname.sql` using the project's normal migration process. Applied to the deployed Supabase database on 2026-10-30 to resolve children registration being rejected for `nickname`. The production migration explicitly sets `search_path` to `phat_hao, pg_catalog` inside a transaction. The deployed schema endpoint was verified at version 11 with a public nickname field; a deliberately invalid-image probe passed field validation and stopped before storage or record creation.
 
 `GET /api/member-options` adds `dharmaName` to the existing minimal approved identity response. It does not expose phone, address, birthday or pending identities.
 

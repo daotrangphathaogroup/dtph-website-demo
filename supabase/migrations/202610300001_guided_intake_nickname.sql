@@ -1,3 +1,5 @@
+BEGIN;
+SET LOCAL search_path TO phat_hao, pg_catalog;
 -- Expose the existing children's nickname field to the guided registration form.
 -- Preserve all member data and schema extensions; run once.
 DO $$ BEGIN
@@ -10,3 +12,5 @@ DO $$ BEGIN
   INSERT INTO app_meta VALUES('guided_intake_nickname_20261030','true');
  END IF;
 END $$;
+
+COMMIT;

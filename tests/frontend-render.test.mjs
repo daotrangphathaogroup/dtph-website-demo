@@ -178,8 +178,8 @@ test("Management opens with records and defers charts to statistics mode", () =>
   assert.match(markup, /Chế độ quản lý/);
   assert.match(markup, /Chờ duyệt/);
   assert.match(markup, /Thống kê/);
-  assert.match(markup, /Tải danh sách/);
-  assert.match(markup, /Tổng hợp/);
+  assert.match(markup, /Xuất CSV/);
+  assert.doesNotMatch(markup, /Tổng hợp/);
   assert.match(markup, /Bảng dữ liệu/);
   assert.match(markup, /<strong>2<\/strong> hồ sơ đã duyệt/);
   assert.equal(markup.includes('aria-label="Lọc nhóm"'), false);
@@ -208,7 +208,7 @@ test("Overview combines filters, metrics, charts and records while group pages k
   assert.match(markup, /Số liệu tổng quan/);
   assert.match(markup, /Cơ cấu nhóm/);
   assert.match(markup, /Đăng ký theo tháng/);
-  assert.match(markup, /Tải danh sách/);
+  assert.match(markup, /Xuất CSV/);
   assert.match(markup, /Lọc năm đăng ký/);
   assert.match(markup, /Lọc tháng đăng ký/);
   assert.doesNotMatch(markup, /Chế độ quản lý/);

@@ -1,48 +1,60 @@
-'use client';
-import {ArrowDown, ArrowUp, ChevronsUpDown, Eye, Pencil} from 'lucide-react';
-import type {Member} from '../lib/types';
-import type {RegistrationSchema} from '../lib/registration';
-import {displayValue} from '../lib/registration';
-import {sheetValue} from '../lib/sheet';
-import {useMemberSheet} from '../hooks/useMemberSheet';
-import MemberSheetToolbar from '../features/members/MemberSheetToolbar';
-import Pagination from './ui/Pagination';
-import {EmptyState, IconButton} from './ui/primitives';
+"use client";
+import { ArrowDown, ArrowUp, ChevronsUpDown, Eye, Pencil } from "lucide-react";
+import type { Member } from "../lib/types";
+import type { RegistrationSchema } from "../lib/registration";
+import { displayValue } from "../lib/registration";
+import { sheetValue } from "../lib/sheet";
+import { useMemberSheet } from "../hooks/useMemberSheet";
+import MemberSheetToolbar from "../features/members/MemberSheetToolbar";
+import Pagination from "./ui/Pagination";
+import { EmptyState, IconButton } from "./ui/primitives";
 export default function MemberDataTable({
   members,
   schema,
   canEdit,
   onOpen,
+  preferenceScope,
+  label,
 }: {
   members: Member[];
   schema: RegistrationSchema;
   canEdit: boolean;
+  preferenceScope?: string;
+  label?: string;
   onOpen: (member: Member, edit: boolean) => void;
 }) {
-  const sheet = useMemberSheet(members, schema);
+  const sheet = useMemberSheet(members, schema, preferenceScope);
   return (
-    <section className={`sheet sheet-${sheet.prefs.density}`} aria-label="Bảng dữ liệu huynh đệ">
+    <section
+      className={`sheet sheet-${sheet.prefs.density}`}
+      aria-label="Bảng dữ liệu huynh đệ"
+    >
       <MemberSheetToolbar sheet={sheet} />
       <div className="sheet-scroll" tabIndex={0} aria-label="Cuộn bảng dữ liệu">
         <table
           className="sheet-table"
-          style={{width: 192 + sheet.visible.reduce((total, f) => total + sheet.width(f.key), 0)}}
+          style={{
+            width:
+              192 +
+              sheet.visible.reduce((total, f) => total + sheet.width(f.key), 0),
+          }}
         >
           <caption className="sr-only">
-            Bảng dữ liệu{' '}
-            {schema.group === 'children'
-              ? 'Chúng thiếu nhi'
-              : schema.group === 'youth'
-                ? 'Chúng thanh niên'
-                : 'Đạo tràng'}
+            Bảng dữ liệu{" "}
+            {label ??
+              (schema.group === "children"
+                ? "Chúng thiếu nhi"
+                : schema.group === "youth"
+                  ? "Chúng thanh niên"
+                  : "Đạo tràng")}
           </caption>
           <colgroup>
-            <col style={{width: 42}} />
-            <col style={{width: 54}} />
+            <col style={{ width: 42 }} />
+            <col style={{ width: 54 }} />
             {sheet.visible.map((f) => (
-              <col key={f.key} style={{width: sheet.width(f.key)}} />
+              <col key={f.key} style={{ width: sheet.width(f.key) }} />
             ))}
-            <col style={{width: 96}} />
+            <col style={{ width: 96 }} />
           </colgroup>
           <thead>
             <tr>
@@ -51,7 +63,9 @@ export default function MemberDataTable({
                   ref={sheet.allCheckbox}
                   type="checkbox"
                   aria-label="Chọn tất cả dòng trên trang"
-                  checked={sheet.rows.length > 0 && sheet.checked === sheet.rows.length}
+                  checked={
+                    sheet.rows.length > 0 && sheet.checked === sheet.rows.length
+                  }
                   disabled={!sheet.rows.length}
                   onChange={sheet.togglePage}
                 />
@@ -63,13 +77,13 @@ export default function MemberDataTable({
                 <th
                   scope="col"
                   key={f.key}
-                  className={f.key === 'name' ? 'sheet-name' : ''}
+                  className={f.key === "name" ? "sheet-name" : ""}
                   aria-sort={
                     sheet.sort.key === f.key
-                      ? sheet.sort.direction === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : 'none'
+                      ? sheet.sort.direction === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : "none"
                   }
                 >
                   <button
@@ -78,16 +92,17 @@ export default function MemberDataTable({
                       sheet.setSort({
                         key: f.key,
                         direction:
-                          sheet.sort.key === f.key && sheet.sort.direction === 'asc'
-                            ? 'desc'
-                            : 'asc',
+                          sheet.sort.key === f.key &&
+                          sheet.sort.direction === "asc"
+                            ? "desc"
+                            : "asc",
                       })
                     }
                     title={f.label}
                   >
                     <span>{f.label}</span>
                     {sheet.sort.key === f.key ? (
-                      sheet.sort.direction === 'asc' ? (
+                      sheet.sort.direction === "asc" ? (
                         <ArrowUp size={14} />
                       ) : (
                         <ArrowDown size={14} />
@@ -110,7 +125,7 @@ export default function MemberDataTable({
                       sheet.resize(f.key, e.clientX);
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
                         e.preventDefault();
                         sheet.setPrefs((old) => ({
                           ...old,
@@ -120,7 +135,8 @@ export default function MemberDataTable({
                               120,
                               Math.min(
                                 600,
-                                sheet.width(f.key) + (e.key === 'ArrowRight' ? 20 : -20),
+                                sheet.width(f.key) +
+                                  (e.key === "ArrowRight" ? 20 : -20),
                               ),
                             ),
                           },
@@ -137,7 +153,10 @@ export default function MemberDataTable({
           </thead>
           <tbody>
             {sheet.rows.map((m, index) => (
-              <tr key={m.id} className={sheet.selected.has(m.id) ? 'is-selected' : ''}>
+              <tr
+                key={m.id}
+                className={sheet.selected.has(m.id) ? "is-selected" : ""}
+              >
                 <td className="sheet-check">
                   <input
                     type="checkbox"
@@ -146,30 +165,41 @@ export default function MemberDataTable({
                     onChange={() => sheet.toggle(m.id)}
                   />
                 </td>
-                <td className="sheet-number">{(sheet.page - 1) * sheet.size + index + 1}</td>
+                <td className="sheet-number">
+                  {(sheet.page - 1) * sheet.size + index + 1}
+                </td>
                 {sheet.visible.map((f) => {
                   const value = sheetValue(m, f.key);
                   return (
                     <td
                       key={f.key}
                       className={
-                        f.key === 'name'
-                          ? 'sheet-name'
-                          : value === undefined || value === ''
-                            ? 'sheet-missing'
-                            : ''
+                        f.key === "name"
+                          ? "sheet-name"
+                          : value === undefined || value === ""
+                            ? "sheet-missing"
+                            : ""
                       }
                       title={displayValue(value, f)}
                     >
-                      {f.key === 'name' ? (
-                        <button className="table-person" onClick={() => onOpen(m, false)}>
+                      {f.key === "name" ? (
+                        <button
+                          className="table-person"
+                          onClick={() => onOpen(m, false)}
+                        >
                           {m.avatar && (
-                            <img src={m.avatar} width={24} height={32} loading="lazy" alt="" />
+                            <img
+                              src={m.avatar}
+                              width={24}
+                              height={32}
+                              loading="lazy"
+                              alt=""
+                            />
                           )}
                           <span>{String(value ?? m.name)}</span>
                         </button>
-                      ) : value === undefined || value === '' ? (
-                        '—'
+                      ) : value === undefined || value === "" ? (
+                        "—"
                       ) : (
                         displayValue(value, f)
                       )}
@@ -178,11 +208,17 @@ export default function MemberDataTable({
                 })}
                 <td className="sheet-actions">
                   <div className="row-actions">
-                    <IconButton label={`Xem hồ sơ ${m.name}`} onClick={() => onOpen(m, false)}>
+                    <IconButton
+                      label={`Xem hồ sơ ${m.name}`}
+                      onClick={() => onOpen(m, false)}
+                    >
                       <Eye size={17} />
                     </IconButton>
                     {canEdit && (
-                      <IconButton label={`Chỉnh sửa ${m.name}`} onClick={() => onOpen(m, true)}>
+                      <IconButton
+                        label={`Chỉnh sửa ${m.name}`}
+                        onClick={() => onOpen(m, true)}
+                      >
                         <Pencil size={16} />
                       </IconButton>
                     )}

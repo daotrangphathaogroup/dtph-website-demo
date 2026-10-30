@@ -631,12 +631,6 @@
   outline: 2px solid var(--chart-stroke);
   outline-offset: 4px;
 }
-.intake-step-heading > .button {
-  margin-left: auto;
-  font-size: 11px;
-  min-height: 28px;
-  padding: 4px 6px;
-}
 .intake-step-number {
   width: 28px;
   height: 28px;
@@ -650,15 +644,17 @@
   font-variant-numeric: tabular-nums;
 }
 .intake-step.active {
-  border-color: #a4c9d7;
-  background: #fff;
-  box-shadow:
-    0 0 0 3px #e6f1f6,
-    0 4px 16px #172b3a05;
+  border-color: #cbdce4;
+  background: var(--surface);
+  box-shadow: 0 2px 10px #172b3a04;
 }
 .intake-step.completed {
-  background: transparent;
+  background: #f8fafb;
   border-color: var(--line);
+  box-shadow: none;
+}
+.intake-step.completed:hover {
+  border-color: #d4dfe5;
 }
 .intake-step.completed .intake-step-body {
   color: var(--muted);
@@ -773,6 +769,21 @@
   font-size: 13px;
   line-height: 1.7;
 }
+.intake-confirm-dialog {
+  width: min(460px, calc(100% - 32px));
+}
+.intake-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+@media (max-width: 480px) {
+  .intake-confirm-actions > .button {
+    width: 100%;
+  }
+}
 @media (max-width: 760px) {
   .intake-step-body {
     padding-left: 0;
@@ -787,9 +798,6 @@
   }
   .intake-actions > .button {
     min-height: 44px;
-  }
-  .intake-step-heading > .button {
-    min-height: 36px;
   }
 }
 
@@ -853,4 +861,19 @@
 }
 .intake-progress-track > .current {
   background: var(--accent);
+}
+.intake-step:nth-child(2).active .intake-step-number {
+  background: var(--youth-color);
+}
+.intake-step:nth-child(3).active .intake-step-number {
+  background: #7760a2;
+}
+.intake-step:nth-child(4).active .intake-step-number {
+  background: #a56d38;
+}
+.intake-step:nth-child(5).active .intake-step-number {
+  background: #477aa6;
+}
+.intake-step:nth-child(6).active .intake-step-number {
+  background: var(--youth-color);
 }

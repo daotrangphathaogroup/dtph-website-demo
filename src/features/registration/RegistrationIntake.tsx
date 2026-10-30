@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
-import { ArrowRight, Check, Pencil, KeyRound } from "lucide-react";
+import { ArrowRight, Check, KeyRound } from "lucide-react";
 import Link from "next/link";
 import { api } from "../../lib/api";
 import { groupLabels } from "../../lib/types";
@@ -14,6 +14,7 @@ import {
 import { todayInVietnam } from "../../lib/dashboard";
 import { getTeam, teamAreas } from "../../lib/areas";
 import { Button, Feedback, Field } from "../../components/ui/primitives";
+import Dialog from "../../components/ui/Dialog";
 import PortraitInput from "../../components/PortraitInput";
 import MemberPicker from "../../components/MemberPicker";
 
@@ -49,7 +50,8 @@ export default function RegistrationIntake({
     [reached, setReached] = useState(0),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
-    [processing, setProcessing] = useState(false);
+    [processing, setProcessing] = useState(false),
+    [reviewPayload, setReviewPayload] = useState("");
   const [receipt, setReceipt] = useState<"pending" | "approved" | null>(null);
   const id = useId(),
     root = useRef<HTMLDivElement>(null),
@@ -85,6 +87,7 @@ export default function RegistrationIntake({
     });
   }, [current, receipt]);
   function update(key: string, value: string) {
+    setReviewPayload("");
     setError("");
     if (key === "birthday" && registrationGroup(value, today) !== group) {
       setCurrent(0);
@@ -104,36 +107,38 @@ export default function RegistrationIntake({
       ...(key === "address" ? { team: getTeam(value) ?? "" } : {}),
     }));
   }
-  function edit(step: number) {
-    if (busy) return;
-    setProcessing(false);
+  function activateStep(step: number) {
+    if (busy || step === current) return;
     setCurrent(step);
     setError("");
-    moveFocus.current = true;
   }
   function next() {
+    for (let step = 0; step <= reached; step++) {
+      const problem = intakeStepError(step, values, today);
+      if (problem) {
+        setCurrent(step);
+        setError(problem);
+        moveFocus.current = true;
+        return;
+      }
+    }
     const controls = root.current?.querySelectorAll<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >(
-      ".intake-step.active input:not([type=file]), .intake-step.active select, .intake-step.active textarea",
+      ".intake-step input:not([type=file]), .intake-step select, .intake-step textarea",
     );
     for (const control of controls ?? []) if (!control.reportValidity()) return;
-    const problem = intakeStepError(current, values, today);
-    if (problem) {
-      setError(problem);
-      return;
-    }
     if (processing) {
       setError("Hoàn tất cắt ảnh trước khi tiếp tục.");
       return;
     }
     setError("");
-    setCurrent(current + 1);
-    setReached((n) => Math.max(n, current + 1));
+    setCurrent(reached + 1);
+    setReached(reached + 1);
     moveFocus.current = true;
   }
-  async function submit() {
-    if (sending.current || processing || current !== finalStep) return;
+  async function submit(confirmed = false) {
+    if (sending.current || processing || reached !== finalStep) return;
     for (let step = 0; step < finalStep; step++) {
       const problem = intakeStepError(step, values, today);
       if (problem) {
@@ -149,6 +154,10 @@ export default function RegistrationIntake({
       if (!control.reportValidity()) return;
     if (!group) return;
     const payload = JSON.stringify(intakeValues(values, group));
+    if (!confirmed || reviewPayload !== payload) {
+      setReviewPayload(payload);
+      return;
+    }
     if (request.current?.payload !== payload)
       request.current = { id: crypto.randomUUID(), payload };
     sending.current = true;
@@ -196,6 +205,7 @@ export default function RegistrationIntake({
             setCurrent(0);
             setReached(0);
             setReceipt(null);
+            setReviewPayload("");
             setError("");
             request.current = null;
             moveFocus.current = true;
@@ -209,11 +219,11 @@ export default function RegistrationIntake({
     <div className="registration-intake" ref={root}>
       <header className="intake-intro">
         <p>
-          Điền lần lượt từng cụm thông tin. Nhóm sinh hoạt được xác định từ ngày
+          Điền lần lượt các thông tin. Nhóm sinh hoạt được xác định từ ngày
           sinh.
         </p>
         <span className="intake-progress" aria-live="polite">
-          Cụm {current + 1} / {steps.length}
+          {current + 1} / {steps.length}
           {group && <> · {groupLabels[group]}</>}
         </span>
         <div className="intake-progress-track" aria-hidden="true">
@@ -231,7 +241,7 @@ export default function RegistrationIntake({
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
-          if (current === finalStep) void submit();
+          if (reached === finalStep) void submit();
           else next();
         }}
       >
@@ -242,15 +252,8 @@ export default function RegistrationIntake({
               <section
                 key={title}
                 className={`intake-step ${index === current ? "active" : "completed"}`}
-                onFocusCapture={(e) => {
-                  if (
-                    index !== current &&
-                    (e.target as HTMLElement).matches("input,select,textarea")
-                  ) {
-                    setCurrent(index);
-                    setError("");
-                  }
-                }}
+                onClick={() => activateStep(index)}
+                onFocusCapture={() => activateStep(index)}
                 aria-labelledby={`${id}-heading-${index}`}
               >
                 <header className="intake-step-heading">
@@ -268,22 +271,11 @@ export default function RegistrationIntake({
                   >
                     {title}
                   </h2>
-                  {index !== current && (
-                    <Button
-                      variant="ghost"
-                      disabled={processing}
-                      onClick={() => edit(index)}
-                      aria-label={`Sửa ${title.toLowerCase()}`}
-                    >
-                      <Pencil size={13} />
-                      Sửa
-                    </Button>
-                  )}
                 </header>
                 <div className="intake-step-body">
                   {index === 0 && (
                     <>
-                      <Field label="Họ và tên" required htmlFor={`${id}-name`}>
+                      <Field label="Họ và tên" htmlFor={`${id}-name`}>
                         <input
                           id={`${id}-name`}
                           required
@@ -293,11 +285,7 @@ export default function RegistrationIntake({
                           onChange={(e) => update("name", e.target.value)}
                         />
                       </Field>
-                      <Field
-                        label="Giới tính"
-                        required
-                        htmlFor={`${id}-gender`}
-                      >
+                      <Field label="Giới tính" htmlFor={`${id}-gender`}>
                         <select
                           id={`${id}-gender`}
                           required
@@ -309,11 +297,7 @@ export default function RegistrationIntake({
                           <option>Nữ</option>
                         </select>
                       </Field>
-                      <Field
-                        label="Ngày sinh"
-                        required
-                        htmlFor={`${id}-birthday`}
-                      >
+                      <Field label="Ngày sinh" htmlFor={`${id}-birthday`}>
                         <input
                           id={`${id}-birthday`}
                           required
@@ -334,11 +318,7 @@ export default function RegistrationIntake({
                   )}
                   {index === 1 && (
                     <>
-                      <Field
-                        label="Địa chỉ / Phường"
-                        required
-                        htmlFor={`${id}-address`}
-                      >
+                      <Field label="Địa chỉ / Phường" htmlFor={`${id}-address`}>
                         <select
                           id={`${id}-address`}
                           required
@@ -357,7 +337,6 @@ export default function RegistrationIntake({
                       </Field>
                       <Field
                         label="Tổ"
-                        required
                         htmlFor={`${id}-team`}
                         hint="Tự chọn theo phường. Có thể đổi tổ theo nhu cầu sinh hoạt."
                       >
@@ -383,7 +362,6 @@ export default function RegistrationIntake({
                         label={
                           children ? "SĐT cá nhân (nếu có)" : "SĐT cá nhân"
                         }
-                        required={!children}
                         htmlFor={`${id}-phone`}
                       >
                         <input
@@ -400,7 +378,7 @@ export default function RegistrationIntake({
                       </Field>
                       {children && (
                         <Field
-                          label="Họ và tên phụ huynh"
+                          label="Họ và tên phụ huynh (nếu có)"
                           htmlFor={`${id}-parent`}
                         >
                           <input
@@ -414,7 +392,11 @@ export default function RegistrationIntake({
                         </Field>
                       )}
                       <Field
-                        label={children ? "SĐT Phụ huynh" : "SĐT Người thân"}
+                        label={
+                          children
+                            ? "SĐT Phụ huynh (nếu có)"
+                            : "SĐT Người thân (nếu có)"
+                        }
                         htmlFor={`${id}-relative`}
                       >
                         <input
@@ -465,12 +447,14 @@ export default function RegistrationIntake({
                         Nếu có người giới thiệu, nhập tên và chọn đúng huynh đệ
                         trong danh sách. Có thể để trống.
                       </p>
-                      <MemberPicker
-                        value={String(values.introducedBy)}
-                        label="Người giới thiệu"
-                        required={false}
-                        onChange={(v) => update("introducedBy", v)}
-                      />
+                      <Field label="Người giới thiệu (nếu có)">
+                        <MemberPicker
+                          value={String(values.introducedBy)}
+                          label="Người giới thiệu (nếu có)"
+                          required={false}
+                          onChange={(v) => update("introducedBy", v)}
+                        />
+                      </Field>
                       <div className="intake-review">
                         <strong>{values.name}</strong>
                         <span>
@@ -487,11 +471,13 @@ export default function RegistrationIntake({
                       </div>
                     </>
                   )}
-                  {index === current && (
+                  {index === current && error && !reviewPayload && (
+                    <Feedback>{error}</Feedback>
+                  )}
+                  {index === reached && (
                     <>
-                      {error && <Feedback>{error}</Feedback>}
                       <div className="intake-actions">
-                        {current === finalStep ? (
+                        {reached === finalStep ? (
                           <Button
                             type="submit"
                             busy={busy}
@@ -516,6 +502,36 @@ export default function RegistrationIntake({
           )}
         </fieldset>
       </form>
+      {reviewPayload && (
+        <Dialog
+          title="Xác nhận đăng ký"
+          description="Vui lòng kiểm tra lại toàn bộ thông tin trước khi gửi phiếu đăng ký."
+          className="intake-confirm-dialog"
+          busy={busy}
+          onClose={() => {
+            setReviewPayload("");
+            setError("");
+          }}
+        >
+          <p>Huynh đệ xác nhận các thông tin đã điền là chính xác?</p>
+          {error && <Feedback>{error}</Feedback>}
+          <div className="intake-confirm-actions">
+            <Button
+              variant="secondary"
+              disabled={busy}
+              onClick={() => {
+                setReviewPayload("");
+                setError("");
+              }}
+            >
+              Quay lại kiểm tra
+            </Button>
+            <Button busy={busy} onClick={() => void submit(true)}>
+              Xác nhận gửi phiếu
+            </Button>
+          </div>
+        </Dialog>
+      )}
       {!isStaff && (
         <Link href="/quan-tri" className="intake-staff-link">
           <KeyRound size={14} />

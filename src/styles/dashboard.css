@@ -1324,3 +1324,37 @@
     padding-inline: 12px;
   }
 }
+/* Group colors complement the white-blue workspace and identify each community. */
+.overview-metric:nth-child(2) {
+  background: var(--congregation-soft);
+  border-color: #efdfc5;
+}
+.overview-metric:nth-child(2) > div > svg {
+  color: var(--congregation-color);
+}
+.overview-metric:nth-child(3) {
+  background: var(--youth-soft);
+  border-color: #d3eade;
+}
+.overview-metric:nth-child(3) > div > svg {
+  color: var(--youth-color);
+}
+.overview-metric:nth-child(4) {
+  background: var(--children-soft);
+  border-color: #e6daf3;
+}
+.overview-metric:nth-child(4) > div > svg {
+  color: var(--children-color);
+}
+.nav-item[aria-label="Chúng thiếu nhi"]:not(.active) > svg {
+  color: var(--children-color);
+}
+.nav-item[aria-label="Chúng thanh niên"]:not(.active) > svg {
+  color: var(--youth-color);
+}
+.nav-item[aria-label="Đạo tràng"]:not(.active) > svg {
+  color: var(--congregation-color);
+}
+.dashboard-list .sheet {
+  border-radius: 14px;
+}

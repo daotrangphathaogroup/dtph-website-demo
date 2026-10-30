@@ -9,7 +9,7 @@ export default function Brand() {
         height="72"
       />
       <div className="brand-name">
-        PHẬT HÀO<span>ĐẠO TRÀNG</span>
+        <span className="brand-prefix">ĐẠO TRÀNG</span>PHẬT HÀO
       </div>
     </>
   );
