@@ -1,0 +1,448 @@
+{
+  "meta": {
+    "name": "Phật Hào · Quản lý hồ sơ",
+    "description": "Rebuild screen hierarchy around records, review queues and optional statistics. Reference is a neutral issue-management workspace. Exact colors measured; spacing and interactions inferred from a still image.",
+    "source_references": [
+      {
+        "type": "image",
+        "file": "codex-clipboard-3d3e4927-d2e5-47c9-996e-5a00536bd613.png",
+        "width": 1200,
+        "height": 1098
+      }
+    ],
+    "created_at": "2026-10-30"
+  },
+  "design_system": {
+    "color": {
+      "palette_type": "Neutral gray surfaces with sparse semantic status accents",
+      "primary": {
+        "hex": "#151515",
+        "role": "Measured foreground; headings and readable table content"
+      },
+      "secondary": {
+        "hex": "#5a86b6",
+        "role": "Measured blue; focus and chart strokes"
+      },
+      "accent": {
+        "hex": "#e3c67c",
+        "role": "Measured amber; pending review counts that need staff attention"
+      },
+      "neutral": {
+        "scale": [
+          "#ffffff",
+          "#f7f7f7",
+          "#f0f0f0",
+          "#dededf",
+          "#c8c8ca",
+          "#a4afa8",
+          "#60645d",
+          "#151515"
+        ],
+        "usage": "Ordered light to dark. Background #f0f0f0 and dark endpoint #151515 measured. #f7f7f7 popup/control surface and #c8c8ca borders are derived neutral steps. Small copy uses measured #60645d."
+      },
+      "semantic": {
+        "success": "#356e51",
+        "warning": "#705718",
+        "error": "#c6405a",
+        "info": "#5a86b6"
+      },
+      "surface": {
+        "background": "#f0f0f0",
+        "card": "#f7f7f7",
+        "elevated": "#ffffff"
+      },
+      "contrast_strategy": "High contrast copy on gray; amber background always paired with dark label and numeric count; status never conveyed solely by hue.",
+      "measurement": {
+        "k": 8,
+        "sampling": {
+          "method": "deterministic_stratified",
+          "max_pixels": 160000,
+          "sampled_pixels": 160000
+        }
+      },
+      "measured_palette": [
+        {
+          "hex": "#f0f0f0",
+          "coverage": 0.6814,
+          "role": "background"
+        },
+        {
+          "hex": "#dededf",
+          "coverage": 0.2621,
+          "role": "unassigned"
+        },
+        {
+          "hex": "#151515",
+          "coverage": 0.0158,
+          "role": "text"
+        },
+        {
+          "hex": "#a4afa8",
+          "coverage": 0.0157,
+          "role": "unassigned"
+        },
+        {
+          "hex": "#60645d",
+          "coverage": 0.0118,
+          "role": "unassigned"
+        },
+        {
+          "hex": "#e3c67c",
+          "coverage": 0.0076,
+          "role": "accent"
+        },
+        {
+          "hex": "#5a86b6",
+          "coverage": 0.0031,
+          "role": "unassigned"
+        },
+        {
+          "hex": "#b47852",
+          "coverage": 0.0025,
+          "role": "unassigned"
+        }
+      ],
+      "brand_exceptions": {
+        "logo": "Preserve the original multicolor logo",
+        "status_colors": "Retain existing green approval and red rejection meaning; no decorative colored card backgrounds",
+        "controls": "Near-white controls and dialogs distinguish editable fields from flat gray canvas"
+      },
+      "accessibility_adjustments": [
+        {
+          "hex": "#49390f",
+          "source": "#e3c67c",
+          "usage": "Dark readable label over the measured amber pending badge"
+        },
+        {
+          "hex": "#315d89",
+          "source": "#5a86b6",
+          "usage": "Darker blue for small text; measured original reserved for chart marks"
+        }
+      ]
+    },
+    "typography": {
+      "type_scale": {
+        "display": {
+          "size": "24px",
+          "weight": 600,
+          "line_height": 1.3,
+          "tracking": "-0.02em"
+        },
+        "heading_1": {
+          "size": "22px",
+          "weight": 600,
+          "line_height": 1.25,
+          "tracking": "-0.02em"
+        },
+        "heading_2": {
+          "size": "15px",
+          "weight": 600,
+          "line_height": 1.4,
+          "tracking": "-0.015em"
+        },
+        "heading_3": {
+          "size": "13px",
+          "weight": 500,
+          "line_height": 1.45,
+          "tracking": "0em"
+        },
+        "body": {
+          "size": "13px",
+          "weight": 400,
+          "line_height": 1.5,
+          "tracking": "0em"
+        },
+        "body_small": {
+          "size": "12px",
+          "weight": 400,
+          "line_height": 1.5,
+          "tracking": "0em"
+        },
+        "caption": {
+          "size": "11px",
+          "weight": 400,
+          "line_height": 1.5,
+          "tracking": "0em"
+        },
+        "overline": {
+          "size": "12px",
+          "weight": 500,
+          "line_height": 1.5,
+          "tracking": "0em"
+        }
+      },
+      "font_families": {
+        "heading": "Geist, sans-serif",
+        "body": "Geist, sans-serif",
+        "mono": "ui-monospace, monospace"
+      },
+      "font_style_notes": "Rounded geometric sans inferred from reference; keep existing self-hosted Geist with Vietnamese glyphs rather than claiming an exact font identification."
+    },
+    "spacing": {
+      "base_unit": "4px",
+      "scale": ["4px", "8px", "12px", "16px", "20px", "24px", "32px", "40px"],
+      "content_density": "compact but legible",
+      "section_rhythm": "8–16px within toolbars; 20–24px content gutter; 44–52px data rows"
+    },
+    "layout": {
+      "grid_system": "Full viewport continuous gray topbar and sidebar; flat main surface with compact filters, counts, mode navigation and list. Statistics and pending are separate working views.",
+      "max_content_width": "1800px",
+      "columns": {
+        "sidebar": "224px / 64px collapsed",
+        "content": 1,
+        "statistics": 2,
+        "forms": 1
+      },
+      "gutter": "24px desktop / 16px mobile",
+      "breakpoints": {
+        "mobile": "760px",
+        "tablet": "1100px",
+        "wide": "1400px"
+      },
+      "alignment_tendency": "strict left aligned grid"
+    },
+    "shape": {
+      "border_radius": {
+        "small": "5px",
+        "medium": "8px",
+        "large": "10px",
+        "pill": "999px"
+      },
+      "border_usage": "subtle 1px neutral outlines",
+      "divider_style": "single cool grey horizontal rules"
+    },
+    "elevation": {
+      "shadow_style": "Flat page and tables; shadows only on floating menus, tooltip and modal",
+      "levels": {
+        "low": "none",
+        "medium": "0 8px 28px #15151520",
+        "high": "0 20px 64px #15151520"
+      },
+      "depth_cues": "Neutral surface changes and fine row dividers; elevated controls only"
+    },
+    "iconography": {
+      "style": "Monochrome outlined utility icons; no ornamental icon disks",
+      "stroke_weight": "1.5px",
+      "size_scale": ["14px", "16px", "18px", "20px", "24px"],
+      "preferred_set": "Existing Lucide React"
+    },
+    "motion": {
+      "easing": "ease-out",
+      "duration_scale": {
+        "micro": "120ms",
+        "normal": "160ms",
+        "macro": "0ms"
+      },
+      "entrance_pattern": "instant, no entrance animation inferred from still image",
+      "exit_pattern": "instant",
+      "philosophy": "minimal functional; respect reduced motion"
+    },
+    "components": {
+      "button_style": "Small gray utility buttons; dark primary for committing a form; semantic green/red for review",
+      "input_style": "Near-white rectangular fields, subtle border and visible blue focus; compact filter controls",
+      "card_style": "Avoid cards around lists. Plain divided rows and one working surface. Bounded boxes only for dialog, form and optional statistics.",
+      "navigation_pattern": "Gray full-height rail with light selected row. List / Pending / Statistics mode buttons with underline. Logo remains in continuous topbar.",
+      "modal_style": "Centered opaque white dialog with thin border; no backdrop blur",
+      "list_style": "Primary working view; compact rows, aligned columns, searchable and sortable data, existing export, pagination and detailed sheet controls.",
+      "component_notes": "Remove promotional hero, multicolor background, stat cards and always-visible chart grid. Put records first; show pending counts in amber. Preserve roles and backend contracts."
+    }
+  },
+  "design_style": {
+    "aesthetic": {
+      "mood": ["focused", "quiet", "practical", "readable"],
+      "visual_metaphor": "A shared administrative register",
+      "era_influence": "Contemporary restrained SaaS dashboards",
+      "genre": "Information-dense operations workspace",
+      "personality_traits": ["organized", "quiet", "reliable"],
+      "adjectives": ["flat", "neutral", "compact", "purposeful"]
+    },
+    "visual_language": {
+      "complexity": "minimal",
+      "ornamentation": "none",
+      "whitespace_usage": "Only functional separation; no oversized hero or outer frame",
+      "visual_weight_distribution": "Names and pending states are strongest, supporting metadata is gray",
+      "focal_strategy": "Immediate access to records and pending review; analytics on demand",
+      "contrast_level": "dark-on-light dominant, low contrast structural borders",
+      "texture_usage": "none"
+    },
+    "composition": {
+      "hierarchy_method": "Task-based modes, aligned rows and sparse semantic status accents",
+      "balance_type": "asymmetric sidebar plus aligned main grid",
+      "flow_direction": "left navigation, top-to-bottom content",
+      "grouping_strategy": "One work surface with separators; filters in a dismissible popup",
+      "negative_space_role": "Distinguish controls from records without wasting vertical space"
+    },
+    "imagery": {
+      "photo_treatment": "Existing portraits kept; no decorative stock photography",
+      "illustration_style": "none",
+      "graphic_elements": "Utility icons, actual portraits and optional data charts only",
+      "pattern_usage": "none",
+      "image_shape": "Existing portrait 3x4 and original logo"
+    },
+    "interaction_feel": {
+      "feedback_style": "immediate selected state and clear loading/empty/error states",
+      "hover_behavior": "Subtle gray row highlight; delayed utility tooltip and keyboard focus",
+      "transition_personality": "snappy",
+      "loading_style": "Static placeholders and spinner only during a request",
+      "microinteraction_density": "Only to explain actions or state; no bounce, reveal or ornamental animation"
+    },
+    "brand_voice_in_ui": {
+      "tone": "calm and helpful Vietnamese appropriate to Đạo Tràng",
+      "formality": "respectful, concise",
+      "cta_style": "direct familiar action labels",
+      "empty_state_approach": "explain available next steps without fabricated data",
+      "error_tone": "clear and recoverable"
+    }
+  },
+  "visual_effects": {
+    "overview": {
+      "effect_intensity": "none",
+      "performance_tier": "lightweight",
+      "fallback_strategy": "No decorative effects; reduced motion disables transitions and spinner",
+      "primary_technology": "CSS with native HTML controls and static SVG chart"
+    },
+    "background_effects": {
+      "type": "none",
+      "description": "Flat measured gray; no gradient frame",
+      "technology": "CSS background-color",
+      "params": {
+        "color_palette": ["#f0f0f0", "#dededf"],
+        "speed": 0,
+        "density": "none",
+        "opacity": 1,
+        "blend_mode": "normal"
+      }
+    },
+    "particle_systems": {
+      "enabled": false,
+      "type": "none",
+      "description": "No particles in reference",
+      "technology": "none",
+      "params": {
+        "count": 0,
+        "shape": "none",
+        "size_range": [0, 0],
+        "movement_pattern": "none",
+        "color_behavior": "none",
+        "interaction": "none",
+        "spawn_area": "none"
+      }
+    },
+    "3d_elements": {
+      "enabled": false,
+      "type": "none",
+      "description": "No 3D content",
+      "technology": "none",
+      "params": {
+        "renderer": "none",
+        "lighting": "none",
+        "camera": "none",
+        "materials": "none",
+        "geometry": "none",
+        "post_processing": [],
+        "interaction_model": "none"
+      }
+    },
+    "shader_effects": {
+      "enabled": false,
+      "type": "none",
+      "description": "No shader distortion observed",
+      "technology": "none",
+      "params": {
+        "uniforms": {},
+        "vertex_manipulation": "none",
+        "fragment_output": "none",
+        "noise_type": "none",
+        "distortion": 0
+      }
+    },
+    "scroll_effects": {
+      "parallax": {
+        "enabled": false,
+        "layers": 0,
+        "depth_range": [0, 0],
+        "speed_curve": "none"
+      },
+      "scroll_triggered_animations": {
+        "enabled": false,
+        "trigger_points": [],
+        "animation_type": "none",
+        "scrub_behavior": "none"
+      },
+      "scroll_morphing": {
+        "enabled": false,
+        "description": "No scroll morphing"
+      }
+    },
+    "text_effects": {
+      "type": "none",
+      "description": "Normal readable type",
+      "technology": "CSS",
+      "params": {
+        "split_strategy": "none",
+        "animation_per_unit": "none",
+        "stagger": 0,
+        "effect_style": "none"
+      }
+    },
+    "cursor_effects": {
+      "enabled": false,
+      "type": "none",
+      "description": "Keep native pointer",
+      "params": {
+        "shape": "native",
+        "size": "auto",
+        "blend_mode": "normal",
+        "trail": "none",
+        "interaction_zone": "none"
+      }
+    },
+    "image_effects": {
+      "type": "none",
+      "description": "No distortion, reveal or parallax",
+      "technology": "CSS object-fit only",
+      "params": {
+        "filter_pipeline": [],
+        "hover_transform": "none",
+        "reveal_animation": "none",
+        "distortion_type": "none"
+      }
+    },
+    "glassmorphism_neumorphism": {
+      "enabled": false,
+      "style": "none",
+      "params": {
+        "blur_radius": "0px",
+        "transparency": 0,
+        "border_treatment": "opaque neutral 1px",
+        "shadow_type": "soft popup only",
+        "light_source_angle": 0
+      }
+    },
+    "canvas_drawings": {
+      "enabled": false,
+      "type": "none",
+      "description": "Use responsive static SVG area chart; existing image crop canvas remains functional, not a visual effect",
+      "technology": "none",
+      "params": {
+        "draw_method": "none",
+        "animation_loop": false,
+        "color_scheme": "none",
+        "responsiveness": "none",
+        "interaction": "none"
+      }
+    },
+    "svg_animations": {
+      "enabled": false,
+      "type": "none",
+      "description": "SVG chart and icons are static; tooltip follows pointer/focus without SVG animation",
+      "params": {
+        "animation_method": "none",
+        "path_morphing": false,
+        "stroke_animation": false,
+        "filter_effects": "none"
+      }
+    },
+    "composite_notes": "Still reference provides no timing evidence. Inferred interactions: 120ms color transitions, 450ms tooltip dwell, immediate focus feedback. No WebGL, blur, animations, scene effects or decorative cards. Retain actual data chart and avatar crop behavior."
+  }
+}

@@ -1,48 +1,326 @@
-'use client';
-import {useEffect,useRef,useState} from 'react';
-import Link from 'next/link';
-import {Home,Users,LogOut,Menu,X,LayoutDashboard,Search,ChevronRight,ChevronDown,ArrowUpRight,ClipboardPen,UserRound,KeyRound,ChevronLeft,Eye,Check,RefreshCw} from 'lucide-react';
-import Brand from './components/Brand';
-import StaffAccounts from './components/StaffAccounts';
-import ChangePassword from './components/ChangePassword';
-import QuickSearch from './components/QuickSearch';
-import ProfileForm from './components/ProfileForm';
-import ManagementDashboard from './components/ManagementDashboard';
-import {defaultSchemas,displayValue,profileFieldLabel} from './lib/registration';
-import type {ProfileValues} from './lib/registration';
-import {api} from './lib/api';
-import type {Bootstrap} from './lib/api';
-import type {Member,MemberGroup} from './lib/types';
-import {defaultRequirements,groupLabels} from './lib/types';
-import {initials} from './lib/utils';
-type Page='dashboard'|'overview'|'search'|'members'|'accounts'|'password';
-const titles={dashboard:'Tổng quan',overview:'Trang chủ',search:'Tìm kiếm nhanh',members:'Huynh đệ',accounts:'Quản lý tài khoản',password:'Đổi mật khẩu'};
-const emptyState:Bootstrap={session:null,managedClassIds:[],classes:[],store:{members:[],enrollments:[],requirements:defaultRequirements}};
-export default function App(){
- const [data,setData]=useState<Bootstrap>(emptyState),[error,setError]=useState(''),[page,setPage]=useState<Page>('overview'),[collapsed,setCollapsed]=useState(false),[rejecting,setRejecting]=useState<Member|null>(null),[mobile,setMobile]=useState(false),[accountMenu,setAccountMenu]=useState(false),[group,setGroup]=useState<MemberGroup>('children'),[detail,setDetail]=useState<Member|null>(null),[editing,setEditing]=useState(false),[notice,setNotice]=useState(''),[saving,setSaving]=useState<Set<string>>(new Set());const [updatedAt,setUpdatedAt]=useState('');const initialRoute=useRef(false);const pending=useRef(new Set<string>());const refreshVersion=useRef(0);
- useEffect(()=>{try{setCollapsed(localStorage.getItem('ph-menu-collapsed')==='true');}catch{}},[]);
- function toggleMenu(){setCollapsed(value=>{const next=!value;try{localStorage.setItem('ph-menu-collapsed',String(next));}catch{}return next;});}
- async function refresh(){const version=++refreshVersion.current;const state=await api<Bootstrap>('/bootstrap');if(version!==refreshVersion.current)return;setData(state);setUpdatedAt(new Date().toISOString());if(!initialRoute.current){initialRoute.current=true;if(state.session)setPage('dashboard');}setError('');}
- useEffect(()=>{void refresh().catch(e=>setError((e as Error).message));},[]);
- useEffect(()=>{if(!data.session)return;const update=()=>{if(document.visibilityState==='visible')void refresh().catch(()=>{});};const timer=window.setInterval(update,30000);window.addEventListener('focus',update);return()=>{window.clearInterval(timer);window.removeEventListener('focus',update);};},[data.session?.id]);
- useEffect(()=>{if(!detail)return;const previous=document.activeElement as HTMLElement;const dialog=document.querySelector<HTMLElement>('[role="dialog"]');const focusable=()=>Array.from(dialog?.querySelectorAll<HTMLElement>('button,input,select,textarea')??[]).filter(el=>!el.hasAttribute('disabled')&&el.offsetParent!==null);focusable()[0]?.focus();function key(e:KeyboardEvent){if(e.key==='Escape')setDetail(null);if(e.key==='Tab'){const items=focusable(),first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}}document.addEventListener('keydown',key);const old=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',key);document.body.style.overflow=old;previous?.focus();};},[detail?.id,editing]);
- function markSaving(key:string,busy:boolean){setSaving(old=>{const next=new Set(old);if(busy)next.add(key);else next.delete(key);return next;});}
- const staff=data.session;const admin=staff?.role==='admin'||staff?.role==='dev',dev=staff?.role==='dev';const schemas={...defaultSchemas,...data.schemas};const valuesFor=(m:Member):ProfileValues=>({...m.profileData,id:m.id,joined:m.joined,...(m.team&&!m.profileData?.team?{team:m.team}:{})});
- const waitingCount=(g:MemberGroup)=>(data.pendingRegistrations??[]).filter(m=>m.group===g).length;
- async function approve(member:Member){const key='review:'+member.id;if(pending.current.has(key))return;pending.current.add(key);markSaving(key,true);try{const result=await api<{member:Member}>(`/registrations/${member.id}/approve`,'POST',{});refreshVersion.current++;setData(d=>({...d,pendingRegistrations:d.pendingRegistrations?.filter(m=>m.id!==member.id),store:{...d.store,members:[result.member,...d.store.members.filter(m=>m.id!==member.id)]}}));if(detail?.id===member.id)setDetail(result.member);}catch(e){setNotice((e as Error).message);}finally{pending.current.delete(key);markSaving(key,false);}}
- async function reject(member:Member){const key='review:'+member.id;if(pending.current.has(key))return;pending.current.add(key);markSaving(key,true);try{await api(`/registrations/${member.id}/reject`,'POST',{});refreshVersion.current++;setData(d=>({...d,pendingRegistrations:d.pendingRegistrations?.filter(m=>m.id!==member.id)}));setRejecting(null);if(detail?.id===member.id)setDetail(null);}catch(e){setNotice((e as Error).message);}finally{pending.current.delete(key);markSaving(key,false);}}
- const renderPendingPanel=(waiting:Member[]) => <>{waiting.length>0&&<section className="panel pending-panel"><div className="panel-heading"><div><h2>{waiting.length} đăng ký mới chờ duyệt</h2><p>{admin?'Xem hồ sơ trước khi duyệt vào danh sách huynh đệ.':'Chỉ Admin/Dev có quyền duyệt đăng ký.'}</p></div><button className="icon-button pending-refresh" aria-label="Cập nhật danh sách đăng ký" title="Cập nhật danh sách đăng ký" onClick={()=>void refresh().catch(e=>setNotice((e as Error).message))}><RefreshCw size={18}/></button></div><div className="table-wrap"><table className="pending-table"><thead><tr><th>HỌ TÊN</th><th>THỜI ĐIỂM ĐĂNG KÝ</th><th>THAO TÁC</th></tr></thead><tbody>{waiting.map(m=><tr key={m.id}><td>{m.name}</td><td>{m.submittedAt?new Date(m.submittedAt).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):'Chưa cập nhật'}</td><td><div className="student-actions"><button className="icon-button" aria-label={`Xem hồ sơ ${m.name}`} title="Xem hồ sơ" onClick={()=>{setDetail(m);setEditing(false);}}><Eye size={18}/></button>{admin&&<><button className="icon-button review-approve" aria-label={`Duyệt đăng ký ${m.name}`} title="Duyệt đăng ký" disabled={saving.has('review:'+m.id)} onClick={()=>void approve(m)}><Check size={18}/></button><button className="icon-button review-reject" aria-label={`Từ chối đăng ký ${m.name}`} title="Từ chối đăng ký" disabled={saving.has('review:'+m.id)} onClick={()=>setRejecting(m)}><X size={18}/></button></>}</div></td></tr>)}</tbody></table></div>{rejecting&&waiting.some(m=>m.id===rejecting.id)&&<div className="rejection-confirm"><p>Từ chối đăng ký của <strong>{rejecting.name}</strong>? Hồ sơ được giữ lại trong hệ thống.</p><div><button className="button secondary" disabled={saving.has('review:'+rejecting.id)} onClick={()=>setRejecting(null)}>Hủy</button><button className="button primary" disabled={saving.has('review:'+rejecting.id)} onClick={()=>void reject(rejecting)}>{saving.has('review:'+rejecting.id)?'Đang xử lý…':'Từ chối đăng ký'}</button></div></div>}</section>}</>;
- const heading=page==='members'?groupLabels[group]:titles[page];
- async function logout(){try{await api('/admin/logout','POST');refreshVersion.current++;setData(emptyState);setDetail(null);setPage('overview');setAccountMenu(false);setNotice('');}catch(e){setNotice((e as Error).message);}}
- function navigate(next:Page){setPage(next);setMobile(false);setAccountMenu(false);window.scrollTo({top:0,behavior:'instant'});}
- return <div className={`app-shell ${collapsed?'sidebar-collapsed':''}`}><aside className={`sidebar ${mobile?'open':''}`}><div className="sidebar-heading"><div className="workspace-label">ĐIỀU HƯỚNG</div><button className="icon-button collapse-menu" aria-label={collapsed?'Mở rộng menu':'Thu gọn menu'} title={collapsed?'Mở rộng menu':'Thu gọn menu'} aria-expanded={!collapsed} onClick={toggleMenu}>{collapsed?<ChevronRight size={18}/>:<ChevronLeft size={18}/>}</button></div><nav aria-label="Điều hướng chính"><button title="Trang chủ" aria-label="Trang chủ" className={`nav-item ${page==='overview'?'active':''}`} onClick={()=>navigate('overview')}><Home size={20}/><span className="nav-label">Trang chủ</span></button><button title="Tìm kiếm nhanh" aria-label="Tìm kiếm nhanh" className={`nav-item ${page==='search'?'active':''}`} onClick={()=>navigate('search')}><Search size={20}/><span className="nav-label">Tìm kiếm nhanh</span></button>{staff&&<div className="nav-section-label">HỒ SƠ HUYNH ĐỆ</div>}{staff&&<button title="Tổng quan" aria-label="Tổng quan" className={`nav-item ${page==='dashboard'?'active':''}`} onClick={()=>navigate('dashboard')}><LayoutDashboard size={20}/><span className="nav-label">Tổng quan</span></button>}{staff&&(Object.keys(groupLabels) as MemberGroup[]).map(g=><button key={g} title={groupLabels[g]} aria-label={groupLabels[g]} className={`nav-item ${page==='members'&&group===g?'active':''}`} onClick={()=>{setGroup(g);navigate('members');}}><Users size={20}/><span className="nav-label">{groupLabels[g]}</span>{waitingCount(g)>0&&<span className="nav-count" aria-label={`${waitingCount(g)} đăng ký chờ duyệt`}>{waitingCount(g)}</span>}</button>)}{dev&&<><div className="nav-section-label">QUẢN TRỊ</div><button title="Quản lý tài khoản" aria-label="Quản lý tài khoản" className={`nav-item ${page==='accounts'?'active':''}`} onClick={()=>navigate('accounts')}><UserRound size={20}/><span className="nav-label">Quản lý tài khoản</span></button></>}</nav></aside>{mobile&&<button className="mobile-scrim" aria-label="Đóng menu" onClick={()=>setMobile(false)}/>}
- <div className="main-shell"><header className="topbar"><Link className="brand workspace-brand" href="/"><Brand/></Link><button className="icon-button mobile-menu" aria-label="Mở menu" onClick={()=>setMobile(true)}><Menu/></button><div className="breadcrumb"><span>Cổng thông tin</span><ChevronRight size={14}/><b>{heading}</b></div>{staff&&<div className="topbar-right account-area"><span className="badge green">{staff.role==='dev'?'Dev':staff.role==='admin'?'Admin':'Manager'}</span><button className="account-trigger" aria-label={`Tài khoản ${staff.username}`} aria-expanded={accountMenu} onClick={()=>setAccountMenu(!accountMenu)}><span className="account-avatar">{staff.username.slice(0,1).toUpperCase()}</span><span>{staff.username}</span><ChevronDown size={14}/></button>{accountMenu&&<div className="account-dropdown">{dev&&<button className="nav-item" onClick={()=>navigate('accounts')}><UserRound size={18}/>Quản lý tài khoản</button>}<button className="nav-item" onClick={()=>navigate('password')}><KeyRound size={18}/>Đổi mật khẩu</button><button className="nav-item" onClick={()=>void logout()}><LogOut size={18}/>Đăng xuất</button></div>}</div>}</header><main className={`content ${page==='dashboard'||page==='members'?'dashboard-content':''}`}><div className="page-heading"><div><div className="eyebrow">ĐẠO TRÀNG PHẬT HÀO</div><h1>{heading}</h1><p>{page==='overview'?'Thông tin sinh hoạt và tu học của Đạo Tràng.':page==='dashboard'?'Thống kê và quản lý huynh đệ toàn Đạo Tràng.':page==='members'?`Thống kê và hồ sơ ${groupLabels[group].toLocaleLowerCase('vi')}.`:''}</p></div></div>{error&&<p className="error" role="alert">{error}<button className="text-button" onClick={()=>void refresh().catch(e=>setError((e as Error).message))}>Thử lại</button></p>}
- {data.demoData&&(page==='dashboard'||page==='members')&&<p className="demo-data-note" role="status">Dữ liệu mẫu trên local · Hồ sơ và ảnh giả lập để thử giao diện</p>}
- {notice&&<p className="error" role="status">{notice}<button className="icon-button" aria-label="Đóng thông báo" onClick={()=>setNotice('')}><X size={16}/></button></p>}
- {page==='overview'&&<div className="overview-layout"><section className="welcome-panel"><div><div className="eyebrow">KÍNH CHÀO HUYNH ĐỆ</div><h2>Cùng tinh tấn<br/>tu học.</h2><p>Chăm lo sinh hoạt và kết nối huynh đệ tại Đạo Tràng Phật Hào.</p><span className="welcome-signature">ĐẠO TRÀNG PHẬT HÀO</span></div></section><section className="panel registration-entry"><div className="entry-icon"><ClipboardPen size={25}/></div><div><h2>Đăng ký thông tin</h2><p>Chọn nhóm sinh hoạt và điền biểu mẫu để Đạo Tràng ghi nhận hồ sơ.</p></div><div className="entry-actions"><Link className="button primary" href="/dang-ky-thong-tin">Điền thông tin<ArrowUpRight size={17}/></Link>{!staff&&<Link className="text-button staff-login-link" href="/quan-tri">Đăng nhập quản trị<ChevronRight size={15}/></Link>}</div></section></div>}
- {page==='search'&&<QuickSearch/>}
- {page==='accounts'&&dev&&<StaffAccounts/>}
- {page==='password'&&staff&&<ChangePassword onChanged={()=>{setData(emptyState);setDetail(null);setPage('overview');setAccountMenu(false);window.location.assign('/quan-tri');}}/>}
- {(page==='dashboard'||page==='members')&&staff&&<ManagementDashboard key={page==='members'?group:'all'} scope={page==='members'?group:undefined} members={data.store.members} pending={data.pendingRegistrations??[]} schemas={schemas} canEdit={admin} onOpen={(member,edit)=>{setDetail(member);setEditing(edit);}} pendingPanel={renderPendingPanel} lastUpdated={updatedAt} onRefresh={async()=>{try{await refresh();}catch(e){setNotice((e as Error).message);}}}/>}
- </main></div>{detail&&<div className="modal-backdrop"><section className="modal" role="dialog" aria-modal="true" aria-labelledby="profile-title"><div className="modal-header"><h2 id="profile-title">{editing?'Chỉnh sửa hồ sơ':'Hồ sơ huynh đệ'}</h2><button className="icon-button" aria-label="Đóng hồ sơ" onClick={()=>setDetail(null)}><X/></button></div>{editing&&admin?<ProfileForm key={detail.id} schema={schemas[detail.group]} initial={valuesFor(detail)} memberId={detail.id} onCancel={()=>setEditing(false)} onSave={async profileData=>{const result=await api<{member:Member}>(`/members/${detail.id}`,'PATCH',{profileData});refreshVersion.current++;setData(d=>({...d,store:{...d.store,members:d.store.members.map(m=>m.id===result.member.id?result.member:m)},pendingRegistrations:d.pendingRegistrations?.map(m=>m.id===result.member.id?result.member:m)}));setDetail(result.member);setEditing(false);}}/>:<><div className="detail-person"><span className="avatar large">{detail.avatar?<img src={detail.avatar} alt="Ảnh đại diện"/>:initials(detail.name)}</span><h2>{detail.name}</h2></div><div className="detail-grid">{schemas[detail.group].fields.filter(f=>f.type!=='image').map(f=><div key={f.key}><span>{profileFieldLabel(f,valuesFor(detail))}<b className="profile-value">{detail.references?.[f.key]?.name??displayValue(valuesFor(detail)[f.key],f)}</b></span></div>)}</div><div className="form-actions">{admin&&detail.registrationStatus==='pending'&&<button className="button primary" disabled={saving.has('review:'+detail.id)} onClick={()=>void approve(detail)}>{saving.has('review:'+detail.id)?'Đang duyệt…':'Duyệt đăng ký'}</button>}{admin&&<button className="button primary" onClick={()=>setEditing(true)}>Chỉnh sửa thông tin</button>}</div></>}</section></div>}</div>;
+"use client";
+import { useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import WorkspaceShell from "./components/layout/WorkspaceShell";
+import type { WorkspacePage } from "./components/layout/WorkspaceShell";
+import {
+  Feedback,
+  FeatureSkeleton,
+  PageHeader,
+} from "./components/ui/primitives";
+
+import PendingRegistrations from "./features/members/PendingRegistrations";
+import { emptyState, usePortalData } from "./hooks/usePortalData";
+import { defaultSchemas } from "./lib/registration";
+import type { ProfileValues } from "./lib/registration";
+import { api } from "./lib/api";
+import type { Member, MemberGroup } from "./lib/types";
+import { groupLabels } from "./lib/types";
+
+const RegistrationIntake = dynamic(
+  () => import("./features/registration/RegistrationIntake"),
+  { loading: () => <FeatureSkeleton /> },
+);
+const loading = () => <FeatureSkeleton />;
+const ManagementDashboard = dynamic(
+  () => import("./components/ManagementDashboard"),
+  { loading },
+);
+const StaffAccounts = dynamic(() => import("./components/StaffAccounts"), {
+  loading,
+});
+const ChangePassword = dynamic(() => import("./components/ChangePassword"), {
+  loading,
+});
+const QuickSearch = dynamic(() => import("./components/QuickSearch"), {
+  loading,
+});
+const MemberProfileDialog = dynamic(
+  () => import("./features/members/MemberProfileDialog"),
+  {
+    loading: () => null,
+  },
+);
+const titles = {
+  dashboard: "Tổng quan",
+  overview: "Đăng ký thông tin",
+  search: "Tìm kiếm nhanh",
+  members: "Huynh đệ",
+  accounts: "Quản lý tài khoản",
+  password: "Đổi mật khẩu",
+};
+export default function App({
+  initialPage,
+}: { initialPage?: WorkspacePage } = {}) {
+  const portal = usePortalData();
+  const {
+    data,
+    setData,
+    error,
+    loading: booting,
+    updatedAt,
+    refresh,
+    invalidate,
+  } = portal;
+  const [page, setPage] = useState<WorkspacePage>(initialPage ?? "overview"),
+    [group, setGroup] = useState<MemberGroup>("children");
+  const [detail, setDetail] = useState<Member | null>(null),
+    [editing, setEditing] = useState(false),
+    [rejecting, setRejecting] = useState<Member | null>(null);
+  const [notice, setNotice] = useState(""),
+    [saving, setSaving] = useState<Set<string>>(new Set());
+  const initialRoute = useRef(false),
+    pending = useRef(new Set<string>());
+  const staff = data.session,
+    admin = staff?.role === "admin" || staff?.role === "dev";
+  const schemas = useMemo(
+    () => ({ ...defaultSchemas, ...data.schemas }),
+    [data.schemas],
+  );
+  const waiting = useMemo(() => {
+    const count = { children: 0, youth: 0, congregation: 0 };
+    for (const m of data.pendingRegistrations ?? []) count[m.group]++;
+    return count;
+  }, [data.pendingRegistrations]);
+  useEffect(() => {
+    if (booting || error || initialRoute.current) return;
+    initialRoute.current = true;
+    if (data.session && !initialPage) setPage("dashboard");
+  }, [booting, error, data.session, initialPage]);
+  function markSaving(key: string, busy: boolean) {
+    setSaving((old) => {
+      const next = new Set(old);
+      if (busy) next.add(key);
+      else next.delete(key);
+      return next;
+    });
+  }
+  async function approve(member: Member) {
+    const key = "review:" + member.id;
+    if (pending.current.has(key)) return;
+    pending.current.add(key);
+    markSaving(key, true);
+    try {
+      const result = await api<{ member: Member }>(
+        `/registrations/${member.id}/approve`,
+        "POST",
+        {},
+      );
+      invalidate();
+      setData((d) => ({
+        ...d,
+        pendingRegistrations: d.pendingRegistrations?.filter(
+          (m) => m.id !== member.id,
+        ),
+        store: {
+          ...d.store,
+          members: [
+            result.member,
+            ...d.store.members.filter((m) => m.id !== member.id),
+          ],
+        },
+      }));
+      if (detail?.id === member.id) setDetail(result.member);
+    } catch (e) {
+      setNotice((e as Error).message);
+    } finally {
+      pending.current.delete(key);
+      markSaving(key, false);
+    }
+  }
+  async function reject(member: Member) {
+    const key = "review:" + member.id;
+    if (pending.current.has(key)) return;
+    pending.current.add(key);
+    markSaving(key, true);
+    try {
+      await api(`/registrations/${member.id}/reject`, "POST", {});
+      invalidate();
+      setData((d) => ({
+        ...d,
+        pendingRegistrations: d.pendingRegistrations?.filter(
+          (m) => m.id !== member.id,
+        ),
+      }));
+      setRejecting(null);
+      if (detail?.id === member.id) setDetail(null);
+    } catch (e) {
+      setNotice((e as Error).message);
+    } finally {
+      pending.current.delete(key);
+      markSaving(key, false);
+    }
+  }
+  async function saveProfile(profileData: ProfileValues) {
+    if (!detail) return;
+    const result = await api<{ member: Member }>(
+      `/members/${detail.id}`,
+      "PATCH",
+      { profileData },
+    );
+    invalidate();
+    setData((d) => ({
+      ...d,
+      store: {
+        ...d.store,
+        members: d.store.members.map((m) =>
+          m.id === result.member.id ? result.member : m,
+        ),
+      },
+      pendingRegistrations: d.pendingRegistrations?.map((m) =>
+        m.id === result.member.id ? result.member : m,
+      ),
+    }));
+    setDetail(result.member);
+    setEditing(false);
+  }
+  async function logout() {
+    try {
+      await api("/admin/logout", "POST");
+      invalidate();
+      setData(emptyState);
+      setDetail(null);
+      setPage("overview");
+      setNotice("");
+    } catch (e) {
+      setNotice((e as Error).message);
+    }
+  }
+  const refreshWithNotice = async () => {
+    try {
+      await refresh();
+    } catch (e) {
+      setNotice((e as Error).message);
+    }
+  };
+  function navigate(next: WorkspacePage, nextGroup?: MemberGroup) {
+    if (nextGroup) setGroup(nextGroup);
+    setPage(next);
+  }
+  function openProfile(member: Member, edit: boolean) {
+    setDetail(member);
+    setEditing(edit);
+  }
+  const heading = page === "members" ? groupLabels[group] : titles[page];
+  const description =
+    page === "overview"
+      ? "Thông tin sinh hoạt và tu học của Đạo Tràng."
+      : page === "dashboard"
+        ? "Thống kê và quản lý huynh đệ toàn Đạo Tràng."
+        : page === "members"
+          ? `Thống kê và hồ sơ ${groupLabels[group].toLocaleLowerCase("vi")}.`
+          : page === "accounts"
+            ? "Tạo tài khoản và quản lý quyền truy cập của nhân sự."
+            : undefined;
+  return (
+    <WorkspaceShell
+      page={page}
+      group={group}
+      heading={heading}
+      staff={staff}
+      waiting={waiting}
+      onNavigate={navigate}
+      onLogout={() => void logout()}
+    >
+      <div className={page === "overview" ? "intake-page-heading" : undefined}>
+        <PageHeader
+          title={heading}
+          description={
+            page === "dashboard" || page === "members" || page === "overview"
+              ? undefined
+              : description
+          }
+          actions={
+            data.demoData && (page === "dashboard" || page === "members") ? (
+              <span
+                className="demo-data-label"
+                title="Hồ sơ và ảnh giả lập trên local"
+              >
+                Dữ liệu mẫu
+              </span>
+            ) : undefined
+          }
+        />
+      </div>
+      {error && (
+        <Feedback
+          action={
+            <button
+              className="text-button"
+              onClick={() => void refreshWithNotice()}
+            >
+              Thử lại
+            </button>
+          }
+        >
+          {error}
+        </Feedback>
+      )}
+      {notice && <Feedback onDismiss={() => setNotice("")}>{notice}</Feedback>}
+      {booting ? (
+        <FeatureSkeleton />
+      ) : (
+        <>
+          {page === "overview" && (
+            <RegistrationIntake
+              isStaff={!!staff}
+              onRegistered={() => void refreshWithNotice()}
+            />
+          )}
+          {page === "search" && <QuickSearch />}
+          {page === "accounts" && staff?.role === "dev" && <StaffAccounts />}
+          {page === "password" && staff && (
+            <ChangePassword
+              onChanged={() => {
+                invalidate();
+                setData(emptyState);
+                setDetail(null);
+                setPage("overview");
+                window.location.assign("/quan-tri");
+              }}
+            />
+          )}
+          {(page === "dashboard" || page === "members") && staff && (
+            <ManagementDashboard
+              key={page === "members" ? group : "all"}
+              scope={page === "members" ? group : undefined}
+              members={data.store.members}
+              pending={data.pendingRegistrations ?? []}
+              schemas={schemas}
+              canEdit={admin}
+              onOpen={openProfile}
+              pendingPanel={(members) => (
+                <PendingRegistrations
+                  members={members}
+                  canApprove={admin}
+                  saving={saving}
+                  rejecting={rejecting}
+                  onView={(m) => openProfile(m, false)}
+                  onApprove={(m) => void approve(m)}
+                  onRejectRequest={setRejecting}
+                  onReject={(m) => void reject(m)}
+                  onRefresh={() => void refreshWithNotice()}
+                />
+              )}
+              lastUpdated={updatedAt}
+              onRefresh={refreshWithNotice}
+            />
+          )}
+        </>
+      )}
+      {detail && (
+        <MemberProfileDialog
+          member={detail}
+          schema={schemas[detail.group]}
+          editing={editing}
+          canEdit={admin}
+          approving={saving.has("review:" + detail.id)}
+          onClose={() => setDetail(null)}
+          onEdit={setEditing}
+          onApprove={() => void approve(detail)}
+          onSave={saveProfile}
+        />
+      )}
+    </WorkspaceShell>
+  );
 }

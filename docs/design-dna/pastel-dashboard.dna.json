@@ -1,0 +1,576 @@
+{
+  "meta": {
+    "name": "Phật Hào · Pastel Workspace",
+    "description": "Measured reference identity adapted to the existing Vietnamese management portal; preserve data, routes and staff permissions. Screenshot identifies static appearance only; interactions are conservative inferences.",
+    "source_references": [
+      {
+        "type": "image",
+        "file": "codex-clipboard-4267a2b4-4cc9-480f-9b9d-f93387b30f74.png",
+        "width": 736,
+        "height": 920
+      }
+    ],
+    "created_at": "2026-10-30"
+  },
+  "design_system": {
+    "color": {
+      "palette_type": "neutral surfaces with analogous blue-green and warm pastel framing",
+      "primary": {
+        "hex": "#262728",
+        "role": "Headings, numerals and primary actions; measured foreground"
+      },
+      "secondary": {
+        "hex": "#3889c3",
+        "role": "Measured blue for chart strokes and small icon accents"
+      },
+      "accent": {
+        "hex": "#262728",
+        "role": "Selected tabs and CTA: reference is charcoal, not a saturated brand color; no accent role was automatically detected in clustering"
+      },
+      "neutral": {
+        "scale": [
+          "#fefefe",
+          "#fbfcfd",
+          "#f9fbfa",
+          "#eceef0",
+          "#d4d5da",
+          "#717e84",
+          "#626e74",
+          "#262728"
+        ],
+        "usage": "Light to dark. #262728 is the measured text endpoint. #626e74 is an accessibility adjustment of measured #717e84 for smaller text. #eceef0 is a neutral border derived from the measured light surface."
+      },
+      "semantic": {
+        "success": "#356e51",
+        "warning": "#86692f",
+        "error": "#c6405a",
+        "info": "#3889c3"
+      },
+      "surface": {
+        "background": "#fbfcfd",
+        "card": "#fefefe",
+        "elevated": "#fefefe"
+      },
+      "contrast_strategy": "Dark foreground on almost white surfaces; saturated chart color is decorative, secondary copy uses a darker measured-neutral derivative. Preserve semantic status meaning.",
+      "measurement": {
+        "k": 8,
+        "sampling": {
+          "method": "deterministic_stratified",
+          "max_pixels": 160000,
+          "sampled_pixels": 160000
+        }
+      },
+      "measured_palette": [
+        {
+          "hex": "#fbfcfd",
+          "coverage": 0.7912,
+          "role": "background"
+        },
+        {
+          "hex": "#8fadb3",
+          "coverage": 0.0937,
+          "role": "unassigned"
+        },
+        {
+          "hex": "#d0cdb3",
+          "coverage": 0.0849,
+          "role": "unassigned"
+        },
+        {
+          "hex": "#717e84",
+          "coverage": 0.0196,
+          "role": "unassigned"
+        },
+        {
+          "hex": "#262728",
+          "coverage": 0.0088,
+          "role": "text"
+        },
+        {
+          "hex": "#3889c3",
+          "coverage": 0.0008,
+          "role": "unassigned"
+        },
+        {
+          "hex": "#c6405a",
+          "coverage": 0.0007,
+          "role": "unassigned"
+        },
+        {
+          "hex": "#9920d2",
+          "coverage": 0.0002,
+          "role": "unassigned"
+        }
+      ],
+      "spatial_samples": [
+        {
+          "role": "pastel_sage",
+          "x": 28,
+          "y": 12,
+          "hex": "#dcdab4",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "pastel_blue",
+          "x": 395,
+          "y": 12,
+          "hex": "#7ba3bc",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "pastel_peach",
+          "x": 600,
+          "y": 18,
+          "hex": "#ebc7ad",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "pastel_lemon",
+          "x": 716,
+          "y": 18,
+          "hex": "#d9e09d",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "pastel_bottom",
+          "x": 12,
+          "y": 850,
+          "hex": "#6b91ab",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "sidebar",
+          "x": 92,
+          "y": 575,
+          "hex": "#f9fbfa",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "surface",
+          "x": 450,
+          "y": 225,
+          "hex": "#fefefe",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "nav_selected",
+          "x": 95,
+          "y": 205,
+          "hex": "#d4d5da",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "border",
+          "x": 380,
+          "y": 238,
+          "hex": "#ffffff",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "chart_grid",
+          "x": 513,
+          "y": 607,
+          "hex": "#eaf7fe",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "chart_fill",
+          "x": 476,
+          "y": 565,
+          "hex": "#e6f2fe",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "charcoal_tab",
+          "x": 279,
+          "y": 208,
+          "hex": "#9b9ea3",
+          "method": "5x5 RGB channel median"
+        }
+      ],
+      "brand_exceptions": {
+        "logo": "Original multicolor Phật Hào logo retained as an image",
+        "status_colors": "Existing success/warning semantics preserved"
+      },
+      "accessibility_adjustments": [
+        {
+          "hex": "#626e74",
+          "source": "#717e84",
+          "usage": "Secondary small text darkened for readability",
+          "contrast_on_card": 5.2
+        },
+        {
+          "hex": "#306b94",
+          "source": "#3889c3",
+          "usage": "Blue text darkened; original measured blue retained for decorative chart strokes",
+          "contrast_on_card": 5.69
+        }
+      ]
+    },
+    "typography": {
+      "type_scale": {
+        "display": {
+          "size": "40px",
+          "weight": 500,
+          "line_height": 1.15,
+          "tracking": "-0.035em"
+        },
+        "heading_1": {
+          "size": "26px",
+          "weight": 600,
+          "line_height": 1.25,
+          "tracking": "-0.03em"
+        },
+        "heading_2": {
+          "size": "15px",
+          "weight": 600,
+          "line_height": 1.4,
+          "tracking": "-0.015em"
+        },
+        "heading_3": {
+          "size": "13px",
+          "weight": 500,
+          "line_height": 1.45,
+          "tracking": "0em"
+        },
+        "body": {
+          "size": "13px",
+          "weight": 400,
+          "line_height": 1.5,
+          "tracking": "0em"
+        },
+        "body_small": {
+          "size": "12px",
+          "weight": 400,
+          "line_height": 1.5,
+          "tracking": "0em"
+        },
+        "caption": {
+          "size": "11px",
+          "weight": 400,
+          "line_height": 1.5,
+          "tracking": "0em"
+        },
+        "overline": {
+          "size": "9px",
+          "weight": 500,
+          "line_height": 1.5,
+          "tracking": "0.08em"
+        }
+      },
+      "font_families": {
+        "heading": "Geist, sans-serif",
+        "body": "Geist, sans-serif",
+        "mono": "ui-monospace, monospace"
+      },
+      "font_style_notes": "Rounded geometric sans inferred from reference; keep existing self-hosted Geist with Vietnamese glyphs rather than claiming an exact font identification."
+    },
+    "spacing": {
+      "base_unit": "4px",
+      "scale": [
+        "4px",
+        "8px",
+        "12px",
+        "16px",
+        "20px",
+        "24px",
+        "32px",
+        "40px"
+      ],
+      "content_density": "compact but legible",
+      "section_rhythm": "12–16px between related cards, 20–24px inside major panels"
+    },
+    "layout": {
+      "grid_system": "Continuous topbar above attached left sidebar and a white main canvas, framed by static pastel background",
+      "max_content_width": "1800px",
+      "columns": {
+        "sidebar": "216px expanded / 64px collapsed",
+        "metrics": 5,
+        "charts": 2,
+        "forms": 1
+      },
+      "gutter": "16px",
+      "breakpoints": {
+        "mobile": "760px",
+        "tablet": "1100px",
+        "wide": "1400px"
+      },
+      "alignment_tendency": "strict left aligned grid"
+    },
+    "shape": {
+      "border_radius": {
+        "small": "5px",
+        "medium": "8px",
+        "large": "12px",
+        "pill": "999px"
+      },
+      "border_usage": "subtle 1px neutral outlines",
+      "divider_style": "single cool grey horizontal rules"
+    },
+    "elevation": {
+      "shadow_style": "almost flat; soft shadow only for floating app frame, menus and dialog",
+      "levels": {
+        "low": "0 1px 2px #26272804",
+        "medium": "0 16px 48px #26272812",
+        "high": "0 20px 64px #26272820"
+      },
+      "depth_cues": "white canvas over pastel frame, thin borders, soft popover shadow"
+    },
+    "iconography": {
+      "style": "thin rounded outline icons with small pastel color fields",
+      "stroke_weight": "1.5px",
+      "size_scale": [
+        "14px",
+        "16px",
+        "18px",
+        "20px",
+        "24px"
+      ],
+      "preferred_set": "Existing Lucide React"
+    },
+    "motion": {
+      "easing": "ease-out",
+      "duration_scale": {
+        "micro": "120ms",
+        "normal": "160ms",
+        "macro": "0ms"
+      },
+      "entrance_pattern": "instant, no entrance animation inferred from still image",
+      "exit_pattern": "instant",
+      "philosophy": "minimal functional; respect reduced motion"
+    },
+    "components": {
+      "button_style": "Compact charcoal primary, white outlined secondary, 5px corners; selected segmented tabs dark with light labels",
+      "input_style": "White surface, fine grey outline, 36–40px height, quiet blue focus ring",
+      "card_style": "White card, 1px light border, 10–12px radius, small title and prominent dark values",
+      "navigation_pattern": "Light grey left rail; active item pale grey; topbar logo stays outside sidebar as requested earlier",
+      "modal_style": "Centered opaque white dialog with thin border; no backdrop blur",
+      "list_style": "Compact sheet with faint row rules, same toolbar/tabs/pagination, horizontal scrolling on small displays",
+      "component_notes": "Preserve all existing controls and permissions. Dashboard charts use real data, never invented growth percentages or counts."
+    }
+  },
+  "design_style": {
+    "aesthetic": {
+      "mood": [
+        "calm",
+        "clear",
+        "approachable",
+        "precise"
+      ],
+      "visual_metaphor": "A clean analytical work surface floating over a soft pastel backdrop",
+      "era_influence": "Contemporary restrained SaaS dashboards",
+      "genre": "premium minimal SaaS workspace",
+      "personality_traits": [
+        "organized",
+        "quiet",
+        "reliable"
+      ],
+      "adjectives": [
+        "airy",
+        "neutral",
+        "compact",
+        "polished"
+      ]
+    },
+    "visual_language": {
+      "complexity": "minimal",
+      "ornamentation": "subtle pastel exterior and tiny colored icons",
+      "whitespace_usage": "Generous outside the workspace, compact and consistent within it",
+      "visual_weight_distribution": "Dark values and active tabs anchor otherwise light cards",
+      "focal_strategy": "statistics followed by a pale blue area chart",
+      "contrast_level": "dark-on-light dominant, low contrast structural borders",
+      "texture_usage": "none"
+    },
+    "composition": {
+      "hierarchy_method": "typographic hierarchy with color weight and spatial grouping",
+      "balance_type": "asymmetric sidebar plus aligned main grid",
+      "flow_direction": "left navigation, top-to-bottom content",
+      "grouping_strategy": "fine outlined panels, toolbar groups and segmented controls",
+      "negative_space_role": "separates app from surroundings and gives individual cards breathing room"
+    },
+    "imagery": {
+      "photo_treatment": "Existing portraits kept; no decorative stock photography",
+      "illustration_style": "none",
+      "graphic_elements": "static pastel gradient and pale blue chart fill",
+      "pattern_usage": "fine chart grid only",
+      "image_shape": "Existing portrait 3x4 and original logo"
+    },
+    "interaction_feel": {
+      "feedback_style": "immediate selected state and clear loading/empty/error states",
+      "hover_behavior": "small background or border change; chart marker tooltip",
+      "transition_personality": "snappy",
+      "loading_style": "static low contrast skeleton, no shimmer",
+      "microinteraction_density": "low"
+    },
+    "brand_voice_in_ui": {
+      "tone": "calm and helpful Vietnamese appropriate to Đạo Tràng",
+      "formality": "respectful, concise",
+      "cta_style": "direct familiar action labels",
+      "empty_state_approach": "explain available next steps without fabricated data",
+      "error_tone": "clear and recoverable"
+    }
+  },
+  "visual_effects": {
+    "overview": {
+      "effect_intensity": "subtle-accent",
+      "performance_tier": "lightweight",
+      "fallback_strategy": "static CSS only; narrower frame on mobile; no animation to disable beyond functional spinner",
+      "primary_technology": "CSS only, static SVG for data charts"
+    },
+    "background_effects": {
+      "type": "mesh-gradient",
+      "description": "Static blended sage/yellow, muted blue and peach outside opaque app canvas; no animated mesh or blur layer",
+      "technology": "CSS radial and linear gradients",
+      "params": {
+        "color_palette": [
+          "#dcdab4",
+          "#7ba3bc",
+          "#ebc7ad",
+          "#d9e09d",
+          "#6b91ab"
+        ],
+        "speed": 0,
+        "density": "three broad soft color fields",
+        "opacity": 1,
+        "blend_mode": "normal"
+      }
+    },
+    "particle_systems": {
+      "enabled": false,
+      "type": "none",
+      "description": "No particles in reference",
+      "technology": "none",
+      "params": {
+        "count": 0,
+        "shape": "none",
+        "size_range": [
+          0,
+          0
+        ],
+        "movement_pattern": "none",
+        "color_behavior": "none",
+        "interaction": "none",
+        "spawn_area": "none"
+      }
+    },
+    "3d_elements": {
+      "enabled": false,
+      "type": "none",
+      "description": "No 3D content",
+      "technology": "none",
+      "params": {
+        "renderer": "none",
+        "lighting": "none",
+        "camera": "none",
+        "materials": "none",
+        "geometry": "none",
+        "post_processing": [],
+        "interaction_model": "none"
+      }
+    },
+    "shader_effects": {
+      "enabled": false,
+      "type": "none",
+      "description": "No shader distortion observed",
+      "technology": "none",
+      "params": {
+        "uniforms": {},
+        "vertex_manipulation": "none",
+        "fragment_output": "none",
+        "noise_type": "none",
+        "distortion": 0
+      }
+    },
+    "scroll_effects": {
+      "parallax": {
+        "enabled": false,
+        "layers": 0,
+        "depth_range": [
+          0,
+          0
+        ],
+        "speed_curve": "none"
+      },
+      "scroll_triggered_animations": {
+        "enabled": false,
+        "trigger_points": [],
+        "animation_type": "none",
+        "scrub_behavior": "none"
+      },
+      "scroll_morphing": {
+        "enabled": false,
+        "description": "No scroll morphing"
+      }
+    },
+    "text_effects": {
+      "type": "none",
+      "description": "Normal readable type",
+      "technology": "CSS",
+      "params": {
+        "split_strategy": "none",
+        "animation_per_unit": "none",
+        "stagger": 0,
+        "effect_style": "none"
+      }
+    },
+    "cursor_effects": {
+      "enabled": false,
+      "type": "none",
+      "description": "Keep native pointer",
+      "params": {
+        "shape": "native",
+        "size": "auto",
+        "blend_mode": "normal",
+        "trail": "none",
+        "interaction_zone": "none"
+      }
+    },
+    "image_effects": {
+      "type": "none",
+      "description": "No distortion, reveal or parallax",
+      "technology": "CSS object-fit only",
+      "params": {
+        "filter_pipeline": [],
+        "hover_transform": "none",
+        "reveal_animation": "none",
+        "distortion_type": "none"
+      }
+    },
+    "glassmorphism_neumorphism": {
+      "enabled": false,
+      "style": "none",
+      "params": {
+        "blur_radius": "0px",
+        "transparency": 0,
+        "border_treatment": "opaque neutral 1px",
+        "shadow_type": "soft popup only",
+        "light_source_angle": 0
+      }
+    },
+    "canvas_drawings": {
+      "enabled": false,
+      "type": "none",
+      "description": "Use responsive static SVG area chart; existing image crop canvas remains functional, not a visual effect",
+      "technology": "none",
+      "params": {
+        "draw_method": "none",
+        "animation_loop": false,
+        "color_scheme": "none",
+        "responsiveness": "none",
+        "interaction": "none"
+      }
+    },
+    "svg_animations": {
+      "enabled": false,
+      "type": "none",
+      "description": "SVG chart and icons are static; tooltip follows pointer/focus without SVG animation",
+      "params": {
+        "animation_method": "none",
+        "path_morphing": false,
+        "stroke_animation": false,
+        "filter_effects": "none"
+      }
+    },
+    "composite_notes": "Only the outer pastel frame and chart fill are decorative. Chart tooltip is a functional pointer/focus state. No WebGL, particles, glass blur or animation libraries. Portfolio name/email and social-platform labels in the source are not copied into the Đạo Tràng product."
+  }
+}

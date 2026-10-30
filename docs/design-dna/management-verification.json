@@ -1,0 +1,141 @@
+{
+  "implementation": "/tmp/ph-management-desktop-final.png",
+  "reference": "docs/design-dna/management-workspace.dna.json",
+  "measurement": {
+    "k": 8
+  },
+  "entries": [
+    {
+      "specHex": "#f0f0f0",
+      "role": "background",
+      "nearestImageHex": "#ebebec",
+      "deltaE": 1.8,
+      "specCoverage": 0.6814,
+      "imageCoverage": 0.9593
+    },
+    {
+      "specHex": "#dededf",
+      "role": "unassigned",
+      "nearestImageHex": "#ebebec",
+      "deltaE": 4.58,
+      "specCoverage": 0.2621,
+      "imageCoverage": 0.012
+    },
+    {
+      "specHex": "#151515",
+      "role": "text",
+      "nearestImageHex": "#303133",
+      "deltaE": 13.6,
+      "specCoverage": 0.0158,
+      "imageCoverage": 0.0067
+    },
+    {
+      "specHex": "#a4afa8",
+      "role": "unassigned",
+      "nearestImageHex": "#cac7c0",
+      "deltaE": 11.16,
+      "specCoverage": 0.0157,
+      "imageCoverage": 0.0083
+    },
+    {
+      "specHex": "#60645d",
+      "role": "unassigned",
+      "nearestImageHex": "#6e7169",
+      "deltaE": 5.37,
+      "specCoverage": 0.0118,
+      "imageCoverage": 0.0125
+    },
+    {
+      "specHex": "#e3c67c",
+      "role": "accent",
+      "nearestImageHex": "#cac7c0",
+      "deltaE": 36.89,
+      "specCoverage": 0.0076,
+      "imageCoverage": 0.0001
+    },
+    {
+      "specHex": "#5a86b6",
+      "role": "unassigned",
+      "nearestImageHex": "#4899dd",
+      "deltaE": 13.7,
+      "specCoverage": 0.0031,
+      "imageCoverage": 0.0002
+    },
+    {
+      "specHex": "#b47852",
+      "role": "unassigned",
+      "nearestImageHex": "#a8303b",
+      "deltaE": 35.27,
+      "specCoverage": 0.0025,
+      "imageCoverage": 0.0009
+    }
+  ],
+  "implementationClusters": [
+    {
+      "imageHex": "#ebebec",
+      "imageCoverage": 0.9593,
+      "nearestSpecHex": "#f0f0f0",
+      "nearestSpecRole": "background",
+      "deltaE": 1.8
+    },
+    {
+      "imageHex": "#6e7169",
+      "imageCoverage": 0.0125,
+      "nearestSpecHex": "#60645d",
+      "nearestSpecRole": "unassigned",
+      "deltaE": 5.37
+    },
+    {
+      "imageHex": "#cac7c0",
+      "imageCoverage": 0.012,
+      "nearestSpecHex": "#dededf",
+      "nearestSpecRole": "unassigned",
+      "deltaE": 9.29
+    },
+    {
+      "imageHex": "#9a9596",
+      "imageCoverage": 0.0083,
+      "nearestSpecHex": "#a4afa8",
+      "nearestSpecRole": "unassigned",
+      "deltaE": 11.2
+    },
+    {
+      "imageHex": "#303133",
+      "imageCoverage": 0.0067,
+      "nearestSpecHex": "#151515",
+      "nearestSpecRole": "text",
+      "deltaE": 13.6
+    },
+    {
+      "imageHex": "#a8303b",
+      "imageCoverage": 0.0009,
+      "nearestSpecHex": "#b47852",
+      "nearestSpecRole": "unassigned",
+      "deltaE": 35.27
+    },
+    {
+      "imageHex": "#4899dd",
+      "imageCoverage": 0.0002,
+      "nearestSpecHex": "#5a86b6",
+      "nearestSpecRole": "unassigned",
+      "deltaE": 13.7
+    },
+    {
+      "imageHex": "#fac90e",
+      "imageCoverage": 0.0001,
+      "nearestSpecHex": "#e3c67c",
+      "nearestSpecRole": "accent",
+      "deltaE": 42.22
+    }
+  ],
+  "meanDeltaE": 2.13,
+  "maxDeltaE": 36.89,
+  "coverageDrift": 0.5572,
+  "thresholds": {
+    "meanDeltaE": 5,
+    "maxDeltaE": 20,
+    "coverageDrift": 0.35,
+    "significantCoverage": 0.005
+  },
+  "pass": false
+}

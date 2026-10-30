@@ -1,2 +1,2 @@
-import RegistrationForm from '../../../components/RegistrationForm';
-export default function Page(){return <RegistrationForm group="children"/>;}
+import {redirect} from 'next/navigation';
+export default function Page() {redirect('/dang-ky-thong-tin');}

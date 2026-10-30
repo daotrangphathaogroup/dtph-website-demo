@@ -15,11 +15,11 @@ function groupFields(group:MemberGroup):ProfileField[]{
   field('relativePhone',children?'SĐT PH':'SĐT Người thân','phone'),field('introducedBy','Người giới thiệu','member'),
   field('notes','Ghi chú','textarea',false,{staffOnly:true}),field('status','Tình trạng','text',false,{staffOnly:true}),
   field('id','ID','text',false,{staffOnly:true,readOnly:true}),field('joined','Ngày tham gia','date',false,{staffOnly:true,readOnly:true}),
-  ...(children?[field('personality','Tính cách','textarea',false,{staffOnly:true}),field('nickname','Biệt danh','text',false,{staffOnly:true})]:[field('caregiver','HĐ Chăm sóc','member',false,{staffOnly:true}),field('position','Vị trí','text',false,{staffOnly:true})])
+  ...(children?[field('personality','Tính cách','textarea',false,{staffOnly:true}),field('nickname','Biệt danh')]:[field('caregiver','HĐ Chăm sóc','member',false,{staffOnly:true}),field('position','Vị trí','text',false,{staffOnly:true})])
  ];
 }
 // Sheet 1 owns the complete profile; staffOnly marks fields absent from sheet 2.
-export const defaultSchemas:Record<MemberGroup,RegistrationSchema>={children:{group:'children',version:10,fields:groupFields('children')},youth:{group:'youth',version:10,fields:groupFields('youth')},congregation:{group:'congregation',version:10,fields:groupFields('congregation')}};
+export const defaultSchemas:Record<MemberGroup,RegistrationSchema>={children:{group:'children',version:11,fields:groupFields('children')},youth:{group:'youth',version:10,fields:groupFields('youth')},congregation:{group:'congregation',version:10,fields:groupFields('congregation')}};
 export function isStudent(occupation:unknown):boolean{return /^(học sinh|sinh viên)$/iu.test(String(occupation??'').trim());}
 export function profileFieldLabel(field:ProfileField,values:ProfileValues):string{return field.key==='job'&&isStudent(values.occupation)?'Trường học':field.label;}
 export function displayValue(value:string|number|undefined,field:ProfileField):string{if(value===undefined||value==='')return 'Chưa cập nhật';if(field.type==='team')return `Tổ ${value}`;if(field.type==='date'){const parts=String(value).slice(0,10).split('-');return parts.length===3?`${parts[2]}/${parts[1]}/${parts[0]}`:String(value);}return String(value);}

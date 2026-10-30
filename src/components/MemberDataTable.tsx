@@ -1,35 +1,215 @@
 'use client';
-import {useEffect,useMemo,useRef,useState} from 'react';
-import {Search,Download,SlidersHorizontal,ArrowUp,ArrowDown,ChevronsUpDown,ChevronLeft,ChevronRight,Eye,Pencil,X,Filter} from 'lucide-react';
+import {ArrowDown, ArrowUp, ChevronsUpDown, Eye, Pencil} from 'lucide-react';
 import type {Member} from '../lib/types';
 import type {RegistrationSchema} from '../lib/registration';
 import {displayValue} from '../lib/registration';
-import {filterSheet,sortSheet,sheetValue,sheetCsv} from '../lib/sheet';
-type Preferences={hidden:string[];widths:Record<string,number>;density:string};
-export default function MemberDataTable({members,schema,canEdit,onOpen}:{members:Member[];schema:RegistrationSchema;canEdit:boolean;onOpen:(member:Member,edit:boolean)=>void}){
- const fields=useMemo(()=>[...schema.fields.filter(f=>f.key==='name'),...schema.fields.filter(f=>f.type!=='image'&&f.key!=='name')],[schema]);
- const [showFilters,setShowFilters]=useState(false);
- const [query,setQuery]=useState(''),[filters,setFilters]=useState<Record<string,string>>({}),[sort,setSort]=useState<{key:string;direction:'asc'|'desc'}>({key:'name',direction:'asc'}),[prefs,setPrefs]=useState<Preferences>({hidden:[],widths:{},density:'standard'}),[ready,setReady]=useState(false),[page,setPage]=useState(1),[size,setSize]=useState(25),[selected,setSelected]=useState<Set<string>>(new Set());
- const optionsRef=useRef<HTMLDetailsElement>(null);
- const closeOptions=()=>{if(optionsRef.current){optionsRef.current.open=false;optionsRef.current.querySelector('summary')?.focus();}};
- const allCheckbox=useRef<HTMLInputElement>(null),resizeCleanup=useRef<()=>void>(()=>{});
- const preferenceKey=`ph-sheet-v${schema.version}-${schema.group}`;
- useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(preferenceKey)??'null');if(saved)setPrefs({hidden:Array.isArray(saved.hidden)?saved.hidden.filter((v:unknown)=>typeof v==='string'&&v!=='name'):[],widths:Object.fromEntries(Object.entries(saved.widths??{}).filter(([key,value])=>fields.some(f=>f.key===key)&&typeof value==='number'&&value>=120&&value<=600)) as Record<string,number>,density:['compact','standard','comfortable'].includes(saved.density)?saved.density:'standard'});}catch{}setReady(true);return()=>resizeCleanup.current();},[preferenceKey]);
- useEffect(()=>{if(ready)try{localStorage.setItem(preferenceKey,JSON.stringify(prefs));}catch{}},[prefs,ready,preferenceKey]);
- useEffect(()=>{setSelected(old=>new Set([...old].filter(id=>members.some(m=>m.id===id))));},[members]);
- const visible=fields.filter(f=>!prefs.hidden.includes(f.key));
- const filtered=useMemo(()=>sortSheet(filterSheet(members,query,filters,fields),fields.find(f=>f.key===sort.key),sort.direction),[members,query,filters,fields,sort]);
- const pages=Math.max(1,Math.ceil(filtered.length/size)),active=Math.min(page,pages),rows=filtered.slice((active-1)*size,active*size),checked=rows.filter(m=>selected.has(m.id)).length;
- useEffect(()=>{if(allCheckbox.current)allCheckbox.current.indeterminate=checked>0&&checked<rows.length;},[checked,rows.length]);
- const width=(key:string)=>prefs.widths[key]??(key==='name'?240:key==='address'||key==='remarks'?300:180);
- function resize(key:string,startX:number){resizeCleanup.current();const initial=width(key);const move=(e:PointerEvent)=>setPrefs(old=>({...old,widths:{...old.widths,[key]:Math.max(120,Math.min(600,initial+e.clientX-startX))}}));const stop=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',stop);window.removeEventListener('pointercancel',stop);};resizeCleanup.current=stop;window.addEventListener('pointermove',move);window.addEventListener('pointerup',stop);window.addEventListener('pointercancel',stop);}
- function exportRows(){const exported=selected.size?members.filter(m=>selected.has(m.id)):filtered;const url=URL.createObjectURL(new Blob([sheetCsv(exported,visible)],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`${schema.group}-huynh-de.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
- function toggle(id:string){setSelected(old=>{const next=new Set(old);next.has(id)?next.delete(id):next.add(id);return next;});}
- const filterFields=fields.filter(f=>['select','team','ward','province','year'].includes(f.type));
- return <section className={`panel sheet sheet-${prefs.density}`} aria-label="Bảng dữ liệu huynh đệ">
-  <div className="sheet-toolbar"><label className="sheet-search"><Search size={17}/><input aria-label="Tìm trong bảng dữ liệu" placeholder="Tìm trong tất cả thông tin…" value={query} onChange={e=>{setQuery(e.target.value);setPage(1);}}/>{query&&<button className="icon-button" aria-label="Xóa tìm kiếm" onClick={()=>{setQuery('');setPage(1);}}><X size={14}/></button>}</label><div className="sheet-tools"><button className={`button secondary ${showFilters?'selected':''}`} aria-expanded={showFilters} aria-controls="sheet-filter-panel" onClick={()=>setShowFilters(!showFilters)}><Filter size={16}/>Bộ lọc{Object.values(filters).filter(Boolean).length>0&&<span className="filter-count">{Object.values(filters).filter(Boolean).length}</span>}</button><details ref={optionsRef} className="sheet-options" onKeyDown={e=>{if(e.key==='Escape')closeOptions();}}><summary className="button secondary" role="button"><SlidersHorizontal size={16}/>Tùy chỉnh bảng</summary><div className="sheet-popover"><div className="popover-heading"><b>Tùy chỉnh bảng</b><button className="icon-button" aria-label="Đóng tùy chỉnh bảng" onClick={closeOptions}><X size={16}/></button></div><label className="field">Mật độ hàng<select aria-label="Mật độ hàng" value={prefs.density} onChange={e=>setPrefs({...prefs,density:e.target.value})}><option value="compact">Gọn</option><option value="standard">Tiêu chuẩn</option><option value="comfortable">Thoáng</option></select></label><p className="eyebrow">CỘT HIỂN THỊ</p>{fields.map(f=><label className="column-option" key={f.key}><input type="checkbox" disabled={f.key==='name'} checked={!prefs.hidden.includes(f.key)} onChange={()=>setPrefs(old=>({...old,hidden:old.hidden.includes(f.key)?old.hidden.filter(k=>k!==f.key):[...old.hidden,f.key]}))}/>{f.label}</label>)}<button className="text-button" onClick={()=>setPrefs({hidden:[],widths:{},density:'standard'})}>Khôi phục hiển thị</button></div></details><button className="button secondary" disabled={!filtered.length&&!selected.size} onClick={exportRows}><Download size={16}/>{selected.size?'Xuất dòng đã chọn':'Xuất CSV'}</button></div></div>
-  <div className="sheet-filters" id="sheet-filter-panel" hidden={!showFilters}>{filterFields.map(f=><label key={f.key}><span>{f.label}</span><select aria-label={`Lọc ${f.label}`} value={filters[f.key]??''} onChange={e=>{setFilters({...filters,[f.key]:e.target.value});setPage(1);}}><option value="">Tất cả</option>{[...new Set(members.map(m=>sheetValue(m,f.key)).filter(v=>v!==undefined&&v!==''))].sort((a,b)=>String(a).localeCompare(String(b),'vi',{numeric:true})).map(v=><option key={v} value={v}>{displayValue(v,f)}</option>)}<option value="__empty">Chưa cập nhật</option></select></label>)}{Object.values(filters).some(Boolean)&&<button className="text-button" onClick={()=>{setFilters({});setPage(1);}}>Xóa bộ lọc</button>}</div>
-  <div className="sheet-context"><span>{filtered.length.toLocaleString('vi-VN')} hồ sơ{query||Object.values(filters).some(Boolean)?' phù hợp':' trong danh sách'}</span>{selected.size>0&&<span className="selection-status"><b>{selected.size} đã chọn</b><button className="text-button" onClick={()=>setSelected(new Set())}>Bỏ chọn</button></span>}</div><div className="sheet-scroll" tabIndex={0} aria-label="Cuộn bảng dữ liệu"><table className="sheet-table" style={{width:96+visible.reduce((total,f)=>total+width(f.key),0)+96}}><colgroup><col style={{width:42}}/><col style={{width:54}}/>{visible.map(f=><col key={f.key} style={{width:width(f.key)}}/>)}<col style={{width:96}}/></colgroup><thead><tr><th className="sheet-check"><input ref={allCheckbox} type="checkbox" aria-label="Chọn tất cả dòng trên trang" checked={rows.length>0&&checked===rows.length} disabled={!rows.length} onChange={()=>setSelected(old=>{const next=new Set(old);rows.forEach(m=>checked===rows.length?next.delete(m.id):next.add(m.id));return next;})}/></th><th className="sheet-number">#</th>{visible.map(f=><th key={f.key} className={f.key==='name'?'sheet-name':''} aria-sort={sort.key===f.key?(sort.direction==='asc'?'ascending':'descending'):'none'}><button className="sheet-sort" onClick={()=>setSort({key:f.key,direction:sort.key===f.key&&sort.direction==='asc'?'desc':'asc'})} title={f.label}><span>{f.label}</span>{sort.key===f.key?(sort.direction==='asc'?<ArrowUp size={14}/>:<ArrowDown size={14}/>):<ChevronsUpDown size={13}/>}</button><span className="column-resizer" role="separator" aria-orientation="vertical" aria-label={`Độ rộng cột ${f.label}`} aria-valuenow={width(f.key)} aria-valuemin={120} aria-valuemax={600} tabIndex={0} onPointerDown={e=>{e.preventDefault();resize(f.key,e.clientX);}} onKeyDown={e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();setPrefs(old=>({...old,widths:{...old.widths,[f.key]:Math.max(120,Math.min(600,width(f.key)+(e.key==='ArrowRight'?20:-20)))}}));}}}/></th>)}<th className="sheet-actions">Hồ sơ</th></tr></thead><tbody>{rows.map((m,index)=><tr key={m.id} className={selected.has(m.id)?'is-selected':''}><td className="sheet-check"><input type="checkbox" aria-label={`Chọn ${m.name}`} checked={selected.has(m.id)} onChange={()=>toggle(m.id)}/></td><td className="sheet-number">{(active-1)*size+index+1}</td>{visible.map(f=>{const value=sheetValue(m,f.key);return <td key={f.key} className={f.key==='name'?'sheet-name':value===undefined||value===''?'sheet-missing':''} title={displayValue(value,f)}>{f.key==='name'?<button className="sheet-person" onClick={()=>onOpen(m,false)}>{m.avatar&&<img className="sheet-portrait" src={m.avatar} alt=""/>}{String(value??m.name)}</button>:value===undefined||value===''?'—':displayValue(value,f)}</td>;})}<td className="sheet-actions"><button className="icon-button" aria-label={`Xem hồ sơ ${m.name}`} onClick={()=>onOpen(m,false)}><Eye size={16}/></button>{canEdit&&<button className="icon-button" aria-label={`Chỉnh sửa ${m.name}`} onClick={()=>onOpen(m,true)}><Pencil size={15}/></button>}</td></tr>)}</tbody></table>{!rows.length&&<div className="empty">Không có hồ sơ phù hợp với tìm kiếm hoặc bộ lọc.</div>}</div>
-  <footer className="sheet-footer"><span>{filtered.length?`${(active-1)*size+1}–${Math.min(active*size,filtered.length)} trên ${filtered.length} hồ sơ`:'0 hồ sơ'}</span><div><label>Số dòng <select aria-label="Số dòng mỗi trang" value={size} onChange={e=>{setSize(Number(e.target.value));setPage(1);}}>{[25,50,100].map(n=><option key={n}>{n}</option>)}</select></label><span>{active} / {pages}</span><button className="icon-button" aria-label="Trang trước" disabled={active===1} onClick={()=>setPage(active-1)}><ChevronLeft size={18}/></button><button className="icon-button" aria-label="Trang sau" disabled={active===pages} onClick={()=>setPage(active+1)}><ChevronRight size={18}/></button></div></footer>
- </section>;
+import {sheetValue} from '../lib/sheet';
+import {useMemberSheet} from '../hooks/useMemberSheet';
+import MemberSheetToolbar from '../features/members/MemberSheetToolbar';
+import Pagination from './ui/Pagination';
+import {EmptyState, IconButton} from './ui/primitives';
+export default function MemberDataTable({
+  members,
+  schema,
+  canEdit,
+  onOpen,
+}: {
+  members: Member[];
+  schema: RegistrationSchema;
+  canEdit: boolean;
+  onOpen: (member: Member, edit: boolean) => void;
+}) {
+  const sheet = useMemberSheet(members, schema);
+  return (
+    <section className={`sheet sheet-${sheet.prefs.density}`} aria-label="Bảng dữ liệu huynh đệ">
+      <MemberSheetToolbar sheet={sheet} />
+      <div className="sheet-scroll" tabIndex={0} aria-label="Cuộn bảng dữ liệu">
+        <table
+          className="sheet-table"
+          style={{width: 192 + sheet.visible.reduce((total, f) => total + sheet.width(f.key), 0)}}
+        >
+          <caption className="sr-only">
+            Bảng dữ liệu{' '}
+            {schema.group === 'children'
+              ? 'Chúng thiếu nhi'
+              : schema.group === 'youth'
+                ? 'Chúng thanh niên'
+                : 'Đạo tràng'}
+          </caption>
+          <colgroup>
+            <col style={{width: 42}} />
+            <col style={{width: 54}} />
+            {sheet.visible.map((f) => (
+              <col key={f.key} style={{width: sheet.width(f.key)}} />
+            ))}
+            <col style={{width: 96}} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th className="sheet-check" scope="col">
+                <input
+                  ref={sheet.allCheckbox}
+                  type="checkbox"
+                  aria-label="Chọn tất cả dòng trên trang"
+                  checked={sheet.rows.length > 0 && sheet.checked === sheet.rows.length}
+                  disabled={!sheet.rows.length}
+                  onChange={sheet.togglePage}
+                />
+              </th>
+              <th className="sheet-number" scope="col">
+                #
+              </th>
+              {sheet.visible.map((f) => (
+                <th
+                  scope="col"
+                  key={f.key}
+                  className={f.key === 'name' ? 'sheet-name' : ''}
+                  aria-sort={
+                    sheet.sort.key === f.key
+                      ? sheet.sort.direction === 'asc'
+                        ? 'ascending'
+                        : 'descending'
+                      : 'none'
+                  }
+                >
+                  <button
+                    className="sheet-sort"
+                    onClick={() =>
+                      sheet.setSort({
+                        key: f.key,
+                        direction:
+                          sheet.sort.key === f.key && sheet.sort.direction === 'asc'
+                            ? 'desc'
+                            : 'asc',
+                      })
+                    }
+                    title={f.label}
+                  >
+                    <span>{f.label}</span>
+                    {sheet.sort.key === f.key ? (
+                      sheet.sort.direction === 'asc' ? (
+                        <ArrowUp size={14} />
+                      ) : (
+                        <ArrowDown size={14} />
+                      )
+                    ) : (
+                      <ChevronsUpDown size={13} />
+                    )}
+                  </button>
+                  <span
+                    className="column-resizer"
+                    role="separator"
+                    aria-orientation="vertical"
+                    aria-label={`Độ rộng cột ${f.label}`}
+                    aria-valuenow={sheet.width(f.key)}
+                    aria-valuemin={120}
+                    aria-valuemax={600}
+                    tabIndex={0}
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      sheet.resize(f.key, e.clientX);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        sheet.setPrefs((old) => ({
+                          ...old,
+                          widths: {
+                            ...old.widths,
+                            [f.key]: Math.max(
+                              120,
+                              Math.min(
+                                600,
+                                sheet.width(f.key) + (e.key === 'ArrowRight' ? 20 : -20),
+                              ),
+                            ),
+                          },
+                        }));
+                      }
+                    }}
+                  />
+                </th>
+              ))}
+              <th scope="col" className="sheet-actions">
+                Hồ sơ
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sheet.rows.map((m, index) => (
+              <tr key={m.id} className={sheet.selected.has(m.id) ? 'is-selected' : ''}>
+                <td className="sheet-check">
+                  <input
+                    type="checkbox"
+                    aria-label={`Chọn ${m.name}`}
+                    checked={sheet.selected.has(m.id)}
+                    onChange={() => sheet.toggle(m.id)}
+                  />
+                </td>
+                <td className="sheet-number">{(sheet.page - 1) * sheet.size + index + 1}</td>
+                {sheet.visible.map((f) => {
+                  const value = sheetValue(m, f.key);
+                  return (
+                    <td
+                      key={f.key}
+                      className={
+                        f.key === 'name'
+                          ? 'sheet-name'
+                          : value === undefined || value === ''
+                            ? 'sheet-missing'
+                            : ''
+                      }
+                      title={displayValue(value, f)}
+                    >
+                      {f.key === 'name' ? (
+                        <button className="table-person" onClick={() => onOpen(m, false)}>
+                          {m.avatar && (
+                            <img src={m.avatar} width={24} height={32} loading="lazy" alt="" />
+                          )}
+                          <span>{String(value ?? m.name)}</span>
+                        </button>
+                      ) : value === undefined || value === '' ? (
+                        '—'
+                      ) : (
+                        displayValue(value, f)
+                      )}
+                    </td>
+                  );
+                })}
+                <td className="sheet-actions">
+                  <div className="row-actions">
+                    <IconButton label={`Xem hồ sơ ${m.name}`} onClick={() => onOpen(m, false)}>
+                      <Eye size={17} />
+                    </IconButton>
+                    {canEdit && (
+                      <IconButton label={`Chỉnh sửa ${m.name}`} onClick={() => onOpen(m, true)}>
+                        <Pencil size={16} />
+                      </IconButton>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {!sheet.rows.length && (
+          <EmptyState
+            title="Không có hồ sơ phù hợp"
+            description="Thử điều chỉnh tìm kiếm hoặc bộ lọc."
+          />
+        )}
+      </div>
+      <Pagination
+        page={sheet.page}
+        pages={sheet.pages}
+        total={sheet.filtered.length}
+        size={sheet.size}
+        onPage={sheet.setPage}
+        onSize={(size) => {
+          sheet.setSize(size);
+          sheet.setPage(1);
+        }}
+      />
+    </section>
+  );
 }

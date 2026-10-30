@@ -1,0 +1,89 @@
+{
+  "source": "codex-clipboard-4267a2b4-4cc9-480f-9b9d-f93387b30f74.png",
+  "samples": [
+    {
+      "role": "pastel_sage",
+      "x": 28,
+      "y": 12,
+      "hex": "#dcdab4",
+      "method": "5x5 RGB channel median"
+    },
+    {
+      "role": "pastel_blue",
+      "x": 395,
+      "y": 12,
+      "hex": "#7ba3bc",
+      "method": "5x5 RGB channel median"
+    },
+    {
+      "role": "pastel_peach",
+      "x": 600,
+      "y": 18,
+      "hex": "#ebc7ad",
+      "method": "5x5 RGB channel median"
+    },
+    {
+      "role": "pastel_lemon",
+      "x": 716,
+      "y": 18,
+      "hex": "#d9e09d",
+      "method": "5x5 RGB channel median"
+    },
+    {
+      "role": "pastel_bottom",
+      "x": 12,
+      "y": 850,
+      "hex": "#6b91ab",
+      "method": "5x5 RGB channel median"
+    },
+    {
+      "role": "sidebar",
+      "x": 92,
+      "y": 575,
+      "hex": "#f9fbfa",
+      "method": "5x5 RGB channel median"
+    },
+    {
+      "role": "surface",
+      "x": 450,
+      "y": 225,
+      "hex": "#fefefe",
+      "method": "5x5 RGB channel median"
+    },
+    {
+      "role": "nav_selected",
+      "x": 95,
+      "y": 205,
+      "hex": "#d4d5da",
+      "method": "5x5 RGB channel median"
+    },
+    {
+      "role": "border",
+      "x": 380,
+      "y": 238,
+      "hex": "#ffffff",
+      "method": "5x5 RGB channel median"
+    },
+    {
+      "role": "chart_grid",
+      "x": 513,
+      "y": 607,
+      "hex": "#eaf7fe",
+      "method": "5x5 RGB channel median"
+    },
+    {
+      "role": "chart_fill",
+      "x": 476,
+      "y": 565,
+      "hex": "#e6f2fe",
+      "method": "5x5 RGB channel median"
+    },
+    {
+      "role": "charcoal_tab",
+      "x": 279,
+      "y": 208,
+      "hex": "#9b9ea3",
+      "method": "5x5 RGB channel median"
+    }
+  ]
+}

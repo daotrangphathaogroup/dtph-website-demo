@@ -16,7 +16,7 @@ test('Workbook profiles: exact public fields, full staff data, image and linked 
   await t.test('sheet 2 determines public order and required fields; sheet 1 adds staff fields',async()=>{
    for(const group of ['children','youth','congregation']){
     const schema=(await call('/registration-schemas/'+group)).body.schema;
-    assert.deepEqual(schema.fields.map(f=>f.key),[...expected,...(group==='children'?['parentName']:[]),'relativePhone','introducedBy']);
+    assert.deepEqual(schema.fields.map(f=>f.key),[...expected,...(group==='children'?['parentName']:[]),'relativePhone','introducedBy',...(group==='children'?['nickname']:[])]);
     assert.deepEqual(schema.fields.filter(f=>f.required).map(f=>f.key),['avatar','name','gender','birthday','address','team',...(group!=='children'?['phone']:[])]);
     assert.deepEqual(schema.fields.find(f=>f.key==='gender').options,['Nam','Nữ']);
     const staff=(await call('/registration-schemas/'+group,'GET',undefined,dev)).body.schema;assert.equal(staff.fields.length,group==='children'?20:19);
@@ -47,8 +47,8 @@ test('Workbook profiles: exact public fields, full staff data, image and linked 
    assert.equal((await call('/members/'+ids.children,'PATCH',{profileData:{personality:'Điềm tĩnh',nickname:'Mây',notes:'Ghi chú'}},dev)).status,200);
   });
   await t.test('linked member picker exposes minimal approved identities and portrait; links store ID, not name',async()=>{
-   const data=validValues({name:'Đồng tên',introducedBy:ids.children});await call('/registrations/youth','POST',{values:data,requestId:randomUUID()},manager);await call('/registrations/congregation','POST',{values:validValues({name:'Đồng tên'}),requestId:randomUUID()},manager);
-   const options=(await call('/member-options?q='+encodeURIComponent('Đồng tên'))).body.results;assert.equal(options.length,2);assert.notEqual(options[0].id,options[1].id);assert.deepEqual(Object.keys(options[0]).sort(),['avatar','group','id','name']);
+   const data=validValues({name:'Đồng tên',dharmaName:'Thiện Tâm',introducedBy:ids.children});await call('/registrations/youth','POST',{values:data,requestId:randomUUID()},manager);await call('/registrations/congregation','POST',{values:validValues({name:'Đồng tên'}),requestId:randomUUID()},manager);
+   const options=(await call('/member-options?q='+encodeURIComponent('Đồng tên'))).body.results;assert.equal(options.length,2);assert.ok(options.some(p=>p.dharmaName==='Thiện Tâm'));assert.ok(options.some(p=>p.dharmaName===''));assert.notEqual(options[0].id,options[1].id);assert.deepEqual(Object.keys(options[0]).sort(),['avatar','dharmaName','group','id','name']);
    const pending=await call('/registrations/youth','POST',{values:validValues({name:'Pending identity'}),requestId:randomUUID()});assert.equal(pending.status,201);assert.deepEqual((await call('/member-options?q=Pending')).body.results,[]);
    const pendingId=(await db.query('SELECT id FROM members WHERE name=$1',['Pending identity'])).rows[0].id;
    for(const introducedBy of ['Raw name',pendingId])assert.equal((await call('/registrations/youth','POST',{values:validValues({introducedBy}),requestId:randomUUID()})).status,400);

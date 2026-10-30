@@ -1,13 +1,203 @@
 'use client';
-import {useEffect,useRef,useState} from 'react';
-import {Camera,Upload,X} from 'lucide-react';
-type Source={bitmap:ImageBitmap;url:string};
-export default function PortraitInput({value,onChange,onError,onProcessing}:{value:string;onChange:(value:string)=>void;onError:(message:string)=>void;onProcessing:(busy:boolean)=>void}){
- const upload=useRef<HTMLInputElement>(null),camera=useRef<HTMLInputElement>(null),canvas=useRef<HTMLCanvasElement>(null),sourceRef=useRef<Source|null>(null);
- const [source,setSource]=useState<Source|null>(null),[zoom,setZoom]=useState(1),[x,setX]=useState(50),[y,setY]=useState(50);
- useEffect(()=>()=>{sourceRef.current?.bitmap.close();if(sourceRef.current)URL.revokeObjectURL(sourceRef.current.url);},[]);
- function clear(){sourceRef.current?.bitmap.close();if(sourceRef.current)URL.revokeObjectURL(sourceRef.current.url);sourceRef.current=null;setSource(null);onProcessing(false);}
- async function load(file?:File){if(!file)return;onError('');if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){onError('Chọn ảnh JPG, PNG hoặc WebP tối đa 5 MB.');return;}onProcessing(true);try{const bitmap=await createImageBitmap(file);if(bitmap.width*bitmap.height>20000000){bitmap.close();throw new Error();}sourceRef.current?.bitmap.close();if(sourceRef.current)URL.revokeObjectURL(sourceRef.current.url);const next={bitmap,url:URL.createObjectURL(file)};sourceRef.current=next;setSource(next);setZoom(1);setX(50);setY(50);}catch{onError('Không đọc được ảnh. Vui lòng chọn ảnh khác.');onProcessing(false);}}
- useEffect(()=>{if(!source||!canvas.current)return;const {bitmap}=source,ctx=canvas.current.getContext('2d');if(!ctx)return;const ratio=Math.max(360/bitmap.width,480/bitmap.height)*zoom,sw=360/ratio,sh=480/ratio;ctx.clearRect(0,0,360,480);ctx.drawImage(bitmap,(bitmap.width-sw)*x/100,(bitmap.height-sh)*y/100,sw,sh,0,0,360,480);},[source,zoom,x,y]);
- return <div className="portrait-input"><div className="portrait-toolbar"><span className="portrait-thumbnail">{value?<img src={value} alt="Ảnh đại diện 3×4"/>:<Camera size={22}/>}</span><div className="portrait-buttons"><button type="button" className="button secondary" onClick={()=>upload.current?.click()}><Upload size={16}/>Tải ảnh lên</button><button type="button" className="button secondary" onClick={()=>camera.current?.click()}><Camera size={16}/>Chụp ảnh</button></div>{value&&<button type="button" className="icon-button" aria-label="Xóa ảnh đại diện" onClick={()=>onChange('')}><X size={16}/></button>}</div><input ref={upload} type="file" hidden aria-label="Tải hình ảnh" accept="image/jpeg,image/png,image/webp" onChange={e=>{void load(e.target.files?.[0]);e.target.value='';}}/><input ref={camera} type="file" hidden aria-label="Chụp hình ảnh" accept="image/*" capture="user" onChange={e=>{void load(e.target.files?.[0]);e.target.value='';}}/><small>JPG, PNG, WebP · Tối đa 5 MB · Ảnh dọc 3×4</small>{source&&<div className="portrait-crop"><canvas ref={canvas} width={360} height={480} aria-label="Khung cắt ảnh 3×4"/><div className="crop-controls"><label>Phóng to<input type="range" min="1" max="3" step="0.01" value={zoom} onChange={e=>setZoom(Number(e.target.value))}/></label><label>Vị trí ngang<input type="range" min="0" max="100" value={x} onChange={e=>setX(Number(e.target.value))}/></label><label>Vị trí dọc<input type="range" min="0" max="100" value={y} onChange={e=>setY(Number(e.target.value))}/></label><div className="portrait-buttons"><button type="button" className="button secondary" onClick={clear}>Hủy cắt ảnh</button><button type="button" className="button primary" onClick={()=>{if(canvas.current)onChange(canvas.current.toDataURL('image/webp',0.82));clear();}}>Dùng ảnh này</button></div></div></div>}</div>;
+import {useEffect, useRef, useState} from 'react';
+import {Camera, Upload, X} from 'lucide-react';
+type Source = {bitmap: ImageBitmap; url: string};
+export default function PortraitInput({
+  value,
+  onChange,
+  onError,
+  onProcessing,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onError: (message: string) => void;
+  onProcessing: (busy: boolean) => void;
+}) {
+  const upload = useRef<HTMLInputElement>(null),
+    camera = useRef<HTMLInputElement>(null),
+    canvas = useRef<HTMLCanvasElement>(null),
+    sourceRef = useRef<Source | null>(null);
+  const [source, setSource] = useState<Source | null>(null),
+    [zoom, setZoom] = useState(1),
+    [x, setX] = useState(50),
+    [y, setY] = useState(50);
+  useEffect(
+    () => () => {
+      sourceRef.current?.bitmap.close();
+      if (sourceRef.current) URL.revokeObjectURL(sourceRef.current.url);
+    },
+    [],
+  );
+  function clear() {
+    sourceRef.current?.bitmap.close();
+    if (sourceRef.current) URL.revokeObjectURL(sourceRef.current.url);
+    sourceRef.current = null;
+    setSource(null);
+    onProcessing(false);
+  }
+  async function load(file?: File) {
+    if (!file) return;
+    onError('');
+    if (
+      !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ||
+      file.size > 5 * 1024 * 1024
+    ) {
+      onError('Chọn ảnh JPG, PNG hoặc WebP tối đa 5 MB.');
+      return;
+    }
+    onProcessing(true);
+    try {
+      const bitmap = await createImageBitmap(file);
+      if (bitmap.width * bitmap.height > 20000000) {
+        bitmap.close();
+        throw new Error();
+      }
+      sourceRef.current?.bitmap.close();
+      if (sourceRef.current) URL.revokeObjectURL(sourceRef.current.url);
+      const next = {bitmap, url: URL.createObjectURL(file)};
+      sourceRef.current = next;
+      setSource(next);
+      setZoom(1);
+      setX(50);
+      setY(50);
+    } catch {
+      onError('Không đọc được ảnh. Vui lòng chọn ảnh khác.');
+      onProcessing(false);
+    }
+  }
+  useEffect(() => {
+    if (!source || !canvas.current) return;
+    const {bitmap} = source,
+      ctx = canvas.current.getContext('2d');
+    if (!ctx) return;
+    const ratio = Math.max(360 / bitmap.width, 480 / bitmap.height) * zoom,
+      sw = 360 / ratio,
+      sh = 480 / ratio;
+    ctx.clearRect(0, 0, 360, 480);
+    ctx.drawImage(
+      bitmap,
+      ((bitmap.width - sw) * x) / 100,
+      ((bitmap.height - sh) * y) / 100,
+      sw,
+      sh,
+      0,
+      0,
+      360,
+      480,
+    );
+  }, [source, zoom, x, y]);
+  return (
+    <div className="portrait-input">
+      <div className="portrait-toolbar">
+        <span className="portrait-thumbnail">
+          {value ? <img src={value} alt="Ảnh đại diện 3×4" /> : <Camera size={22} />}
+        </span>
+        <div className="portrait-buttons">
+          <button
+            type="button"
+            className="button secondary"
+            onClick={() => upload.current?.click()}
+          >
+            <Upload size={16} />
+            Tải ảnh lên
+          </button>
+          <button
+            type="button"
+            className="button secondary"
+            onClick={() => camera.current?.click()}
+          >
+            <Camera size={16} />
+            Chụp ảnh
+          </button>
+        </div>
+        {value && (
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Xóa ảnh đại diện"
+            onClick={() => onChange('')}
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
+      <input
+        ref={upload}
+        type="file"
+        hidden
+        aria-label="Tải hình ảnh"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={(e) => {
+          void load(e.target.files?.[0]);
+          e.target.value = '';
+        }}
+      />
+      <input
+        ref={camera}
+        type="file"
+        hidden
+        aria-label="Chụp hình ảnh"
+        accept="image/*"
+        capture="user"
+        onChange={(e) => {
+          void load(e.target.files?.[0]);
+          e.target.value = '';
+        }}
+      />
+      <small>JPG, PNG, WebP · Tối đa 5 MB · Ảnh dọc 3×4</small>
+      {source && (
+        <div className="portrait-crop">
+          <canvas ref={canvas} width={360} height={480} aria-label="Khung cắt ảnh 3×4" />
+          <div className="crop-controls">
+            <label>
+              Phóng to
+              <input
+                type="range"
+                min="1"
+                max="3"
+                step="0.01"
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+              />
+            </label>
+            <label>
+              Vị trí ngang
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={x}
+                onChange={(e) => setX(Number(e.target.value))}
+              />
+            </label>
+            <label>
+              Vị trí dọc
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={y}
+                onChange={(e) => setY(Number(e.target.value))}
+              />
+            </label>
+            <div className="portrait-buttons">
+              <button type="button" className="button secondary" onClick={clear}>
+                Hủy cắt ảnh
+              </button>
+              <button
+                type="button"
+                className="button primary"
+                onClick={() => {
+                  if (canvas.current) onChange(canvas.current.toDataURL('image/webp', 0.82));
+                  clear();
+                }}
+              >
+                Dùng ảnh này
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
