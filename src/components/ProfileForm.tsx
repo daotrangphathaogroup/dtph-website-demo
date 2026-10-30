@@ -1,7 +1,7 @@
 'use client';
 import {useId, useState} from 'react';
 import type {ProfileField, RegistrationSchema, ProfileValues} from '../lib/registration';
-import {displayValue, profileFieldLabel} from '../lib/registration';
+import {activityStatuses, displayValue, profileFieldLabel} from '../lib/registration';
 import {getTeam, teamAreas} from '../lib/areas';
 import {legacyProvinces} from '../lib/provinces';
 import MemberPicker from './MemberPicker';
@@ -45,6 +45,33 @@ export default function ProfileForm({
       value = values[f.key] ?? '';
     if (f.readOnly)
       return <input id={id} value={value} readOnly aria-readonly="true" className="system-field" />;
+    if (f.key === 'status')
+      return (
+        <>
+          <div className="activity-status-options" role="radiogroup" aria-label="Trạng thái">
+            {activityStatuses.map((status, index) => (
+              <label key={status} className={`activity-status-option activity-level-${index}`}>
+                <input
+                  type="radio"
+                  name={id}
+                  value={status}
+                  checked={value === status}
+                  onChange={() => update(f.key, status)}
+                />
+                <span><i aria-hidden="true" />{status}</span>
+              </label>
+            ))}
+          </div>
+          {value && !activityStatuses.includes(String(value)) && (
+            <small>Trạng thái hiện tại: {value}. Chọn một mức hoạt động để cập nhật.</small>
+          )}
+          {value && (
+            <button type="button" className="activity-status-clear" onClick={() => update(f.key, '')}>
+              Bỏ chọn trạng thái
+            </button>
+          )}
+        </>
+      );
     if (f.type === 'image')
       return (
         <PortraitInput
@@ -209,13 +236,13 @@ export default function ProfileForm({
         <div className="form-grid">
           {fields.map((f) => (
             <div
-              className={`field ${['image', 'textarea'].includes(f.type) ? 'span-two' : ''}`}
+              className={`field ${['image', 'textarea'].includes(f.type) || f.key === 'status' ? 'span-two' : ''}`}
               key={f.key}
             >
               <label
                 className="field-title"
                 htmlFor={
-                  f.type === 'image' || f.type === 'member' ? undefined : `${inputPrefix}-${f.key}`
+                  f.type === 'image' || f.type === 'member' || f.key === 'status' ? undefined : `${inputPrefix}-${f.key}`
                 }
               >
                 {profileFieldLabel(f, values)}

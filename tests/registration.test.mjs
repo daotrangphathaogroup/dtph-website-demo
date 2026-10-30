@@ -46,6 +46,20 @@ test('Workbook profiles: exact public fields, full staff data, image and linked 
    assert.equal((await call('/members/'+ids.children,'PATCH',{profileData:{personality:'Điềm tĩnh',nickname:'Mây',notes:'Ghi chú'}},manager)).status,403);
    assert.equal((await call('/members/'+ids.children,'PATCH',{profileData:{personality:'Điềm tĩnh',nickname:'Mây',notes:'Ghi chú'}},dev)).status,200);
   });
+  await t.test('activity status has four staff-only levels, preserves legacy text, and rejects new free text',async()=>{
+   const levels=['Không hoạt động','Ít hoạt động','Hoạt động thường xuyên','Hoạt động tích cực'];
+   for(const group of ['children','youth','congregation']){
+    const schema=(await call('/registration-schemas/'+group,'GET',undefined,dev)).body.schema;
+    const field=schema.fields.find(f=>f.key==='status');assert.equal(field.label,'Trạng thái');assert.equal(field.type,'select');assert.deepEqual(field.options,levels);
+    assert.ok(!(await call('/registration-schemas/'+group)).body.schema.fields.some(f=>f.key==='status'));
+   }
+   await db.query("UPDATE members SET profile_data=profile_data || $2::jsonb WHERE id=$1",[ids.youth,JSON.stringify({status:'Nội dung cũ chưa phân loại'})]);
+   const preserved=await call('/members/'+ids.youth,'PATCH',{profileData:{notes:'Đổi ghi chú'}},dev);assert.equal(preserved.status,200);assert.equal(preserved.body.member.profileData.status,'Nội dung cũ chưa phân loại');
+   assert.equal((await call('/members/'+ids.youth,'PATCH',{profileData:{status:'Mức tự nhập'}},dev)).status,400);
+   assert.equal((await call('/members/'+ids.youth,'PATCH',{profileData:{status:levels[0]}},manager)).status,403);
+   for(const status of levels){const result=await call('/members/'+ids.youth,'PATCH',{profileData:{status}},dev);assert.equal(result.status,200);assert.equal(result.body.member.profileData.status,status);}
+   assert.equal((await call('/members/'+ids.youth,'PATCH',{profileData:{status:''}},dev)).status,200);
+  });
   await t.test('linked member picker exposes minimal approved identities and portrait; links store ID, not name',async()=>{
    const data=validValues({name:'Đồng tên',dharmaName:'Thiện Tâm',introducedBy:ids.children});await call('/registrations/youth','POST',{values:data,requestId:randomUUID()},manager);await call('/registrations/congregation','POST',{values:validValues({name:'Đồng tên'}),requestId:randomUUID()},manager);
    const options=(await call('/member-options?q='+encodeURIComponent('Đồng tên'))).body.results;assert.equal(options.length,2);assert.ok(options.some(p=>p.dharmaName==='Thiện Tâm'));assert.ok(options.some(p=>p.dharmaName===''));assert.notEqual(options[0].id,options[1].id);assert.deepEqual(Object.keys(options[0]).sort(),['avatar','dharmaName','group','id','name']);

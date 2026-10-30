@@ -1,6 +1,6 @@
 import express from 'express';
 import {DEV_ACCOUNT} from './dev-account.mjs';
-import {defaultSchemas} from '../src/lib/registration.ts';
+import {defaultSchemas,normalizeRegistrationSchema} from '../src/lib/registration.ts';
 import {getTeam} from '../src/lib/areas.ts';
 import {registrationGroup} from '../src/lib/registration-flow.ts';
 import {legacyProvinces} from '../src/lib/provinces.ts';
@@ -33,6 +33,7 @@ export async function createBackend({dataDir='./.local/postgres',uploadDir='./.l
   await db.exec(await readFile(new URL('./migrations/009_adult_registration_fields.sql',import.meta.url),'utf8'));
   await db.exec(await readFile(new URL('./migrations/010_workbook_profiles.sql',import.meta.url),'utf8'));
   await db.exec(await readFile(new URL('./migrations/011_intake_nickname.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('./migrations/012_activity_status.sql',import.meta.url),'utf8'));
  }
  let secret=configuredSecret;
  if(!secret){const existing=await db.query("SELECT value FROM app_meta WHERE key='staff_session_secret'");secret=existing.rows[0]?.value??token();if(!existing.rows.length)await db.query("INSERT INTO app_meta VALUES ('staff_session_secret',$1)",[secret]);}
@@ -69,7 +70,7 @@ export async function createBackend({dataDir='./.local/postgres',uploadDir='./.l
  route('get','/api/health',async(_,res)=>{await db.query('SELECT id FROM staff_accounts LIMIT 1');res.json({ok:true,database:production?'Supabase PostgreSQL':'PostgreSQL / PGlite',mode:'staff-portal'});});
  route('get','/api/bootstrap',async(req,res)=>res.json(await db.transaction(async tx=>{
   const s=await session(req,false,tx);if(!s)return {session:null,managedClassIds:[],classes:[],store:{members:[],enrollments:[],requirements:{}}};
-  const schemas=Object.fromEntries((await tx.query('SELECT * FROM registration_schemas')).rows.map(r=>[r.group_id,{group:r.group_id,version:r.version,fields:r.fields}]));
+  const schemas=Object.fromEntries((await tx.query('SELECT * FROM registration_schemas')).rows.map(r=>[r.group_id,normalizeRegistrationSchema({group:r.group_id,version:r.version,fields:r.fields})]));
   const requirements=Object.fromEntries((await tx.query('SELECT * FROM registration_fields')).rows.filter(r=>configurable.includes(r.field)).map(r=>[r.field,r.required]));
   const classes=(await tx.query('SELECT * FROM classes')).rows;
   const records=(await tx.query('SELECT * FROM members ORDER BY submitted_at DESC,id')).rows;const directory=new Map(records.map(m=>[m.id,m]));const members=records.filter(m=>m.registration_status==='approved').map(m=>profile(m,directory));const pendingRegistrations=records.filter(m=>m.registration_status==='pending').map(m=>profile(m,directory));
@@ -93,7 +94,7 @@ export async function createBackend({dataDir='./.local/postgres',uploadDir='./.l
  route('get','/api/member-portraits/:id',async(req,res)=>{if(rateLimits)await limit('member-portraits:'+req.ip,180,60000);const row=(await db.query("SELECT avatar FROM members WHERE id=$1 AND registration_status='approved'",[req.params.id])).rows[0];const key=row?.avatar?.split('/').at(-1);if(!key||!/^\w[\w-]{35}\.webp$/.test(key))fail(404,'Không tìm thấy ảnh.');res.type('webp').send(storage?await storage.get(key):await readFile(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ uploadDir,key)));});
  async function memberLinks(data,tx,self){for(const key of ['introducedBy','caregiver'])if(data[key]){if(data[key]===self)fail(400,'Không thể chọn chính hồ sơ này.');const row=(await tx.query("SELECT id FROM members WHERE id=$1 AND registration_status='approved' FOR KEY SHARE",[data[key]])).rows[0];if(!row)fail(400,'Vui lòng chọn huynh đệ đã được duyệt từ danh sách.');}}
  async function serialize(row){const refs=(await db.query("SELECT id,name,avatar,registration_status FROM members WHERE id=ANY($1::text[])",[[row.profile_data?.introducedBy,row.profile_data?.caregiver].filter(Boolean)])).rows;return profile(row,new Map(refs.map(r=>[r.id,r])));}
- async function schemaFor(group,executor=db){if(!Object.hasOwn(defaultSchemas,group))fail(400,'Nhóm sinh hoạt không hợp lệ.');const row=(await executor.query('SELECT * FROM registration_schemas WHERE group_id=$1',[group])).rows[0];if(!row)fail(503,'Biểu mẫu chưa sẵn sàng.');return {group,version:row.version,fields:row.fields};}
+ async function schemaFor(group,executor=db){if(!Object.hasOwn(defaultSchemas,group))fail(400,'Nhóm sinh hoạt không hợp lệ.');const row=(await executor.query('SELECT * FROM registration_schemas WHERE group_id=$1',[group])).rows[0];if(!row)fail(503,'Biểu mẫu chưa sẵn sàng.');return normalizeRegistrationSchema({group,version:row.version,fields:row.fields});}
  function validateValues(input,schema,staff=false,old={}){
   if(!input||typeof input!=='object'||Array.isArray(input))fail(400,'Thông tin biểu mẫu không hợp lệ.');
   const allowed=schema.fields.filter(f=>staff||!f.staffOnly);const keys=new Set(allowed.filter(f=>!f.readOnly).map(f=>f.key));
@@ -102,7 +103,7 @@ export async function createBackend({dataDir='./.local/postgres',uploadDir='./.l
   for(const f of allowed.filter(f=>!f.readOnly)){if(f.key==='job'&&(input.occupation??old.occupation)==='Không'){values.job='';continue;}let value=input[f.key]??old[f.key]??'';if(!['string','number'].includes(typeof value))fail(400,f.label+' không hợp lệ.');value=typeof value==='string'?value.trim():value;
    if(value===''){if(f.required)fail(400,'Vui lòng cung cấp '+f.label+'.');values[f.key]='';continue;}
    if(['year','number','team'].includes(f.type)){if(!/^\d+$/.test(String(value)))fail(400,f.label+' phải là số nguyên.');value=Number(value);if(!Number.isSafeInteger(value)||value<0||value>100000)fail(400,f.label+' không hợp lệ.');if(f.type==='year'&&(value<1900||value>currentYear))fail(400,f.label+' phải từ 1900 đến '+currentYear+'.');if(f.type==='team'&&![1,2,3].includes(value))fail(400,'Vui lòng chọn Tổ 1, 2 hoặc 3.');}
-   else{value=String(value);if(value.length>(f.type==='image'?1500000:f.type==='textarea'?5000:200))fail(400,f.label+' vượt độ dài cho phép.');if(f.type==='select'&&!f.options?.includes(value)&&!(f.allowOther&&value.startsWith('Khác: ')&&value.slice(6).trim()))fail(400,f.label+' không hợp lệ.');if(f.type==='ward'&&getTeam(value)===null)fail(400,'Vui lòng chọn phường trong danh sách.');if(f.type==='province'&&!legacyProvinces.includes(value))fail(400,'Vui lòng chọn tỉnh/thành theo địa chỉ cũ.');if(f.type==='phone'&&!/^0[35789]\d{8}$/.test(value))fail(400,f.label+' cần 10 chữ số.');if(f.type==='date'&&(!/^\d{4}-\d{2}-\d{2}$/.test(value)||Number.isNaN(Date.parse(value))||new Date(value).toISOString().slice(0,10)!==value))fail(400,'Ngày học không hợp lệ.');}
+   else{value=String(value);if(value.length>(f.type==='image'?1500000:f.type==='textarea'?5000:200))fail(400,f.label+' vượt độ dài cho phép.');if(f.type==='select'&&!f.options?.includes(value)&&!(f.key==='status'&&staff&&value===old.status)&&!(f.allowOther&&value.startsWith('Khác: ')&&value.slice(6).trim()))fail(400,f.label+' không hợp lệ.');if(f.type==='ward'&&getTeam(value)===null)fail(400,'Vui lòng chọn phường trong danh sách.');if(f.type==='province'&&!legacyProvinces.includes(value))fail(400,'Vui lòng chọn tỉnh/thành theo địa chỉ cũ.');if(f.type==='phone'&&!/^0[35789]\d{8}$/.test(value))fail(400,f.label+' cần 10 chữ số.');if(f.type==='date'&&(!/^\d{4}-\d{2}-\d{2}$/.test(value)||Number.isNaN(Date.parse(value))||new Date(value).toISOString().slice(0,10)!==value))fail(400,'Ngày học không hợp lệ.');}
    if(f.key==='birthday'&&String(value)>new Date(now()).toISOString().slice(0,10))fail(400,'Ngày sinh không thể ở tương lai.');
    values[f.key]=value;
   }
