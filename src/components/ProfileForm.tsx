@@ -246,7 +246,7 @@ export default function ProfileForm({
                 }
               >
                 {profileFieldLabel(f, values)}
-                {f.required && <span className="required"> *</span>}
+                {f.required ? <span className="required" aria-hidden="true"> *</span> : !f.readOnly && !profileFieldLabel(f, values).includes("(nếu có)") && " (nếu có)"}
               </label>
               {control(f)}
               {f.key === 'team' && (

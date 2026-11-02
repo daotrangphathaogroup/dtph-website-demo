@@ -275,7 +275,7 @@ export default function RegistrationIntake({
                 <div className="intake-step-body">
                   {index === 0 && (
                     <>
-                      <Field label="Họ và tên" htmlFor={`${id}-name`}>
+                      <Field required label="Họ và tên" htmlFor={`${id}-name`}>
                         <input
                           id={`${id}-name`}
                           required
@@ -285,7 +285,7 @@ export default function RegistrationIntake({
                           onChange={(e) => update("name", e.target.value)}
                         />
                       </Field>
-                      <Field label="Giới tính" htmlFor={`${id}-gender`}>
+                      <Field required label="Giới tính" htmlFor={`${id}-gender`}>
                         <select
                           id={`${id}-gender`}
                           required
@@ -297,7 +297,7 @@ export default function RegistrationIntake({
                           <option>Nữ</option>
                         </select>
                       </Field>
-                      <Field label="Ngày sinh" htmlFor={`${id}-birthday`}>
+                      <Field required label="Ngày sinh" htmlFor={`${id}-birthday`}>
                         <input
                           id={`${id}-birthday`}
                           required
@@ -318,7 +318,7 @@ export default function RegistrationIntake({
                   )}
                   {index === 1 && (
                     <>
-                      <Field label="Địa chỉ / Phường" htmlFor={`${id}-address`}>
+                      <Field required label="Địa chỉ / Phường" htmlFor={`${id}-address`}>
                         <select
                           id={`${id}-address`}
                           required
@@ -336,6 +336,7 @@ export default function RegistrationIntake({
                         </select>
                       </Field>
                       <Field
+                        required
                         label="Tổ"
                         htmlFor={`${id}-team`}
                         hint="Tự chọn theo phường. Có thể đổi tổ theo nhu cầu sinh hoạt."
@@ -359,6 +360,7 @@ export default function RegistrationIntake({
                   {index === 2 && (
                     <>
                       <Field
+                        required={!children}
                         label={
                           children ? "SĐT cá nhân (nếu có)" : "SĐT cá nhân"
                         }
@@ -416,6 +418,7 @@ export default function RegistrationIntake({
                   )}
                   {index === 3 && (
                     <>
+                      <p className="field-title">Ảnh đại diện <span className="required" aria-hidden="true">*</span></p>
                       <PortraitInput
                         value={String(values.avatar)}
                         onChange={(v) => update("avatar", v)}

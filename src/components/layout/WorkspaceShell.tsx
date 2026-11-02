@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import Brand from "../Brand";
+import SiteFooter from "./SiteFooter";
 import ManagementSidebar from "./ManagementSidebar";
 import { IconButton } from "../ui/primitives";
 import type { Session } from "../../lib/api";
@@ -314,13 +315,16 @@ export default function WorkspaceShell({
         className={`main-shell ${staff ? "has-management-sidebar" : ""}`}
         inert={mobile}
       >
-        <main
-          id="main-content"
-          className={`content ${page === "dashboard" || page === "members" ? "dashboard-content" : ""}`}
-          tabIndex={-1}
-        >
-          {children}
-        </main>
+        <div className="workspace-content-column">
+          <main
+            id="main-content"
+            className={`content ${page === "dashboard" || page === "members" ? "dashboard-content" : ""}`}
+            tabIndex={-1}
+          >
+            {children}
+          </main>
+          <SiteFooter />
+        </div>
         {staff && <ManagementSidebar />}
       </div>
     </div>

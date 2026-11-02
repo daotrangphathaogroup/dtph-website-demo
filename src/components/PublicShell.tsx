@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
+import SiteFooter from "./layout/SiteFooter";
 import Brand from "./Brand";
 export default function PublicShell({
   children,
@@ -42,6 +43,7 @@ export default function PublicShell({
       <main id="public-content" className="public-main" tabIndex={-1}>
         {children}
       </main>
+      <SiteFooter />
     </div>
   );
 }
