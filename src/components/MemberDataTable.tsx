@@ -7,6 +7,7 @@ import { sheetValue } from "../lib/sheet";
 import { useMemberSheet } from "../hooks/useMemberSheet";
 import MemberSheetToolbar from "../features/members/MemberSheetToolbar";
 import Pagination from "./ui/Pagination";
+import ActivityStatus from "./ActivityStatus";
 import { EmptyState, IconButton } from "./ui/primitives";
 export default function MemberDataTable({
   members,
@@ -200,6 +201,8 @@ export default function MemberDataTable({
                         </button>
                       ) : value === undefined || value === "" ? (
                         "—"
+                      ) : f.key === "status" ? (
+                        <ActivityStatus value={value} />
                       ) : (
                         displayValue(value, f)
                       )}

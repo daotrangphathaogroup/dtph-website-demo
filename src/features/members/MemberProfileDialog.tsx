@@ -1,15 +1,16 @@
-'use client';
-import {useMemo} from 'react';
-import dynamic from 'next/dynamic';
-import {Pencil, Check} from 'lucide-react';
-import type {Member} from '../../lib/types';
-import {groupLabels} from '../../lib/types';
-import type {ProfileValues, RegistrationSchema} from '../../lib/registration';
-import {displayValue, profileFieldLabel} from '../../lib/registration';
-import {initials} from '../../lib/utils';
-import Dialog from '../../components/ui/Dialog';
-import {Badge, Button, FeatureSkeleton} from '../../components/ui/primitives';
-const ProfileForm = dynamic(() => import('../../components/ProfileForm'), {
+"use client";
+import { useMemo } from "react";
+import dynamic from "next/dynamic";
+import { Pencil, Check } from "lucide-react";
+import type { Member } from "../../lib/types";
+import { groupLabels } from "../../lib/types";
+import type { ProfileValues, RegistrationSchema } from "../../lib/registration";
+import { displayValue, profileFieldLabel } from "../../lib/registration";
+import { initials } from "../../lib/utils";
+import Dialog from "../../components/ui/Dialog";
+import ActivityStatus from "../../components/ActivityStatus";
+import { Badge, Button, FeatureSkeleton } from "../../components/ui/primitives";
+const ProfileForm = dynamic(() => import("../../components/ProfileForm"), {
   loading: () => <FeatureSkeleton />,
 });
 export default function MemberProfileDialog({
@@ -38,13 +39,15 @@ export default function MemberProfileDialog({
       ...member.profileData,
       id: member.id,
       joined: member.joined,
-      ...(member.team && !member.profileData?.team ? {team: member.team} : {}),
+      ...(member.team && !member.profileData?.team
+        ? { team: member.team }
+        : {}),
     }),
     [member],
   );
   return (
     <Dialog
-      title={editing ? 'Chỉnh sửa hồ sơ' : 'Hồ sơ huynh đệ'}
+      title={editing ? "Chỉnh sửa hồ sơ" : "Hồ sơ huynh đệ"}
       description={groupLabels[member.group]}
       onClose={onClose}
       className="profile-dialog"
@@ -63,7 +66,12 @@ export default function MemberProfileDialog({
           <div className="detail-person">
             <span className="avatar large">
               {member.avatar ? (
-                <img src={member.avatar} alt="Ảnh đại diện" width={72} height={96} />
+                <img
+                  src={member.avatar}
+                  alt="Ảnh đại diện"
+                  width={72}
+                  height={96}
+                />
               ) : (
                 initials(member.name)
               )}
@@ -72,24 +80,31 @@ export default function MemberProfileDialog({
               <h3>{member.name}</h3>
               <div className="detail-badges">
                 <Badge tone="blue">{member.id}</Badge>
-                {member.registrationStatus === 'pending' && <Badge tone="gold">Chờ duyệt</Badge>}
+                {member.registrationStatus === "pending" && (
+                  <Badge tone="gold">Chờ duyệt</Badge>
+                )}
               </div>
             </div>
           </div>
           <dl className="detail-grid">
             {schema.fields
-              .filter((f) => f.type !== 'image')
+              .filter((f) => f.type !== "image")
               .map((field) => (
                 <div key={field.key}>
                   <dt>{profileFieldLabel(field, values)}</dt>
                   <dd>
-                    {member.references?.[field.key]?.name ?? displayValue(values[field.key], field)}
+                    {field.key === "status" && values[field.key] ? (
+                      <ActivityStatus value={values[field.key]} />
+                    ) : (
+                      (member.references?.[field.key]?.name ??
+                      displayValue(values[field.key], field))
+                    )}
                   </dd>
                 </div>
               ))}
           </dl>
           <footer className="form-actions">
-            {canEdit && member.registrationStatus === 'pending' && (
+            {canEdit && member.registrationStatus === "pending" && (
               <Button busy={approving} onClick={onApprove}>
                 <Check size={16} />
                 Duyệt đăng ký
@@ -97,7 +112,11 @@ export default function MemberProfileDialog({
             )}
             {canEdit && (
               <Button
-                variant={member.registrationStatus === 'pending' ? 'secondary' : 'primary'}
+                variant={
+                  member.registrationStatus === "pending"
+                    ? "secondary"
+                    : "primary"
+                }
                 onClick={() => onEdit(true)}
               >
                 <Pencil size={16} />

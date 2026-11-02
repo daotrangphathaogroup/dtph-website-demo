@@ -1,57 +1,58 @@
 {
   "meta": {
-    "name": "Phật Hào · Quản lý hồ sơ",
-    "description": "Rebuild screen hierarchy around records, review queues and optional statistics. Reference is a neutral issue-management workspace. Exact colors measured; spacing and interactions inferred from a still image.",
+    "name": "Đạo tràng Phật Hào · Soft community dashboard",
+    "description": "Measured soft reference adapted to a clear staff management hierarchy: scoped filters, approved/group/pending KPIs, direct review access, bounded analytical panels and detailed records. The current composition follows the user’s request for clearer information grouping.",
     "source_references": [
       {
         "type": "image",
-        "file": "codex-clipboard-3d3e4927-d2e5-47c9-996e-5a00536bd613.png",
-        "width": 1200,
-        "height": 1098
+        "file": "codex-clipboard-19f9d9d0-c2a8-45b7-8b78-6a8189730498.png",
+        "width": 2048,
+        "height": 1536
       }
     ],
-    "created_at": "2026-10-30"
+    "created_at": "2026-11-02"
   },
   "design_system": {
     "color": {
-      "palette_type": "Neutral gray surfaces with sparse semantic status accents",
+      "palette_type": "Cool neutral workspace with complementary coral and cyan focal cards",
       "primary": {
-        "hex": "#151515",
-        "role": "Measured foreground; headings and readable table content"
+        "hex": "#0c0d0e",
+        "role": "Measured foreground for readable labels and metrics"
       },
       "secondary": {
-        "hex": "#5a86b6",
-        "role": "Measured blue; focus and chart strokes"
+        "hex": "#60636c",
+        "role": "Derived secondary foreground darkened from measured #909093 for readable small labels"
       },
       "accent": {
-        "hex": "#e3c67c",
-        "role": "Measured amber; pending review counts that need staff attention"
+        "hex": "#3e7ff1",
+        "role": "Measured blue for chart marks, focus and selected data; darker #2462ce for white-text actions"
       },
       "neutral": {
         "scale": [
           "#ffffff",
-          "#f7f7f7",
-          "#f0f0f0",
-          "#dededf",
-          "#c8c8ca",
-          "#a4afa8",
-          "#60645d",
-          "#151515"
+          "#f8f9fc",
+          "#f5f6fa",
+          "#e6e7ec",
+          "#cfd0db",
+          "#909093",
+          "#60636c",
+          "#4f5051",
+          "#0c0d0e"
         ],
-        "usage": "Ordered light to dark. Background #f0f0f0 and dark endpoint #151515 measured. #f7f7f7 popup/control surface and #c8c8ca borders are derived neutral steps. Small copy uses measured #60645d."
+        "usage": "Light to dark. Reference background #f5f6fa and foreground #0c0d0e used verbatim. Outer gray #cfd0db is a presentation frame in the source, not a 32%-width application border."
       },
       "semantic": {
-        "success": "#356e51",
-        "warning": "#705718",
-        "error": "#c6405a",
-        "info": "#5a86b6"
+        "success": "#34704f",
+        "warning": "#795b19",
+        "error": "#b83c53",
+        "info": "#255fc6"
       },
       "surface": {
-        "background": "#f0f0f0",
-        "card": "#f7f7f7",
+        "background": "#f5f6fa",
+        "card": "#ffffff",
         "elevated": "#ffffff"
       },
-      "contrast_strategy": "High contrast copy on gray; amber background always paired with dark label and numeric count; status never conveyed solely by hue.",
+      "contrast_strategy": "Near-black on cool light surfaces. Secondary text is darkened for legibility. Gradient cards use dark text and raw counts; color is never the only label.",
       "measurement": {
         "k": 8,
         "sampling": {
@@ -62,113 +63,120 @@
       },
       "measured_palette": [
         {
-          "hex": "#f0f0f0",
-          "coverage": 0.6814,
+          "hex": "#f5f6fa",
+          "coverage": 0.6257,
           "role": "background"
         },
         {
-          "hex": "#dededf",
-          "coverage": 0.2621,
+          "hex": "#cfd0db",
+          "coverage": 0.3198,
           "role": "unassigned"
         },
         {
-          "hex": "#151515",
-          "coverage": 0.0158,
+          "hex": "#98def5",
+          "coverage": 0.0217,
+          "role": "unassigned"
+        },
+        {
+          "hex": "#f89082",
+          "coverage": 0.0099,
+          "role": "unassigned"
+        },
+        {
+          "hex": "#0c0d0e",
+          "coverage": 0.0076,
           "role": "text"
         },
         {
-          "hex": "#a4afa8",
-          "coverage": 0.0157,
-          "role": "unassigned"
-        },
-        {
-          "hex": "#60645d",
-          "coverage": 0.0118,
-          "role": "unassigned"
-        },
-        {
-          "hex": "#e3c67c",
-          "coverage": 0.0076,
+          "hex": "#3e7ff1",
+          "coverage": 0.0065,
           "role": "accent"
         },
         {
-          "hex": "#5a86b6",
-          "coverage": 0.0031,
+          "hex": "#909093",
+          "coverage": 0.0046,
           "role": "unassigned"
         },
         {
-          "hex": "#b47852",
-          "coverage": 0.0025,
+          "hex": "#4f5051",
+          "coverage": 0.0042,
           "role": "unassigned"
         }
       ],
       "brand_exceptions": {
-        "logo": "Preserve the original multicolor logo",
-        "status_colors": "Retain existing green approval and red rejection meaning; no decorative colored card backgrounds",
-        "controls": "Near-white controls and dialogs distinguish editable fields from flat gray canvas"
+        "logo": "Keep original community logo and Đạo tràng → Phật Hào order",
+        "focal_cards": "Blue approved total, amber pending work; three communities receive equal-weight neutral cards.",
+        "status": "Approval and activity colors retain readable labels",
+        "shell_surfaces": "Topbar/right sidebar white; left sidebar uses existing #eef1f8 surface-hover token; main canvas stays measured #f5f6fa. Stronger rules visually separate regions without dark ornamental panels."
       },
       "accessibility_adjustments": [
         {
-          "hex": "#49390f",
-          "source": "#e3c67c",
-          "usage": "Dark readable label over the measured amber pending badge"
+          "hex": "#2462ce",
+          "source": "#3e7ff1",
+          "usage": "White-text primary actions"
         },
         {
-          "hex": "#315d89",
-          "source": "#5a86b6",
-          "usage": "Darker blue for small text; measured original reserved for chart marks"
+          "hex": "#60636c",
+          "source": "#909093",
+          "usage": "Small secondary text"
+        },
+        {
+          "hex": "#d85e70",
+          "source": "#f89082",
+          "usage": "Pending-series stroke, darker for visibility on a light plot"
         }
-      ]
+      ],
+      "source_variants": []
     },
     "typography": {
       "type_scale": {
         "display": {
-          "size": "24px",
-          "weight": 600,
-          "line_height": 1.3,
-          "tracking": "-0.02em"
+          "size": "48px",
+          "weight": 400,
+          "line_height": 1.2,
+          "tracking": "-0.04em"
         },
         "heading_1": {
-          "size": "22px",
-          "weight": 600,
-          "line_height": 1.25,
-          "tracking": "-0.02em"
+          "size": "30px",
+          "weight": 500,
+          "line_height": 1.3,
+          "tracking": "-0.035em"
         },
         "heading_2": {
-          "size": "15px",
-          "weight": 600,
+          "size": "18px",
+          "weight": 400,
           "line_height": 1.4,
-          "tracking": "-0.015em"
+          "tracking": "-0.02em"
         },
         "heading_3": {
-          "size": "13px",
+          "size": "16px",
           "weight": 500,
-          "line_height": 1.45,
-          "tracking": "0em"
+          "line_height": 1.4,
+          "tracking": "-0.02em"
         },
         "body": {
-          "size": "13px",
+          "size": "14px",
           "weight": 400,
-          "line_height": 1.5,
+          "line_height": 1.55,
           "tracking": "0em"
         },
         "body_small": {
-          "size": "12px",
+          "size": "13px",
           "weight": 400,
           "line_height": 1.5,
           "tracking": "0em"
         },
         "caption": {
-          "size": "11px",
+          "size": "12px",
           "weight": 400,
           "line_height": 1.5,
           "tracking": "0em"
         },
         "overline": {
-          "size": "12px",
+          "size": "11px",
           "weight": 500,
           "line_height": 1.5,
-          "tracking": "0em"
+          "tracking": "0.02em"
         }
       },
       "font_families": {
@@ -176,115 +184,147 @@
         "body": "Geist, sans-serif",
         "mono": "ui-monospace, monospace"
       },
-      "font_style_notes": "Rounded geometric sans inferred from reference; keep existing self-hosted Geist with Vietnamese glyphs rather than claiming an exact font identification."
+      "font_style_notes": "Self-hosted Geist with Vietnamese coverage; reference font identity unknown. Overview uses 40px total and 32px subgroup counts with tabular numerals; body remains 13–14px."
     },
     "spacing": {
       "base_unit": "4px",
-      "scale": ["4px", "8px", "12px", "16px", "20px", "24px", "32px", "40px"],
-      "content_density": "compact but legible",
-      "section_rhythm": "8–16px within toolbars; 20–24px content gutter; 44–52px data rows"
+      "scale": [
+        "4px",
+        "8px",
+        "12px",
+        "16px",
+        "20px",
+        "24px",
+        "32px",
+        "40px",
+        "48px"
+      ],
+      "content_density": "Comfortable analytics with compact operational tables and focused forms",
+      "section_rhythm": "24px between work areas, 12px between KPI cards, 16px between analytical panels; existing responsive content gutters."
     },
     "layout": {
-      "grid_system": "Full viewport continuous gray topbar and sidebar; flat main surface with compact filters, counts, mode navigation and list. Statistics and pending are separate working views.",
+      "grid_system": "Labeled filter panel, equal-weight total/three-community/pending KPI row, expandable review area, two clearly bounded analytics panels and full-width detailed sheet. Continuous topbar and both sidebars remain.",
       "max_content_width": "1800px",
       "columns": {
         "sidebar": "224px / 64px collapsed",
-        "content": 1,
-        "statistics": 2,
-        "forms": 1
+        "summary": "Five aligned KPIs; below 800px available width, total/pending row then three equal community cards",
+        "analytics": "1.45fr / 1fr overview, stacked below 800px available column width; group statistics unchanged",
+        "forms": 1,
+        "accounts": "320px / flexible directory"
       },
-      "gutter": "24px desktop / 16px mobile",
+      "gutter": "32px desktop / 20px tablet / 16px mobile",
       "breakpoints": {
         "mobile": "760px",
+        "analytics_stack": "980px",
         "tablet": "1100px",
-        "wide": "1400px"
+        "wide": "1200px"
       },
-      "alignment_tendency": "strict left aligned grid"
+      "alignment_tendency": "Asymmetric left-to-right analysis, aligned edges; no artificial screenshot outer frame"
     },
     "shape": {
       "border_radius": {
-        "small": "5px",
-        "medium": "8px",
-        "large": "10px",
+        "small": "12px",
+        "medium": "14px",
+        "large": "20px standard / 26px analytics",
         "pill": "999px"
       },
-      "border_usage": "subtle 1px neutral outlines",
-      "divider_style": "single cool grey horizontal rules"
+      "border_usage": "Minimal card borders, hairline list separators, precise table rules and focus boundaries",
+      "divider_style": "Fine cool-gray rules between review entries and analytical columns"
     },
     "elevation": {
-      "shadow_style": "Flat page and tables; shadows only on floating menus, tooltip and modal",
+      "shadow_style": "Soft diffused, low contrast",
       "levels": {
-        "low": "none",
-        "medium": "0 8px 28px #15151520",
-        "high": "0 20px 64px #15151520"
+        "low": "0 8px 28px #252b4510",
+        "medium": "0 12px 36px #1a203014, 0 2px 6px #1a203008",
+        "high": "0 24px 80px #1a203024"
       },
-      "depth_cues": "Neutral surface changes and fine row dividers; elevated controls only"
+      "depth_cues": "White total surface on cool canvas, colored focal cards, gray children strip, restrained depth for overlays"
     },
     "iconography": {
-      "style": "Monochrome outlined utility icons; no ornamental icon disks",
-      "stroke_weight": "1.5px",
-      "size_scale": ["14px", "16px", "18px", "20px", "24px"],
+      "style": "Fine Lucide outlines; translucent utility squares only within two focal cards",
+      "stroke_weight": "1.5–2px",
+      "size_scale": [
+        "14px",
+        "16px",
+        "18px",
+        "20px",
+        "24px"
+      ],
       "preferred_set": "Existing Lucide React"
     },
     "motion": {
-      "easing": "ease-out",
+      "easing": "cubic-bezier(0.2,0.7,0.2,1)",
       "duration_scale": {
-        "micro": "120ms",
-        "normal": "160ms",
-        "macro": "0ms"
+        "micro": "150ms",
+        "normal": "180ms",
+        "macro": "240ms"
       },
-      "entrance_pattern": "instant, no entrance animation inferred from still image",
-      "exit_pattern": "instant",
-      "philosophy": "minimal functional; respect reduced motion"
+      "entrance_pattern": "240ms subtle intake reveal; 160ms utility entry",
+      "exit_pattern": "Immediate dismissal and focus return",
+      "philosophy": "Functional only; all animation and transitions disabled for reduced-motion preference"
     },
     "components": {
-      "button_style": "Small gray utility buttons; dark primary for committing a form; semantic green/red for review",
-      "input_style": "Near-white rectangular fields, subtle border and visible blue focus; compact filter controls",
-      "card_style": "Avoid cards around lists. Plain divided rows and one working surface. Bounded boxes only for dialog, form and optional statistics.",
-      "navigation_pattern": "Gray full-height rail with light selected row. List / Pending / Statistics mode buttons with underline. Logo remains in continuous topbar.",
-      "modal_style": "Centered opaque white dialog with thin border; no backdrop blur",
-      "list_style": "Primary working view; compact rows, aligned columns, searchable and sortable data, existing export, pagination and detailed sheet controls.",
-      "component_notes": "Remove promotional hero, multicolor background, stat cards and always-visible chart grid. Put records first; show pending counts in amber. Preserve roles and backend contracts."
+      "button_style": "Readable blue commits, quiet utility controls, three peer community filter cards with pressed/focus feedback, and an actionable pending KPI.",
+      "input_style": "White fields with soft corners; pill-shaped filter selectors and search; fine focus boundaries",
+      "card_style": "20px neutral panels and compact metric cards. Blue total, amber pending work, neutral peer community cards with color dots. Distinct filters, analytics and records; no decorative gradient KPI mosaic.",
+      "navigation_pattern": "Flat white continuous topbar, 72px desktop / 60px mobile, fine bottom divider and no drop shadow. Larger original logo/wordmark; staff identity and role form one quiet account control with dark circular initials. Pale blue-gray left sidebar, cool main canvas and white right sidebar retain clear dividing rules. No path/breadcrumb. Existing collapse, menu keyboard behavior and accessible mobile drawer remain.",
+      "modal_style": "Centered opaque white native dialog, 22px corners, 24px padding, bounded viewport, Escape and focus return preserved",
+      "list_style": "Right-side latest pending names link to actual profiles; full review stays available. Detailed sheet preserves filtering, sorting, resize, select, export and pagination.",
+      "component_notes": "Group KPIs have equal width and aligned numbers. Pending opens full review before charts. Six shared selects replace the month strip. Two-level analytical headers align. Existing table, chart and form behavior remains."
     }
   },
   "design_style": {
     "aesthetic": {
-      "mood": ["focused", "quiet", "practical", "readable"],
-      "visual_metaphor": "A shared administrative register",
+      "mood": [
+        "calm",
+        "airy",
+        "friendly",
+        "precise"
+      ],
+      "visual_metaphor": "A considered community workspace",
       "era_influence": "Contemporary restrained SaaS dashboards",
-      "genre": "Information-dense operations workspace",
-      "personality_traits": ["organized", "quiet", "reliable"],
-      "adjectives": ["flat", "neutral", "compact", "purposeful"]
+      "genre": "Soft contemporary administrative dashboard",
+      "personality_traits": [
+        "reliable",
+        "considered",
+        "understated"
+      ],
+      "adjectives": [
+        "light",
+        "rounded",
+        "colorful",
+        "readable"
+      ]
     },
     "visual_language": {
       "complexity": "minimal",
-      "ornamentation": "none",
-      "whitespace_usage": "Only functional separation; no oversized hero or outer frame",
-      "visual_weight_distribution": "Names and pending states are strongest, supporting metadata is gray",
-      "focal_strategy": "Immediate access to records and pending review; analytics on demand",
+      "ornamentation": "Small semantic color accents and sparse chart dots only",
+      "whitespace_usage": "Open analytics and clear grouping, with compact records below",
+      "visual_weight_distribution": "Approved total and pending work anchor a compact aligned KPI row; charts and detailed records have distinct labeled panels.",
+      "focal_strategy": "Data scope, approved total, pending actions, trends, records",
       "contrast_level": "dark-on-light dominant, low contrast structural borders",
-      "texture_usage": "none"
+      "texture_usage": "Static sparse SVG dots clipped to chart area only"
     },
     "composition": {
-      "hierarchy_method": "Task-based modes, aligned rows and sparse semantic status accents",
-      "balance_type": "asymmetric sidebar plus aligned main grid",
+      "hierarchy_method": "Numeric scale, asymmetric columns, surface and color grouping",
+      "balance_type": "Asymmetric analytical focal area within a consistent content grid",
       "flow_direction": "left navigation, top-to-bottom content",
-      "grouping_strategy": "One work surface with separators; filters in a dismissible popup",
-      "negative_space_role": "Distinguish controls from records without wasting vertical space"
+      "grouping_strategy": "Filters → current counts → pending review → analysis → full records",
+      "negative_space_role": "Separate functional areas without adding empty presentation framing"
     },
     "imagery": {
       "photo_treatment": "Existing portraits kept; no decorative stock photography",
       "illustration_style": "none",
-      "graphic_elements": "Utility icons, actual portraits and optional data charts only",
-      "pattern_usage": "none",
+      "graphic_elements": "Peer community dots, actual monthly series, distribution tracks, original logo and functional portraits.",
+      "pattern_usage": "Sparse chart dots only",
       "image_shape": "Existing portrait 3x4 and original logo"
     },
     "interaction_feel": {
       "feedback_style": "immediate selected state and clear loading/empty/error states",
-      "hover_behavior": "Subtle gray row highlight; delayed utility tooltip and keyboard focus",
-      "transition_personality": "snappy",
+      "hover_behavior": "Quiet neutral row and utility hover; blue focus outline; delayed tooltip",
+      "transition_personality": "180ms quiet state changes",
       "loading_style": "Static placeholders and spinner only during a request",
-      "microinteraction_density": "Only to explain actions or state; no bounce, reveal or ornamental animation"
+      "microinteraction_density": "Only existing workflow feedback, focus, progress and data tooltip"
     },
     "brand_voice_in_ui": {
       "tone": "calm and helpful Vietnamese appropriate to Đạo Tràng",
@@ -296,17 +336,24 @@
   },
   "visual_effects": {
     "overview": {
-      "effect_intensity": "none",
+      "effect_intensity": "subtle-accent",
       "performance_tier": "lightweight",
-      "fallback_strategy": "No decorative effects; reduced motion disables transitions and spinner",
-      "primary_technology": "CSS with native HTML controls and static SVG chart"
+      "fallback_strategy": "Native content and static CSS/SVG remain fully usable with reduced motion",
+      "primary_technology": "Static CSS radial gradients and responsive SVG data charts"
     },
     "background_effects": {
       "type": "none",
-      "description": "Flat measured gray; no gradient frame",
+      "description": "Flat cool canvas and opaque cards; gradient-card mosaic replaced by equal-weight administrative KPIs",
       "technology": "CSS background-color",
       "params": {
-        "color_palette": ["#f0f0f0", "#dededf"],
+        "color_palette": [
+          "#f89082",
+          "#98def5",
+          "#3e7ff1",
+          "#ded7f7",
+          "#f5b6da",
+          "#63e5db"
+        ],
         "speed": 0,
         "density": "none",
         "opacity": 1,
@@ -321,7 +368,10 @@
       "params": {
         "count": 0,
         "shape": "none",
-        "size_range": [0, 0],
+        "size_range": [
+          0,
+          0
+        ],
         "movement_pattern": "none",
         "color_behavior": "none",
         "interaction": "none",
@@ -360,7 +410,10 @@
       "parallax": {
         "enabled": false,
         "layers": 0,
-        "depth_range": [0, 0],
+        "depth_range": [
+          0,
+          0
+        ],
         "speed_curve": "none"
       },
       "scroll_triggered_animations": {
@@ -443,6 +496,6 @@
         "filter_effects": "none"
       }
     },
-    "composite_notes": "Still reference provides no timing evidence. Inferred interactions: 120ms color transitions, 450ms tooltip dwell, immediate focus feedback. No WebGL, blur, animations, scene effects or decorative cards. Retain actual data chart and avatar crop behavior."
+    "composite_notes": "Static CSS surfaces with semantic accents; responsive SVG curves pass through actual monthly observations with no overshoot. Sparse plot dots and functional tooltips only. No overview ring or gradient-card mosaic; group statistics retain composition. No animation loops, shaders or decorative rendering dependencies."
   }
 }

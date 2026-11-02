@@ -216,7 +216,6 @@ export default function App({
     <WorkspaceShell
       page={page}
       group={group}
-      heading={heading}
       staff={staff}
       waiting={waiting}
       onNavigate={navigate}

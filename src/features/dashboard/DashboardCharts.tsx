@@ -3,7 +3,12 @@ import { ChartNoAxesCombined, ChartColumn, ChartLine } from "lucide-react";
 import MonthlyAreaChart from "./MonthlyAreaChart";
 import { EmptyState, SegmentedControl } from "../../components/ui/primitives";
 import type { Distribution } from "../../lib/dashboard";
-const palette = ["#d1a55f", "#48a58f", "#a480c8", "#6696b2"];
+const palette = [
+  "var(--chart-amber)",
+  "var(--chart-sage)",
+  "var(--chart-stroke)",
+  "var(--chart-muted)",
+];
 export type Dimension = "ward" | "age" | "gender";
 function Donut({ items, total }: { items: Distribution[]; total: number }) {
   let angle = 0;
@@ -90,6 +95,7 @@ function DashboardCharts({
   composition,
   bars,
   months,
+  pendingMonths,
   month,
   period,
   dimension,
@@ -100,6 +106,7 @@ function DashboardCharts({
   composition: Distribution[];
   bars: Distribution[];
   months: number[];
+  pendingMonths: number[];
   month: number | null;
   period: string;
   dimension: Dimension;
@@ -111,24 +118,95 @@ function DashboardCharts({
   );
   return (
     <>
-      <div className="dashboard-charts">
-        <section className="dashboard-card">
-          <header className="chart-heading">
+      <div
+        className={`dashboard-analysis ${!scope ? "overview-analysis" : ""}`}
+      >
+        <section className="dashboard-card dashboard-month-chart">
+          <header className="dashboard-card-heading">
             <div className="chart-title">
               <div>
-                <h2>{scope ? "Phân bố theo Tổ" : "Cơ cấu nhóm"}</h2>
-                <p>
-                  {scope
-                    ? "Huynh đệ theo từng tổ sinh hoạt"
-                    : "Thành phần các nhóm sinh hoạt"}
-                </p>
+                <h2>Đăng ký theo tháng</h2>
+                <p>{period}</p>
               </div>
             </div>
-            <span className="chart-unit">Người</span>
+            <SegmentedControl
+              label="Kiểu biểu đồ đăng ký"
+              value={chartView}
+              onChange={setChartView}
+              items={[
+                {
+                  value: "area",
+                  label: (
+                    <>
+                      <ChartLine size={14} />
+                      Đường
+                    </>
+                  ),
+                },
+                {
+                  value: "bars",
+                  label: (
+                    <>
+                      <ChartColumn size={14} />
+                      Cột
+                    </>
+                  ),
+                },
+              ]}
+            />
           </header>
-          <Donut items={composition} total={total} />
+          {chartView === "area" ? (
+            <MonthlyAreaChart months={months} pendingMonths={pendingMonths} />
+          ) : (
+            <div
+              className="monthly-bars"
+              role="img"
+              aria-label={months
+                .map((n, i) => `Tháng ${i + 1}: ${n}`)
+                .join(", ")}
+            >
+              {months.map((n, i) => (
+                <div
+                  className={`monthly-column ${month === i + 1 ? "active" : ""}`}
+                  key={i}
+                >
+                  <span className="monthly-value">{n}</span>
+                  <div className="monthly-track">
+                    <i
+                      style={{ height: n ? `${(n / maxMonth) * 100}%` : "0%" }}
+                    />
+                  </div>
+                  <span>T{i + 1}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {!total && (
+            <p className="dashboard-zero-note">
+              Chưa có hồ sơ đã duyệt phù hợp với bộ lọc.
+            </p>
+          )}
         </section>
-        <section className="dashboard-card">
+
+        {scope && (
+          <section className="dashboard-card dashboard-structure">
+            <header className="chart-heading">
+              <div className="chart-title">
+                <div>
+                  <h2>{scope ? "Phân bố theo Tổ" : "Cơ cấu nhóm"}</h2>
+                  <p>
+                    {scope
+                      ? "Huynh đệ theo từng tổ sinh hoạt"
+                      : "Thành phần các nhóm sinh hoạt"}
+                  </p>
+                </div>
+              </div>
+              <span className="chart-unit">Người</span>
+            </header>
+            <Donut items={composition} total={total} />
+          </section>
+        )}
+        <section className="dashboard-card dashboard-distribution">
           <header className="dashboard-card-heading">
             <div className="chart-title">
               <div>
@@ -150,70 +228,6 @@ function DashboardCharts({
           <Bars items={bars} />
         </section>
       </div>
-      <section className="dashboard-card dashboard-month-chart">
-        <header className="dashboard-card-heading">
-          <div className="chart-title">
-            <div>
-              <h2>Đăng ký theo tháng</h2>
-              <p>{period}</p>
-            </div>
-          </div>
-          <SegmentedControl
-            label="Kiểu biểu đồ đăng ký"
-            value={chartView}
-            onChange={setChartView}
-            items={[
-              {
-                value: "area",
-                label: (
-                  <>
-                    <ChartLine size={14} />
-                    Đường
-                  </>
-                ),
-              },
-              {
-                value: "bars",
-                label: (
-                  <>
-                    <ChartColumn size={14} />
-                    Cột
-                  </>
-                ),
-              },
-            ]}
-          />
-        </header>
-        {chartView === "area" ? (
-          <MonthlyAreaChart months={months} />
-        ) : (
-          <div
-            className="monthly-bars"
-            role="img"
-            aria-label={months.map((n, i) => `Tháng ${i + 1}: ${n}`).join(", ")}
-          >
-            {months.map((n, i) => (
-              <div
-                className={`monthly-column ${month === i + 1 ? "active" : ""}`}
-                key={i}
-              >
-                <span className="monthly-value">{n}</span>
-                <div className="monthly-track">
-                  <i
-                    style={{ height: n ? `${(n / maxMonth) * 100}%` : "0%" }}
-                  />
-                </div>
-                <span>T{i + 1}</span>
-              </div>
-            ))}
-          </div>
-        )}
-        {!total && (
-          <p className="dashboard-zero-note">
-            Chưa có hồ sơ đã duyệt phù hợp với bộ lọc.
-          </p>
-        )}
-      </section>
     </>
   );
 }

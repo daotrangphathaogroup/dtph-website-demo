@@ -205,7 +205,7 @@ test("Overview combines filters, metrics, charts and records while group pages k
       onRefresh: async () => {},
     }),
   );
-  assert.match(markup, /Số liệu tổng quan/);
+  assert.match(markup, /Hiện trạng hồ sơ/);
   assert.match(markup, /Cơ cấu nhóm/);
   assert.match(markup, /Đăng ký theo tháng/);
   assert.match(markup, /Xuất CSV/);

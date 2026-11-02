@@ -1,0 +1,208 @@
+{
+  "node_count": 597,
+  "unverified_node_count": 0,
+  "raw_edge_count": 1470,
+  "non_object_edges": 0,
+  "missing_endpoint_edges": 0,
+  "dangling_endpoint_edges": 3,
+  "external_reference_edges": 55,
+  "self_loop_edges": 2,
+  "valid_candidate_edges": 1412,
+  "exact_duplicate_edges": 0,
+  "directed_unique_endpoint_pairs": 1333,
+  "directed_same_endpoint_collapsed_edges": 79,
+  "undirected_unique_endpoint_pairs": 1331,
+  "undirected_same_endpoint_collapsed_edges": 81,
+  "same_endpoint_group_count": 76,
+  "relation_variant_groups": 45,
+  "source_file_variant_groups": 0,
+  "source_location_variant_groups": 32,
+  "context_variant_groups": 1,
+  "post_build_graph_type": "Graph",
+  "post_build_node_count": 612,
+  "post_build_edge_count": 1388,
+  "post_build_error": "",
+  "producer_suppression": {
+    "path": "/Users/hoanganh/.local/share/uv/tools/graphifyy/lib/python3.13/site-packages/graphify/extract.py",
+    "total_sites": 12,
+    "sites": [
+      {
+        "line": 1830,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 2394,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 2396,
+        "name": "seen_doc_refs",
+        "tuple_arity": 0,
+        "sample": "seen_doc_refs: set[str] = set()"
+      },
+      {
+        "line": 3063,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 3210,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n.get(\"id\") for n in nodes}"
+      },
+      {
+        "line": 4351,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 4537,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 8005,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 8113,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 8192,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 8717,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 8718,
+        "name": "seen_edges",
+        "tuple_arity": 4,
+        "sample": "seen_edges: set[tuple[str, str, str, str | None]] = set()"
+      }
+    ],
+    "error": ""
+  },
+  "examples": [
+    {
+      "source": "server_postgres_createpostgresdatabase",
+      "target": "server_postgres_createpostgresdatabase_transaction",
+      "edge_count": 3,
+      "relations": [
+        "calls",
+        "contains",
+        "indirect_call"
+      ],
+      "source_files": [
+        "server/postgres.mjs"
+      ],
+      "source_locations": [
+        "L6",
+        "L7"
+      ],
+      "contexts": [
+        "",
+        "call",
+        "collection"
+      ]
+    },
+    {
+      "source": "src_components_ui_primitives",
+      "target": "src_components_ui_iconbutton",
+      "edge_count": 3,
+      "relations": [
+        "imports_from",
+        "re_exports"
+      ],
+      "source_files": [
+        "src/components/ui/primitives.tsx"
+      ],
+      "source_locations": [
+        "L1",
+        "L45"
+      ],
+      "contexts": [
+        "export",
+        "import",
+        "re-export"
+      ]
+    },
+    {
+      "source": "tests_member_updates_test",
+      "target": "tests_member_updates_test_onpending",
+      "edge_count": 3,
+      "relations": [
+        "contains"
+      ],
+      "source_files": [
+        "tests/member-updates.test.mjs"
+      ],
+      "source_locations": [
+        "L12",
+        "L17",
+        "L19"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "server_backend_createbackend",
+      "target": "server_backend_createbackend_limit",
+      "edge_count": 2,
+      "relations": [
+        "calls",
+        "contains"
+      ],
+      "source_files": [
+        "server/backend.mjs"
+      ],
+      "source_locations": [
+        "L54",
+        "L58"
+      ],
+      "contexts": [
+        "",
+        "call"
+      ]
+    },
+    {
+      "source": "server_backend_createbackend",
+      "target": "server_backend_createbackend_session",
+      "edge_count": 2,
+      "relations": [
+        "calls",
+        "contains"
+      ],
+      "source_files": [
+        "server/backend.mjs"
+      ],
+      "source_locations": [
+        "L62",
+        "L72"
+      ],
+      "contexts": [
+        "",
+        "call"
+      ]
+    }
+  ]
+}

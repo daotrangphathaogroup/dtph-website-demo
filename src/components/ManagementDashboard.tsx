@@ -1,16 +1,7 @@
 "use client";
 import { useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import {
-  BarChart3,
-  List,
-  Clock3,
-  Users,
-  Flower2,
-  Leaf,
-  Baby,
-  ArrowDown,
-} from "lucide-react";
+import { BarChart3, List, Clock3, ChevronDown } from "lucide-react";
 import { EmptyState } from "./ui/primitives";
 import type { Member, MemberGroup } from "../lib/types";
 import type { RegistrationSchema } from "../lib/registration";
@@ -27,6 +18,7 @@ import {
   todayInVietnam,
 } from "../lib/dashboard";
 import type { DashboardFilters as Filters } from "../lib/dashboard";
+import OverviewSummary from "../features/dashboard/OverviewSummary";
 import OverviewFilters from "../features/dashboard/OverviewFilters";
 import DashboardFilters from "../features/dashboard/DashboardFilters";
 import DashboardCharts from "../features/dashboard/DashboardCharts";
@@ -173,49 +165,25 @@ export default function ManagementDashboard({
         />
       )}
       {!scope && (
-        <div className="overview-metrics" aria-label="Số liệu tổng quan">
-          {[
-            { label: "Tổng huynh đệ", value: total, Icon: Users },
-            ...composition.map((item, i) => ({
-              ...item,
-              value: item.count,
-              Icon: [Flower2, Leaf, Baby][i],
-            })),
-          ].map(({ label, value, Icon }) => (
-            <section className="overview-metric" key={label}>
-              <div>
-                <Icon size={16} aria-hidden="true" />
-                <span>{label}</span>
-              </div>
-              <strong>{value.toLocaleString("vi-VN")}</strong>
-            </section>
-          ))}
-          <button
-            className="overview-metric overview-pending-metric"
-            disabled={!waiting.length}
-            onClick={() => {
-              setShowPending(true);
-              requestAnimationFrame(() =>
-                pendingRef.current?.scrollIntoView({
-                  behavior: window.matchMedia(
-                    "(prefers-reduced-motion: reduce)",
-                  ).matches
-                    ? "instant"
-                    : "smooth",
-                  block: "start",
-                }),
-              );
+        <OverviewSummary
+          members={approved}
+          waiting={waiting}
+          selectedGroup={filters.group}
+          onGroup={(group) => change("group", group)}
+          onPending={() => {
+            setShowPending(true);
+            requestAnimationFrame(() => {
+              pendingRef.current?.scrollIntoView({
+                behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+                  .matches
+                  ? "instant"
+                  : "smooth",
+                block: "start",
+              });
               pendingRef.current?.focus({ preventScroll: true });
-            }}
-          >
-            <div>
-              <Clock3 size={16} />
-              <span>Chờ duyệt</span>
-            </div>
-            <strong>{waiting.length}</strong>
-            <ArrowDown className="metric-arrow" size={15} />
-          </button>
-        </div>
+            });
+          }}
+        />
       )}
       {scope && (
         <>
@@ -260,21 +228,6 @@ export default function ManagementDashboard({
           </nav>
         </>
       )}
-      {(!scope || view === "statistics") && (
-        <div className="statistics-view">
-          <DashboardCharts
-            scope={scope}
-            total={total}
-            composition={composition}
-            bars={bars}
-            months={months}
-            month={filters.month}
-            period={period}
-            dimension={dimension}
-            onDimension={setDimension}
-          />
-        </div>
-      )}
       {(!scope ? waiting.length > 0 : view === "pending") && (
         <div ref={pendingRef} tabIndex={-1} className="dashboard-pending">
           {waiting.length ? (
@@ -287,8 +240,15 @@ export default function ManagementDashboard({
                 className="overview-review-disclosure"
               >
                 <summary>
-                  <span>{waiting.length} đăng ký chờ duyệt</span>
-                  <span>Xem đăng ký</span>
+                  <span className="overview-review-label">
+                    <Clock3 size={16} aria-hidden="true" />
+                    <b>Đăng ký chờ duyệt</b>
+                    <em>{waiting.length}</em>
+                  </span>
+                  <span>
+                    {showPending ? "Thu gọn" : "Xem danh sách"}
+                    <ChevronDown size={16} aria-hidden="true" />
+                  </span>
                 </summary>
                 {pendingPanel(waiting)}
               </details>
@@ -301,11 +261,32 @@ export default function ManagementDashboard({
           )}
         </div>
       )}
-      <div hidden={!!scope && view !== "list"}>
+      {(!scope || view === "statistics") && (
+        <div className="statistics-view">
+          <DashboardCharts
+            scope={scope}
+            total={total}
+            composition={composition}
+            bars={bars}
+            months={months}
+            pendingMonths={monthlyRegistrations(waiting)}
+            month={filters.month}
+            period={period}
+            dimension={dimension}
+            onDimension={setDimension}
+          />
+        </div>
+      )}
+      <div
+        hidden={!!scope && view !== "list"}
+        className={!scope ? "overview-records" : undefined}
+        role={!scope ? "region" : undefined}
+        aria-labelledby={!scope ? "overview-records-title" : undefined}
+      >
         {!scope && (
-          <h2 className="overview-list-title">
+          <h2 className="overview-list-title" id="overview-records-title">
             Danh sách huynh đệ{" "}
-            <span>{total.toLocaleString("vi-VN")} hồ sơ</span>
+            <span>{total.toLocaleString("vi-VN")} hồ sơ đã duyệt</span>
           </h2>
         )}
         <DashboardMemberList

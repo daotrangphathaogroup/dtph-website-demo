@@ -25,6 +25,25 @@ export default function OverviewFilters({
 }: Props) {
   return (
     <section className="overview-filters" aria-label="Bộ lọc tổng quan">
+      <header className="overview-filter-heading">
+        <div>
+          <h2>Bộ lọc dữ liệu</h2>
+          <p>{period}</p>
+        </div>
+        <div className="overview-filter-actions">
+          <Button variant="ghost" onClick={onReset}>
+            <FilterX size={15} />
+            Xóa bộ lọc
+          </Button>
+          <IconButton
+            label="Làm mới số liệu"
+            busy={refreshing}
+            onClick={onRefresh}
+          >
+            <RefreshCw size={16} />
+          </IconButton>
+        </div>
+      </header>
       <div className="overview-filter-fields">
         <label>
           Nhóm
@@ -88,58 +107,40 @@ export default function OverviewFilters({
             ))}
           </select>
         </label>
-        <div className="overview-filter-actions">
-          <Button variant="ghost" onClick={onReset}>
-            <FilterX size={15} />
-            Xóa bộ lọc
-          </Button>
-          <IconButton
-            label="Làm mới số liệu"
-            busy={refreshing}
-            onClick={onRefresh}
-          >
-            <RefreshCw size={16} />
-          </IconButton>
-        </div>
-      </div>
-      <div className="overview-period">
-        <span>Tháng đăng ký</span>
-        <div
-          className="overview-months"
-          role="group"
-          aria-label="Lọc tháng đăng ký"
-        >
-          <button
-            aria-pressed={filters.month === null}
-            onClick={() => onChange("month", null)}
-          >
-            Tổng
-          </button>
-          {Array.from({ length: 12 }, (_, i) => (
-            <button
-              key={i}
-              aria-pressed={filters.month === i + 1}
-              onClick={() => onChange("month", i + 1)}
-            >
-              T{i + 1}
-            </button>
-          ))}
-        </div>
         <label>
-          Năm
+          Năm đăng ký
           <select
             aria-label="Lọc năm đăng ký"
             value={filters.year}
             onChange={(e) => onChange("year", e.target.value)}
           >
             <option value="all">Tất cả</option>
-            {years.map((y) => (
-              <option key={y}>{y}</option>
+            {years.map((year) => (
+              <option key={year}>{year}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Tháng đăng ký
+          <select
+            aria-label="Lọc tháng đăng ký"
+            value={filters.month ?? "all"}
+            onChange={(e) =>
+              onChange(
+                "month",
+                e.target.value === "all" ? null : Number(e.target.value),
+              )
+            }
+          >
+            <option value="all">Tất cả</option>
+            {Array.from({ length: 12 }, (_, index) => (
+              <option key={index} value={index + 1}>
+                Tháng {index + 1}
+              </option>
             ))}
           </select>
         </label>
       </div>
-      <p>{period} · Bộ lọc áp dụng cho số liệu, biểu đồ và danh sách.</p>
     </section>
   );
 }

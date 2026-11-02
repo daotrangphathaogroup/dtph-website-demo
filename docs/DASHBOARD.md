@@ -1,19 +1,27 @@
 # Dashboard quản lý
 
-Trang chủ công khai giữ nội dung giới thiệu và đăng ký. Trang Tổng quan và dashboard ba chúng chỉ hiển thị sau khi đăng nhập Dev/Admin/Manager. Sau đăng nhập, trang quản lý mặc định là Tổng quan.
+Tổng quan dành cho Dev/Admin/Manager và là trang mặc định sau đăng nhập. Public sử dụng đăng ký thông tin và tìm kiếm nhanh; không thấy dữ liệu quản trị.
 
-Bộ lọc nhóm/phường/Tổ/độ tuổi/năm/tháng áp dụng đồng thời cho các thẻ thống kê, biểu đồ, hồ sơ chờ duyệt và danh sách. Tổng tháng và Năm “Tất cả” nghĩa là mọi thời điểm; có thể chọn riêng năm hoặc tháng. Thống kê tháng dùng ngày gửi đăng ký theo Asia/Ho_Chi_Minh; hồ sơ cũ không có thời điểm gửi sẽ dùng Ngày tham gia. Tuổi tính theo ngày sinh đầy đủ và ngày hiện tại tại Việt Nam. Thiếu dữ liệu được gom vào nhóm “Chưa có…”, không gán tuổi/phường/Tổ giả định.
+## Bố cục Tổng quan
 
-Số liệu chính và biểu đồ chỉ đếm hồ sơ đã duyệt. Hồ sơ chờ duyệt được đếm riêng, không gộp vào tổng. Khi database trống, thẻ/biểu đồ hiển thị 0 và thông báo chưa có dữ liệu; không thêm dữ liệu minh họa vào database.
+1. **Bộ lọc dữ liệu**: một panel chứa Nhóm, Phường, Tổ, Độ tuổi, Năm đăng ký và Tháng đăng ký. Nút xóa lọc và làm mới nằm cùng tiêu đề. Năm/tháng dùng select, không còn dãy 12 nút tháng.
+2. **Hiện trạng hồ sơ**: Tổng đã duyệt, ba chúng ngang hàng, và Chờ duyệt. Tổng có nhấn xanh; chờ duyệt có nhấn vàng. Nhấn thẻ nhóm để lọc/bỏ lọc. Không lặp cơ cấu nhóm dưới dạng donut hoặc thẻ nhóm kích thước khác nhau.
+3. **Đăng ký chờ duyệt**: disclosure mở trực tiếp từ KPI; nằm trước biểu đồ để thao tác xử lý dễ tìm. Không có danh sách rút gọn thứ hai cạnh số liệu. Chỉ Admin/Dev được duyệt hoặc từ chối.
+4. **Phân tích**: Đăng ký theo tháng và Phân bố huynh đệ là hai panel có tiêu đề/nút điều khiển/đường phân cách nhất quán. Giữ đường/cột và phường/tuổi/giới tính.
+5. **Danh sách huynh đệ**: vùng riêng có tiêu đề, số hồ sơ đã duyệt và bảng đầy đủ. Giữ tìm kiếm, sắp xếp, cột, mật độ, lọc, chọn dòng, CSV và phân trang.
 
-Dashboard tổng hiển thị cơ cấu ba chúng. Dashboard từng chúng giới hạn dữ liệu đúng nhóm đó, thống kê từng Tổ và biểu đồ phân bố theo Tổ. Cả bốn trang có biểu đồ phường/độ tuổi/giới tính và đăng ký theo tháng.
+Bố cục thích ứng theo bề rộng thực tế của vùng Tổng quan (container query), bao gồm khi có cả hai sidebar. Dưới 800px, Tổng và Chờ duyệt ở hàng đầu; ba chúng ở hàng kế tiếp; biểu đồ xếp dọc. Các thẻ nhóm luôn cùng độ rộng và căn số liệu cùng hàng.
 
-Danh sách tổng hợp có tìm kiếm tên/pháp danh/ID, sắp xếp, phân trang, tải CSV theo bộ lọc và từ khóa hiện tại. Trang từng chúng (hoặc khi chọn riêng một nhóm ở dashboard tổng) có thêm chế độ Bảng dữ liệu để dùng các cột hồ sơ đầy đủ, tùy chỉnh độ rộng/cột, bộ lọc theo trường và xuất CSV chi tiết. Tìm kiếm/lọc nội bộ bảng chỉ áp dụng cho danh sách đó.
+## Dữ liệu và bộ lọc
 
-Manager xem hồ sơ. Admin/Dev có thêm chỉnh sửa và duyệt/từ chối. API tiếp tục kiểm tra quyền. Nút làm mới và đồng bộ nền 30 giây dùng cùng bootstrap hiện có.
+Sáu bộ lọc áp dụng đồng thời cho KPI, biểu đồ, hồ sơ chờ duyệt và danh sách. Tất cả năm/tháng nghĩa là mọi thời điểm. Thời gian dùng ngày gửi theo Asia/Ho_Chi_Minh, fallback ngày tham gia cho hồ sơ cũ. Thiếu ngày sinh/phường/Tổ giữ nhóm chưa có dữ liệu, không đoán giá trị.
 
-## Dữ liệu thử local
+Tổng huynh đệ và các tỷ lệ nhóm chỉ tính hồ sơ đã duyệt; chờ duyệt được tách riêng. Biểu đồ đường có hai chuỗi đã duyệt/chờ duyệt trên cùng trục; số liệu không thay đổi qua các đoạn cong. Khi dữ liệu trống, hiển thị 0 và trạng thái trống; không tạo dữ liệu vào database.
 
-Tổng quan nằm dưới nhãn Hồ sơ huynh đệ, trước ba trang chúng. Không còn trang Cấu hình đăng ký hoặc API thay đổi trường bắt buộc. Quản lý tài khoản vẫn dành riêng cho Dev.
+Trang từng chúng giữ nguyên chế độ Danh sách / Chờ duyệt / Thống kê và biểu đồ cơ cấu theo Tổ. Không thêm chế độ chuyển bảng tổng hợp cho Tổng quan. Manager chỉ xem; Admin/Dev chỉnh sửa. API và quyền truy cập không đổi.
 
-Dừng server local, chạy `npm run db:demo`, rồi khởi động lại để thêm 360 hồ sơ giả đã duyệt (thiếu nhi 90, thanh niên 120, Đạo tràng 150) và 12 hồ sơ chờ duyệt. Script không truy cập Supabase/R2, không xóa hồ sơ có sẵn, không tạo tài khoản quản trị, và không thêm trùng khi chạy lại. Ảnh và thông tin đều là dữ liệu mẫu; dashboard hiển thị nhãn để nhận biết. Thông tin Tình trạng/Vị trí tiếp tục để trống.
+## Kiểm chứng
+
+18 kiểm tra liên quan đến render, dashboard và biểu đồ; kiểm tra trình duyệt trên dữ liệu local theo chế độ đọc và fixture cô lập. Đã kiểm tra lọc/reset/chọn nhóm, review disclosure, keyboard tooltip, đổi biểu đồ, bảng/CSV/hồ sơ, trạng thái trống và màn hình 320–1920px. Ảnh thử lưu tại `.local/audits/overview-layout/`.
+
+Dữ liệu demo local được tạo bằng quy trình riêng `npm run db:demo` khi dừng server. Lần sửa giao diện này không tạo, xóa hoặc nhập dữ liệu.

@@ -19,7 +19,8 @@ import {
   X,
 } from "lucide-react";
 import Brand from "../Brand";
-import { Badge, IconButton } from "../ui/primitives";
+import ManagementSidebar from "./ManagementSidebar";
+import { IconButton } from "../ui/primitives";
 import type { Session } from "../../lib/api";
 import type { MemberGroup } from "../../lib/types";
 import { groupLabels } from "../../lib/types";
@@ -28,7 +29,6 @@ export type WorkspacePage =
 type Props = {
   page: WorkspacePage;
   group: MemberGroup;
-  heading: string;
   staff: Session | null;
   waiting: Record<MemberGroup, number>;
   onNavigate: (page: WorkspacePage, group?: MemberGroup) => void;
@@ -38,7 +38,6 @@ type Props = {
 export default function WorkspaceShell({
   page,
   group,
-  heading,
   staff,
   waiting,
   onNavigate,
@@ -184,20 +183,8 @@ export default function WorkspaceShell({
             <Brand />
           </Link>
         </div>
-        <div className="breadcrumb">
-          <span>Cổng thông tin</span>
-          <ChevronRight size={14} aria-hidden="true" />
-          <span aria-current="page">{heading}</span>
-        </div>
         {staff && (
           <div className="account-area" ref={accountRef}>
-            <Badge>
-              {staff.role === "dev"
-                ? "Dev"
-                : staff.role === "admin"
-                  ? "Admin"
-                  : "Manager"}
-            </Badge>
             <button
               ref={accountTrigger}
               type="button"
@@ -210,7 +197,16 @@ export default function WorkspaceShell({
               <span className="account-avatar" aria-hidden="true">
                 {staff.username.slice(0, 1).toUpperCase()}
               </span>
-              <span className="account-name">{staff.username}</span>
+              <span className="account-copy">
+                <span className="account-name">{staff.username}</span>
+                <span className="account-role">
+                  {staff.role === "dev"
+                    ? "Nhà phát triển"
+                    : staff.role === "admin"
+                      ? "Quản trị viên"
+                      : "Quản lý"}
+                </span>
+              </span>
               <ChevronDown size={14} aria-hidden="true" />
             </button>
             {accountOpen && (
@@ -314,7 +310,10 @@ export default function WorkspaceShell({
           tabIndex={-1}
         />
       )}
-      <div className="main-shell" inert={mobile}>
+      <div
+        className={`main-shell ${staff ? "has-management-sidebar" : ""}`}
+        inert={mobile}
+      >
         <main
           id="main-content"
           className={`content ${page === "dashboard" || page === "members" ? "dashboard-content" : ""}`}
@@ -322,6 +321,7 @@ export default function WorkspaceShell({
         >
           {children}
         </main>
+        {staff && <ManagementSidebar />}
       </div>
     </div>
   );

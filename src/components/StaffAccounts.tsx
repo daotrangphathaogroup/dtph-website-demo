@@ -68,7 +68,7 @@ export default function StaffAccounts() {
           {notice}
         </Feedback>
       )}
-      <Card>
+      <Card className="account-create-panel">
         <CardHeader
           title="Tạo tài khoản nhân sự"
           description="Cấp quyền Admin hoặc Manager cho nhân sự quản lý."
@@ -137,7 +137,7 @@ export default function StaffAccounts() {
           </footer>
         </form>
       </Card>
-      <Card>
+      <Card className="account-directory-panel">
         <CardHeader
           title={
             <>
