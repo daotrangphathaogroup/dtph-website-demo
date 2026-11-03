@@ -111,7 +111,7 @@ test("Detailed sheet paginates to 25 rows, preserves selection, sorting, export 
       canEdit ? 25 : 0,
     );
     assert.match(markup, /Tùy chỉnh bảng/);
-    assert.match(markup, /Xuất CSV/);
+    assert.match(markup, /Xuất Excel/);
     assert.match(markup, /role="separator"/);
     assert.match(markup, /aria-sort="ascending"/);
     assert.match(markup, /Số dòng mỗi trang/);
@@ -178,7 +178,7 @@ test("Management opens with records and defers charts to statistics mode", () =>
   assert.match(markup, /Chế độ quản lý/);
   assert.match(markup, /Chờ duyệt/);
   assert.match(markup, /Thống kê/);
-  assert.match(markup, /Xuất CSV/);
+  assert.match(markup, /Xuất Excel/);
   assert.doesNotMatch(markup, /Tổng hợp/);
   assert.match(markup, /Bảng dữ liệu/);
   assert.match(markup, /<strong>2<\/strong> hồ sơ đã duyệt/);
@@ -208,7 +208,7 @@ test("Overview combines filters, metrics, charts and records while group pages k
   assert.match(markup, /Hiện trạng hồ sơ/);
   assert.match(markup, /Cơ cấu nhóm/);
   assert.match(markup, /Đăng ký theo tháng/);
-  assert.match(markup, /Xuất CSV/);
+  assert.match(markup, /Xuất Excel/);
   assert.match(markup, /Lọc năm đăng ký/);
   assert.match(markup, /Lọc tháng đăng ký/);
   assert.doesNotMatch(markup, /Chế độ quản lý/);
@@ -225,4 +225,28 @@ test("Guided intake starts with only basic information and exposes no premature 
   assert.doesNotMatch(markup, /Gửi phiếu đăng ký/);
   assert.doesNotMatch(markup, /Chọn nhóm sinh hoạt/);
   assert.doesNotMatch(markup, /Địa chỉ \/ Phường/);
+});
+
+test('Member profile displays stored core columns when profileData is incomplete', () => {
+ const m={...member(1),name:'Hồ sơ dữ liệu cũ',birthday:'2001-03-04',phone:'0909876543',address:'Tân Phong',avatar:'/api/avatars/example.webp',team:2,profileData:{dharmaName:'Tâm An'}};
+ const markup=render(h(MemberProfileDialog,{member:m,schema:defaultSchemas.youth,editing:false,canEdit:false,approving:false,onClose:noop,onEdit:noop,onApprove:noop,onSave:async()=>{}}));
+ for(const expected of ['<dd>Hồ sơ dữ liệu cũ</dd>','<dd>04/03/2001</dd>','<dd>0909876543</dd>','<dd>Tân Phong</dd>','<dd>Tổ 2</dd>','<dd>Tâm An</dd>'])assert.ok(markup.includes(expected),`Missing profile value: ${expected}`);
+});
+
+test('Every group profile shows all configured information including staff fields, zero and linked names', () => {
+ for(const group of ['children','youth','congregation']) {
+  const schema=defaultSchemas[group];
+  const profileData=Object.fromEntries(schema.fields.map(f=>[f.key, f.key==='team'?2:f.key==='birthday'?'2000-03-04':f.key==='status'?'Hoạt động tích cực':`Thông tin ${f.key}`]));
+  profileData.notes='Dòng một\nDòng hai';
+  profileData.introducedBy='PH2';
+  profileData.caregiver='PH3';
+  const m={...member(1),group,profileData,references:{introducedBy:{id:'PH2',name:'Người giới thiệu A'},caregiver:{id:'PH3',name:'Huynh đệ chăm sóc B'}}};
+  const markup=render(h(MemberProfileDialog,{member:m,schema,editing:false,canEdit:false,approving:false,onClose:noop,onEdit:noop,onApprove:noop,onSave:async()=>{}}));
+  assert.equal((markup.match(/<dt>/g)||[]).length,schema.fields.filter(f=>f.type!=='image').length);
+  assert.match(markup,/Người giới thiệu A/);
+  assert.match(markup,/Dòng một\nDòng hai/);
+  assert.match(markup,/Hoạt động tích cực/);
+  if(group==='children'){assert.match(markup,/Thông tin nickname/);assert.match(markup,/Thông tin personality/);assert.match(markup,/Thông tin parentName/);}
+  else {assert.match(markup,/Huynh đệ chăm sóc B/);assert.match(markup,/Thông tin position/);}
+ }
 });

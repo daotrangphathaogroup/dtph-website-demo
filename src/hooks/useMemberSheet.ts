@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Member } from "../lib/types";
 import type { RegistrationSchema } from "../lib/registration";
-import { filterSheet, sortSheet, sheetValue, sheetCsv } from "../lib/sheet";
+import { filterSheet, sortSheet, sheetValue, sheetExportData } from "../lib/sheet";
 export type SheetPreferences = {
   hidden: string[];
   widths: Record<string, number>;
@@ -13,6 +13,9 @@ export function useMemberSheet(
   schema: RegistrationSchema,
   preferenceScope: string = schema.group,
 ) {
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
+  const exportInFlight = useRef(false);
   const fields = useMemo(
     () => [
       ...schema.fields.filter((f) => f.key === "name"),
@@ -170,20 +173,23 @@ export function useMemberSheet(
     window.addEventListener("pointerup", stop);
     window.addEventListener("pointercancel", stop);
   }
-  function exportRows() {
-    const exported = selected.size
-      ? members.filter((m) => selected.has(m.id))
-      : filtered;
-    const url = URL.createObjectURL(
-      new Blob([sheetCsv(exported, visible)], {
-        type: "text/csv;charset=utf-8",
-      }),
-    );
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${preferenceScope}-huynh-de.csv`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  async function exportRows() {
+    if (exportInFlight.current) return;
+    exportInFlight.current = true;
+    setExporting(true);
+    setExportError("");
+    try {
+      const exported = selected.size
+        ? members.filter((m) => selected.has(m.id))
+        : filtered;
+      const {downloadExcel} = await import("../lib/excel-export");
+      await downloadExcel(sheetExportData(exported, visible), `${preferenceScope}-huynh-de.xlsx`);
+    } catch {
+      setExportError("Không thể xuất Excel. Vui lòng thử lại.");
+    } finally {
+      exportInFlight.current = false;
+      setExporting(false);
+    }
   }
   function toggle(id: string) {
     setSelected((old) => {
@@ -230,6 +236,8 @@ export function useMemberSheet(
     width,
     resize,
     exportRows,
+    exporting,
+    exportError,
     toggle,
     togglePage,
   };

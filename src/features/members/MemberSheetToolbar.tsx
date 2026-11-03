@@ -4,6 +4,7 @@ import type { ReturnTypeOfSheet } from "./sheet-types";
 import { displayValue } from "../../lib/registration";
 import {
   Button,
+  Feedback,
   IconButton,
   SearchField,
 } from "../../components/ui/primitives";
@@ -113,9 +114,10 @@ export default function MemberSheetToolbar({
             variant="secondary"
             disabled={!sheet.filtered.length && !sheet.selected.size}
             onClick={sheet.exportRows}
+            busy={sheet.exporting}
           >
             <Download size={16} />
-            {sheet.selected.size ? "Xuất dòng đã chọn" : "Xuất CSV"}
+            {sheet.selected.size ? "Xuất Excel dòng đã chọn" : "Xuất Excel"}
           </Button>
         </div>
       </div>
@@ -153,6 +155,7 @@ export default function MemberSheetToolbar({
           </Button>
         )}
       </div>
+      {sheet.exportError && <Feedback>{sheet.exportError}</Feedback>}
       <div className="sheet-context">
         <span>
           {sheet.filtered.length.toLocaleString("vi-VN")} hồ sơ

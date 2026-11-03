@@ -608,6 +608,7 @@ form > .feedback {
   margin-bottom: 4px;
 }
 .detail-grid dd {
+  white-space: pre-wrap;
   color: var(--ink);
   font-size: 13px;
   overflow-wrap: anywhere;

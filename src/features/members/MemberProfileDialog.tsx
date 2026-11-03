@@ -6,6 +6,7 @@ import type { Member } from "../../lib/types";
 import { groupLabels } from "../../lib/types";
 import type { ProfileValues, RegistrationSchema } from "../../lib/registration";
 import { displayValue, profileFieldLabel } from "../../lib/registration";
+import { memberProfileValues } from "../../lib/member-profile";
 import { initials } from "../../lib/utils";
 import Dialog from "../../components/ui/Dialog";
 import ActivityStatus from "../../components/ActivityStatus";
@@ -34,17 +35,7 @@ export default function MemberProfileDialog({
   onApprove: () => void;
   onSave: (values: ProfileValues) => Promise<void>;
 }) {
-  const values = useMemo<ProfileValues>(
-    () => ({
-      ...member.profileData,
-      id: member.id,
-      joined: member.joined,
-      ...(member.team && !member.profileData?.team
-        ? { team: member.team }
-        : {}),
-    }),
-    [member],
-  );
+  const values = useMemo(() => memberProfileValues(member), [member]);
   return (
     <Dialog
       title={editing ? "Chỉnh sửa hồ sơ" : "Hồ sơ huynh đệ"}
@@ -65,9 +56,9 @@ export default function MemberProfileDialog({
         <>
           <div className="detail-person">
             <span className="avatar large">
-              {member.avatar ? (
+              {values.avatar ? (
                 <img
-                  src={member.avatar}
+                  src={String(values.avatar)}
                   alt="Ảnh đại diện"
                   width={72}
                   height={96}
