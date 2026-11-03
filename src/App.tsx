@@ -266,7 +266,7 @@ export default function App({
               onRegistered={() => void refreshWithNotice()}
             />
           )}
-          {page === "search" && <QuickSearch members={staff ? data.store.members : undefined} onOpen={staff ? member => openProfile(member, false) : undefined} />}
+          {page === "search" && staff && <QuickSearch members={data.store.members} onOpen={member => openProfile(member, false)} />}
           {page === "accounts" && staff?.role === "dev" && <StaffAccounts />}
           {page === "password" && staff && (
             <ChangePassword

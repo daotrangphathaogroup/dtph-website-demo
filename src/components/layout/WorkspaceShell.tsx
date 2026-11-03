@@ -45,17 +45,17 @@ export default function WorkspaceShell({
   onLogout,
   children,
 }: Props) {
-  const [collapsed, setCollapsed] = useState(false),
+  const [collapsed, setCollapsed] = useState(!staff),
     [mobile, setMobile] = useState(false),
     [accountOpen, setAccountOpen] = useState(false);
   const accountRef = useRef<HTMLDivElement>(null),
     accountTrigger = useRef<HTMLButtonElement>(null),
     sidebarRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    try {
-      setCollapsed(localStorage.getItem("ph-menu-collapsed") === "true");
-    } catch {}
-  }, []);
+    setCollapsed(!staff);
+    setAccountOpen(false);
+    setMobile(false);
+  }, [staff?.id, staff?.role]);
   useEffect(() => {
     if (!accountOpen) return;
     const close = (e: PointerEvent) => {
@@ -124,13 +124,7 @@ export default function WorkspaceShell({
     window.scrollTo({ top: 0, behavior: "instant" });
   }
   function toggle() {
-    setCollapsed((value) => {
-      const next = !value;
-      try {
-        localStorage.setItem("ph-menu-collapsed", String(next));
-      } catch {}
-      return next;
-    });
+    setCollapsed((value) => !value);
   }
   const navItem = (
     key: WorkspacePage,
@@ -280,7 +274,7 @@ export default function WorkspaceShell({
         </div>
         <nav aria-label="Điều hướng chính">
           {navItem("overview", "Đăng ký thông tin", ClipboardPen)}
-          {navItem("search", "Tìm kiếm nhanh", Search)}
+          {staff && navItem("search", "Tìm kiếm nhanh", Search)}
           {staff && (
             <>
               <div className="nav-section-label">Hồ sơ huynh đệ</div>

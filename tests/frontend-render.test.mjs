@@ -60,7 +60,8 @@ test("Public, Manager, Admin and Dev navigation preserves access-specific contro
       ),
     );
     assert.match(markup, /aria-label="Đăng ký thông tin"/);
-    assert.match(markup, /aria-label="Tìm kiếm nhanh"/);
+    assert.equal(markup.includes('aria-label="Tìm kiếm nhanh"'), !!role);
+    assert.equal(markup.includes('app-shell sidebar-collapsed'), !role);
     assert.equal(markup.includes('aria-label="Tổng quan"'), !!role);
     assert.equal(markup.includes('aria-label="Chúng thiếu nhi"'), !!role);
     assert.equal(
