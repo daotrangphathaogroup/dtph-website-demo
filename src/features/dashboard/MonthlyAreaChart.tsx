@@ -149,22 +149,24 @@ export default function MonthlyAreaChart({
             </g>
           ))}
         </g>
-        <path d={chart.area} fill={`url(#${id}-fill)`} />
-        <path d={chart.area} fill={`url(#${id}-dots)`} />
-        {pendingMonths.length > 0 && (
+        <g className="chart-series-reveal">
+          <path d={chart.area} fill={`url(#${id}-fill)`} />
+          <path d={chart.area} fill={`url(#${id}-dots)`} />
+          {pendingMonths.length > 0 && (
+            <path
+              d={comparison.line}
+              className="area-chart-line comparison"
+              fill="none"
+              vectorEffect="non-scaling-stroke"
+            />
+          )}
           <path
-            d={comparison.line}
-            className="area-chart-line comparison"
+            d={chart.line}
+            className="area-chart-line"
             fill="none"
             vectorEffect="non-scaling-stroke"
           />
-        )}
-        <path
-          d={chart.line}
-          className="area-chart-line"
-          fill="none"
-          vectorEffect="non-scaling-stroke"
-        />
+        </g>
         {selected && (
           <g aria-hidden="true">
             <line

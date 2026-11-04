@@ -6,3 +6,6 @@
 @import './styles/dashboard.css';
 @import './styles/sheet.css';
 @import './styles/forms.css';
+@import './styles/registration-effects.css';
+
+@import './styles/motion.css';

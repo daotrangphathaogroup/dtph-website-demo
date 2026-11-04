@@ -1,0 +1,55 @@
+/* Video-inspired entrance; data, controls and layout keep their final values. */
+@keyframes dashboard-enter {
+  from { opacity: 0.35; transform: translateY(var(--motion-distance)); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes dashboard-fade {
+  from { opacity: 0.5; }
+  to { opacity: 1; }
+}
+@keyframes chart-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes bar-rise {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.management-dashboard[data-entering] > :is(.overview-filters, .dashboard-filter-panel, .management-summary, .management-views) {
+  animation: dashboard-enter var(--motion-enter) var(--motion-ease-out) both;
+}
+.management-dashboard[data-entering] .overview-section-heading {
+  animation: dashboard-fade 220ms ease-out both;
+}
+.management-dashboard[data-entering] .overview-kpi {
+  animation: dashboard-enter var(--motion-enter) var(--motion-ease-out) both;
+  animation-delay: 60ms;
+}
+.management-dashboard[data-entering] .overview-kpi:nth-child(2) { animation-delay: 100ms; }
+.management-dashboard[data-entering] .overview-kpi:nth-child(3) { animation-delay: 140ms; }
+.management-dashboard[data-entering] .overview-kpi:nth-child(4) { animation-delay: 180ms; }
+.management-dashboard[data-entering] .overview-kpi:nth-child(5) { animation-delay: 220ms; }
+.management-dashboard[data-entering] > :is(.overview-records, .group-records, .dashboard-pending) {
+  animation: dashboard-fade 220ms ease-out 120ms both;
+}
+.statistics-view[data-entering] .dashboard-card {
+  animation: dashboard-enter var(--motion-enter) var(--motion-ease-out) 140ms both;
+}
+.statistics-view[data-entering] .dashboard-distribution { animation-delay: 200ms; }
+.statistics-view[data-entering] :is(.chart-series-reveal, .dashboard-bar-track > i) {
+  animation: chart-reveal var(--motion-chart) var(--motion-ease-out) 260ms both;
+}
+.statistics-view[data-entering] .monthly-track > i {
+  transform-origin: center bottom;
+  animation: bar-rise 600ms var(--motion-ease-out) 260ms both;
+}
+.statistics-view[data-entering] .dashboard-composition {
+  animation: dashboard-fade 400ms ease-out 220ms both;
+}
+.dashboard-metric { font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) {
+  :root { --motion-distance: 4px; --motion-enter: 220ms; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-entering] *, [data-entering] { animation: none !important; }
+}

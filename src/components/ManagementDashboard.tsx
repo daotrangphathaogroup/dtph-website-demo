@@ -18,6 +18,7 @@ import {
   todayInVietnam,
 } from "../lib/dashboard";
 import type { DashboardFilters as Filters } from "../lib/dashboard";
+import { useDashboardEntrance } from "../hooks/useDashboardEntrance";
 import OverviewSummary from "../features/dashboard/OverviewSummary";
 import OverviewFilters from "../features/dashboard/OverviewFilters";
 import DashboardFilters from "../features/dashboard/DashboardFilters";
@@ -111,6 +112,9 @@ export default function ManagementDashboard({
       [approved, dimension, asOf],
     ),
     months = useMemo(() => monthlyRegistrations(approved), [approved]);
+  const motionRevision = useMemo(() => ({members, pending, filters}), [members, pending, filters]);
+  const entrance = useDashboardEntrance(motionRevision);
+  const chartEntrance = useDashboardEntrance(motionRevision, !scope || view === "statistics");
   const total = approved.length;
   function change<K extends keyof Filters>(key: K, value: Filters[K]) {
     setFilters((f) => ({ ...f, [key]: value }));
@@ -138,6 +142,7 @@ export default function ManagementDashboard({
         : `Tháng ${filters.month}/${filters.year}`;
   return (
     <div
+      ref={entrance}
       className={`management-dashboard ${!scope ? "overview-dashboard" : ""}`}
     >
       {!scope ? (
@@ -262,7 +267,7 @@ export default function ManagementDashboard({
         </div>
       )}
       {(!scope || view === "statistics") && (
-        <div className="statistics-view">
+        <div className="statistics-view" ref={chartEntrance}>
           <DashboardCharts
             scope={scope}
             total={total}
@@ -279,7 +284,7 @@ export default function ManagementDashboard({
       )}
       <div
         hidden={!!scope && view !== "list"}
-        className={!scope ? "overview-records" : undefined}
+        className={!scope ? "overview-records" : "group-records"}
         role={!scope ? "region" : undefined}
         aria-labelledby={!scope ? "overview-records-title" : undefined}
       >

@@ -587,7 +587,7 @@
   margin: 0 auto;
   min-width: 0;
 }
-.registration-intake > form {
+.intake-paper-sheet {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-panel);
@@ -999,3 +999,167 @@
 .intake-step:last-child {
   border-bottom: 0;
 }
+
+/* Shared-paper submission: one persistent surface, a card, then an envelope. */
+.intake-document { position: relative; }
+.intake-paper-sheet { position: relative; margin-inline: auto; }
+.intake-paper-sheet > form { margin: 0; }
+.intake-delivering > .intake-intro,
+.intake-delivering > .intake-staff-link { display: none; }
+.intake-delivering .intake-document { min-height: 490px; overflow-anchor: none; }
+.intake-delivering .intake-paper-sheet {
+  z-index: 2; overflow: visible; perspective: 1200px;
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-soft);
+  animation: paper-surface-release 200ms ease-out calc(var(--paper-compact) + var(--paper-morph) - 200ms) both;
+}
+.intake-delivering .intake-step { animation: none; }
+.intake-delivering .intake-step-body { min-height: 0; overflow: hidden; }
+.intake-delivering .intake-paper-sheet > form {
+  overflow: hidden; height: 100%; border-radius: inherit;
+  animation: paper-content-out 420ms ease-in-out calc(var(--paper-compact) - 120ms) both;
+}
+.registration-card-face {
+  position: absolute; inset: 0 0 auto; height: 160px; border-radius: var(--radius-sm);
+  perspective: 1000px; color: var(--ink);
+  animation: paper-content-in 540ms ease-in-out calc(var(--paper-compact) - 100ms) both;
+}
+.registration-card-inside,
+.paper-leaf-cover { height: 160px; padding: 18px 22px; display: flex; flex-direction: column; align-items: flex-start; background: var(--surface); border-radius: var(--radius-sm); }
+.registration-card-brand { display: flex; align-items: center; gap: 10px; }
+.registration-card-brand span { font-size: 8px; line-height: 1.7; font-weight: 500; letter-spacing: 0.15em; color: var(--text-secondary); }
+.registration-card-brand b { color: var(--blue-ink); font-size: 11px; letter-spacing: 0.12em; }
+.registration-card-caption { margin-top: 15px; color: var(--muted); font-size: 8px; letter-spacing: 0.12em; }
+.registration-card-inside > strong,
+.paper-leaf-cover > strong { margin-top: 5px; color: var(--ink); font-size: 16px; line-height: 1.4; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.registration-card-group { margin-top: 3px; font-size: 10px; color: var(--text-secondary); }
+.paper-leaf-cover { position: absolute; inset: 0; backface-visibility: hidden; }
+.paper-leaf-cover { transform: rotateX(180deg); border: 1px solid var(--info-line); border-bottom: 1px solid var(--info-line); box-shadow: var(--shadow-soft); align-items: center; text-align: center; background: linear-gradient(135deg, var(--surface) 45%, var(--surface-subtle)); }
+.registration-delivery { position: absolute; inset: 0; pointer-events: none; }
+.delivery-envelope-scene { position: absolute; top: 218px; left: 50%; width: 312px; height: 192px; margin-left: -156px; }
+.delivery-envelope-back {
+  position: absolute; inset: 0; border: 1px solid var(--info-line); border-radius: 10px 10px 14px 14px; background: var(--blue); box-shadow: var(--shadow-soft);
+  animation: envelope-appear 300ms ease-out calc(var(--paper-compact) + var(--paper-morph) + var(--paper-crease) - 180ms) both;
+}
+.delivery-envelope-front {
+  position: absolute; z-index: 3; inset: 20px 0 0; border: 1px solid var(--info-line);
+  border-radius: 0 0 14px 14px; overflow: hidden; background: var(--surface-subtle);
+  animation: envelope-appear 300ms ease-out calc(var(--paper-compact) + var(--paper-morph) + var(--paper-crease) - 180ms) both;
+}
+.envelope-lining { position: absolute; inset: 9px 10px 15px; border-radius: 5px 5px 10px 10px; background: repeating-linear-gradient(45deg, transparent 0 5px, color-mix(in srgb, var(--accent) 7%, transparent) 5px 6px), var(--blue); border: 1px solid var(--info-line); }
+.delivery-envelope-front > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.envelope-fold-left { fill: var(--blue); }
+.envelope-fold-right { fill: var(--surface-hover); }
+.envelope-fold-bottom { fill: var(--surface); }
+.envelope-seam { fill: none; stroke: var(--info-line); stroke-width: 1; }
+.envelope-wordmark { position: absolute; bottom: 15px; left: 0; right: 0; text-align: center; color: var(--blue-ink); font-size: 8px; font-weight: 500; letter-spacing: 0.16em; opacity: 0.75; }
+.delivery-envelope-flap {
+  position: absolute; z-index: 1; top: 20px; left: 0; right: 0; height: 100px;
+  background: transparent;
+  transform-origin: center top; transform: perspective(1000px) rotateX(180deg);
+  animation: envelope-appear 300ms ease-out calc(var(--paper-compact) + var(--paper-morph) + var(--paper-crease) - 180ms) both;
+}
+.delivery-envelope-flap > svg { display: block; width: 100%; height: 100%; fill: var(--surface-subtle); stroke: var(--info-line); stroke-width: 1; }
+.delivery-closing .delivery-envelope-flap { z-index: 4; animation: envelope-seal var(--paper-seal) cubic-bezier(0.45, 0, 0.2, 1) both; }
+.delivery-closing .delivery-envelope-back,
+.delivery-sending .delivery-envelope-back { clip-path: inset(20px 0 0); }
+.delivery-sending .delivery-envelope-flap { z-index: 4; transform: perspective(1000px) rotateX(0); animation: none; }
+.delivery-envelope-seal {
+  position: absolute; z-index: 5; top: 101px; left: calc(50% - 18px); width: 36px; height: 36px;
+  display: grid; place-items: center; border-radius: 50%; background: var(--surface); border: 1px solid var(--reference-accent); box-shadow: var(--shadow-soft); color: var(--blue-ink); opacity: 0;
+}
+.delivery-closing .delivery-envelope-seal { animation: envelope-stamp 320ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--paper-seal) - 340ms) both; }
+.delivery-sending .delivery-envelope-seal { opacity: 1; }
+.delivery-caption { position: absolute; top: 442px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 12px; }
+.delivery-caption p { margin: 0; }
+.delivery-caption > svg { flex-shrink: 0; color: var(--blue-ink); }
+.delivery-sending .delivery-envelope-scene { animation: envelope-depart var(--paper-send) linear both; }
+.delivery-sending .delivery-envelope-scene { z-index: 3; }
+.delivery-closing .intake-paper-sheet,
+.delivery-sending .intake-paper-sheet { visibility: hidden; }
+@keyframes paper-surface-release { to { background: transparent; border-color: transparent; box-shadow: none; } }
+@keyframes paper-content-out { to { opacity: 0; } }
+@keyframes paper-content-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes paper-fold {
+  0%, 16% { transform: rotateX(0deg); animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1); }
+  38% { transform: rotateX(90deg); animation-timing-function: ease-out; }
+  68% { transform: rotateX(183deg); animation-timing-function: ease-in-out; }
+  83% { transform: rotateX(176deg); animation-timing-function: ease-in-out; }
+  94%, 100% { transform: rotateX(180deg); }
+}
+@keyframes envelope-appear { from { opacity: 0; } to { opacity: 1; } }
+@keyframes envelope-seal {
+  0% { transform: perspective(1000px) rotateX(180deg); }
+  64% { transform: perspective(1000px) rotateX(-7deg); }
+  80% { transform: perspective(1000px) rotateX(4deg); }
+  94%, 100% { transform: perspective(1000px) rotateX(0); }
+}
+@keyframes envelope-stamp {
+  0% { opacity: 0; transform: scale(1.6) translateY(-14px); }
+  45% { opacity: 1; transform: scale(0.84) translateY(2px); }
+  70% { opacity: 1; transform: scale(1.1) translateY(-1px); }
+  88% { opacity: 1; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes envelope-depart {
+  0% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0) scale(1); animation-timing-function: ease-in-out; }
+  14% { opacity: 1; transform: translate3d(-8px, 10px, 0) rotate(-3deg) scale(1.035, 0.965); animation-timing-function: ease-in-out; }
+  24% { opacity: 1; transform: translate3d(-5px, -14px, 0) rotate(1deg) scale(0.985, 1.025); animation-timing-function: ease-out; }
+  32% { opacity: 1; transform: translate3d(0, -24px, 0) rotate(2deg) scale(1); animation-timing-function: cubic-bezier(0.3, 0.15, 0.6, 0.8); }
+  56% { opacity: 1; transform: translate3d(38px, -90px, 0) rotate(-7deg) scale(0.94); animation-timing-function: ease-in; }
+  78% { opacity: 0.95; transform: translate3d(102px, -192px, 0) rotate(-15deg) scale(0.79); animation-timing-function: ease-in; }
+  100% { opacity: 0; transform: translate3d(185px, -340px, 0) rotate(-21deg) scale(0.5); }
+}
+.delivery-envelope-shadow { position: absolute; top: 418px; left: calc(50% - 110px); width: 220px; height: 12px; border-radius: 50%; background: color-mix(in srgb, var(--blue-ink) 13%, transparent); filter: blur(8px); animation: envelope-appear 360ms ease-out calc(var(--paper-compact) + var(--paper-morph) + var(--paper-crease) - 100ms) both; }
+.delivery-sending .delivery-envelope-shadow { animation: envelope-shadow-away var(--paper-send) ease-in both; }
+.delivery-sending .registration-delivery { overflow: clip; }
+@keyframes envelope-shadow-away { 0%, 14% { opacity: 1; transform: scaleX(1); } 70%, 100% { opacity: 0; transform: scaleX(0.25); } }
+@media (max-width: 480px) {
+  .delivery-envelope-scene { width: 304px; margin-left: -152px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .registration-card-face { opacity: 0; }
+  .delivery-envelope-flap { transform: rotateX(0); z-index: 4; }
+}
+
+.intake-demo-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); }
+.intake-demo-tools small { color: var(--muted); font-size: var(--text-xs); }
+
+/* Fine stationery detail; lighting follows the folded paper rather than the page. */
+.card-cover-frame { position: absolute; inset: 8px; border: 1px solid var(--info-line); border-radius: 7px; pointer-events: none; }
+.paper-leaf-cover { padding-block: 17px; }
+.paper-leaf-cover .registration-card-brand { gap: 8px; }
+.paper-leaf-cover .registration-card-brand img { width: 36px; height: 36px; }
+.paper-leaf-cover .registration-card-caption { margin-top: 12px; font-size: 8px; letter-spacing: 0.2em; color: var(--blue-ink); }
+.paper-leaf-cover > strong { font-size: 18px; letter-spacing: -0.025em; margin-top: 6px; }
+.paper-leaf-cover .registration-card-group { font-size: 10px; margin-top: 4px; }
+.card-cover-rule { width: 28px; height: 2px; margin-top: 10px; background: var(--reference-accent); border-radius: var(--radius-pill); }
+.delivery-particles { position: absolute; inset: 0 0 auto; height: 430px; z-index: 6; overflow: clip; pointer-events: none; }
+.delivery-particles > i {
+  position: absolute; top: 104px; left: 50%; width: var(--particle-size, 4px); height: var(--particle-size, 4px);
+  background: var(--accent); border-radius: 50%; opacity: 0;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 20%, transparent);
+  animation: paper-spark 1100ms cubic-bezier(0.2, 0.65, 0.25, 1) both;
+}
+.delivery-particles > i:nth-child(3n) { background: var(--reference-accent); width: 5px; height: 5px; border-radius: 1px; }
+.delivery-particles > i:nth-child(3n + 1) { background: var(--lavender); }
+.delivery-particles > i:nth-child(5n) { background: var(--cyan); border-radius: 1px; }
+.particles-gather > i { animation-delay: calc(var(--paper-compact) - 100ms + var(--particle-delay)); }
+.particles-fold > i { animation-delay: calc(var(--paper-compact) + var(--paper-morph) + var(--paper-crease) - 200ms + var(--particle-delay)); }
+.particles-send > i { top: 315px; animation: none; --origin-x: 0px; --origin-y: 0px; }
+.particles-seal > i { top: 335px; animation: none; --origin-x: 0px; --origin-y: 0px; }
+.particles-trail > i { top: 315px; animation: none; border-radius: 50%; }
+:is(.delivery-closing, .delivery-sending) .particles-seal > i { animation: paper-spark 700ms ease-out calc(var(--paper-seal) - 320ms + var(--particle-delay)) both; }
+.delivery-sending .particles-trail > i { animation: paper-spark 680ms ease-out var(--particle-delay) both; }
+.delivery-sending .particles-send > i { animation: paper-spark 1100ms ease-out var(--particle-delay) both; }
+@keyframes paper-spark {
+  0% { opacity: 0; transform: translate(var(--origin-x, var(--particle-start-x)), var(--origin-y, var(--particle-start-y))) scale(0.2) rotate(0); }
+  18% { opacity: 0.9; transform: translate(var(--origin-x, var(--particle-start-x)), var(--origin-y, var(--particle-start-y))) scale(1) rotate(0); }
+  70% { opacity: 0.6; }
+  100% { opacity: 0; transform: translate(var(--particle-x), var(--particle-y)) scale(0.1) rotate(var(--particle-turn)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .delivery-particles { display: none; }
+}
+
+.delivery-particles > i:nth-child(7n) { width: 8px; height: 8px; border-radius: 0; background: var(--reference-accent); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
+.particles-trail > i:nth-child(7n) { clip-path: none; width: 3px; height: 3px; border-radius: 50%; }

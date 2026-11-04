@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
-import { ArrowRight, Check, KeyRound } from "lucide-react";
+import { ArrowRight, Check, KeyRound, Shuffle } from "lucide-react";
 import Link from "next/link";
 import { api } from "../../lib/api";
 import { groupLabels } from "../../lib/types";
@@ -15,6 +15,10 @@ import { todayInVietnam } from "../../lib/dashboard";
 import { getTeam, teamAreas } from "../../lib/areas";
 import { Button, Feedback, Field } from "../../components/ui/primitives";
 import Dialog from "../../components/ui/Dialog";
+import {useInlineDelivery} from "../../hooks/useInlineDelivery";
+import RegistrationDelivery, {RegistrationCardFace, RegistrationCardCover, RegistrationPrintSummary, deliveryStyle} from "./RegistrationDelivery";
+import {registrationDelivery} from "../../lib/registration-delivery";
+import type {DeliveryPhase} from "../../lib/registration-delivery";
 import PortraitInput from "../../components/PortraitInput";
 import MemberPicker from "../../components/MemberPicker";
 
@@ -52,6 +56,11 @@ export default function RegistrationIntake({
     [busy, setBusy] = useState(false),
     [processing, setProcessing] = useState(false),
     [reviewPayload, setReviewPayload] = useState("");
+  const inlineDelivery = useInlineDelivery(busy);
+  const [demo, setDemo] = useState(false);
+  const [deliveryPhase, setDeliveryPhase] = useState<DeliveryPhase>("packing");
+  const deliveryAbort = useRef<AbortController | null>(null);
+  useEffect(() => () => deliveryAbort.current?.abort(), []);
   const [receipt, setReceipt] = useState<"pending" | "approved" | null>(null);
   const id = useId(),
     root = useRef<HTMLDivElement>(null),
@@ -86,6 +95,40 @@ export default function RegistrationIntake({
       block: "start",
     });
   }, [current, receipt]);
+  function fillDemo() {
+    if (process.env.NODE_ENV !== "development" || busy || processing) return;
+    const pick = <T,>(items: readonly T[]): T => items[Math.floor(Math.random() * items.length)];
+    const name = `${pick(["Nguyễn", "Trần", "Lê", "Phạm"])} ${pick(["Minh An", "Ngọc Hân", "Gia Bảo", "Thanh Tâm", "Hoàng Nam"])} (thử)`;
+    const year = Number(today.slice(0, 4)) - pick([10, 12, 15, 20, 25, 35, 45, 52, 60]);
+    const birthday = `${year}-${String(1 + Math.floor(Math.random() * 12)).padStart(2, "0")}-10`;
+    const address = pick(Object.values(teamAreas).flat());
+    const phone = () => `090${String(Math.floor(Math.random() * 10000000)).padStart(7, "0")}`;
+    const canvas = document.createElement("canvas");
+    canvas.width = 360;
+    canvas.height = 480;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const tokens = getComputedStyle(document.documentElement);
+    ctx.fillStyle = tokens.getPropertyValue("--blue").trim();
+    ctx.fillRect(0, 0, 360, 480);
+    ctx.fillStyle = tokens.getPropertyValue("--accent").trim();
+    ctx.beginPath(); ctx.arc(180, 170, 70, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(180, 390, 130, 120, 0, 0, Math.PI * 2); ctx.fill();
+    const isChild = registrationGroup(birthday, today) === "children";
+    setValues({...blank, name, gender: pick(["Nam", "Nữ"]), birthday, address,
+      team: getTeam(address) ?? 1, phone: phone(), relativePhone: phone(),
+      parentName: isChild ? pick(["Nguyễn Văn Minh", "Trần Thị Mai", "Lê Thanh Bình"]) : "",
+      nickname: isChild ? pick(["Bắp", "Sóc", "Mít", "Bông"]) : "",
+      avatar: canvas.toDataURL("image/jpeg", 0.85),
+    });
+    setDemo(true);
+    setCurrent(isChild ? 5 : 4);
+    setReached(isChild ? 5 : 4);
+    setReceipt(null);
+    setReviewPayload("");
+    setError("");
+    request.current = null;
+  }
   function update(key: string, value: string) {
     setReviewPayload("");
     setError("");
@@ -160,28 +203,30 @@ export default function RegistrationIntake({
     }
     if (request.current?.payload !== payload)
       request.current = { id: crypto.randomUUID(), payload };
+    inlineDelivery.capture();
     sending.current = true;
     setBusy(true);
     setError("");
+    const controller = new AbortController();
+    deliveryAbort.current = controller;
     try {
-      const result = await api<{
-        status: "pending" | "approved" | "rejected";
-      }>("/registrations/auto", "POST", {
-        values: JSON.parse(payload),
-        requestId: request.current.id,
-      });
-      if (result.status === "rejected")
-        throw new Error(
-          "Phiếu này đã được từ chối. Vui lòng liên hệ nhân sự Đạo Tràng.",
-        );
+      const result = await registrationDelivery(async () => {
+        if (demo) return {status: "pending" as const};
+        const response = await api<{status: "pending" | "approved" | "rejected"}>("/registrations/auto", "POST", {
+          values: JSON.parse(payload),
+          requestId: request.current!.id,
+        });
+        if (response.status === "rejected") throw new Error("Phiếu này đã được từ chối. Vui lòng liên hệ nhân sự Đạo Tràng.");
+        return {status: response.status};
+      }, setDeliveryPhase, controller.signal, window.matchMedia("(prefers-reduced-motion: reduce)").matches, steps.length);
       setReceipt(result.status);
-      onRegistered?.();
+      if (!demo) onRegistered?.();
       moveFocus.current = true;
     } catch (e) {
-      setError((e as Error).message);
+      if (!controller.signal.aborted) setError((e as Error).message);
     } finally {
       sending.current = false;
-      setBusy(false);
+      if (!controller.signal.aborted) setBusy(false);
     }
   }
   if (receipt)
@@ -193,14 +238,16 @@ export default function RegistrationIntake({
         tabIndex={-1}
       >
         <Check size={28} aria-hidden="true" />
-        <h2>Đã gửi phiếu đăng ký</h2>
+        <h2>{demo ? "Đã hoàn tất animation thử" : "Đã gửi phiếu đăng ký"}</h2>
         <p>
-          {receipt === "approved"
+          {demo ? "Đây là bản chạy thử. Không có hồ sơ nào được lưu." : receipt === "approved"
             ? "Hồ sơ đã được ghi nhận vào danh sách huynh đệ."
             : "Phiếu đã được gửi đến nhân sự Đạo Tràng và đang chờ duyệt."}
         </p>
+        {demo && <Button variant="secondary" onClick={fillDemo}>Điền thử lần nữa</Button>}
         <Button
           onClick={() => {
+            setDemo(false);
             setValues({ ...blank });
             setCurrent(0);
             setReached(0);
@@ -216,8 +263,12 @@ export default function RegistrationIntake({
       </section>
     );
   return (
-    <div className="registration-intake" ref={root}>
+    <div className={`registration-intake ${busy ? "intake-delivering" : ""}`} ref={root}>
       <header className="intake-intro">
+        {process.env.NODE_ENV === "development" && <div className="intake-demo-tools">
+          <Button variant="secondary" onClick={fillDemo} disabled={busy || processing}><Shuffle size={15} aria-hidden="true" />Điền thử ngẫu nhiên</Button>
+          <small>{demo ? "Chế độ thử · Gửi phiếu chỉ chạy animation, không lưu dữ liệu." : "Chỉ trên local · Dữ liệu thử không được lưu."}</small>
+        </div>}
         <p>
           Điền lần lượt các thông tin. Nhóm sinh hoạt được xác định từ ngày
           sinh.
@@ -237,7 +288,13 @@ export default function RegistrationIntake({
           ))}
         </div>
       </header>
+      <div className={`intake-document ${busy ? `delivery-${deliveryPhase}` : ""}`} ref={inlineDelivery.root} style={busy ? deliveryStyle() : undefined}>
+      <div className="intake-paper-sheet">
+      {busy && <span className="intake-paper-surface" aria-hidden="true" />}
+      <div className="intake-fold-leaf">
       <form
+        aria-hidden={busy || undefined}
+        inert={busy}
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
@@ -272,6 +329,7 @@ export default function RegistrationIntake({
                     {title}
                   </h2>
                 </header>
+                {busy && <RegistrationPrintSummary step={index} values={values} childrenGroup={children} />}
                 <div className="intake-step-body">
                   {index === 0 && (
                     <>
@@ -486,7 +544,7 @@ export default function RegistrationIntake({
                             busy={busy}
                             disabled={processing}
                           >
-                            Gửi phiếu đăng ký
+                            {demo ? "Xem thử animation" : "Gửi phiếu đăng ký"}
                           </Button>
                         ) : (
                           <Button type="submit" disabled={processing}>
@@ -505,10 +563,16 @@ export default function RegistrationIntake({
           )}
         </fieldset>
       </form>
-      {reviewPayload && (
+      {busy && <RegistrationCardCover name={String(values.name)} group={group ? groupLabels[group] : ""} />}
+      </div>
+      {busy && <RegistrationCardFace name={String(values.name)} group={group ? groupLabels[group] : ""} />}
+      </div>
+      {busy && <RegistrationDelivery phase={deliveryPhase} />}
+      </div>
+      {reviewPayload && !busy && (
         <Dialog
           title="Xác nhận đăng ký"
-          description="Vui lòng kiểm tra lại toàn bộ thông tin trước khi gửi phiếu đăng ký."
+          description={demo ? "Chạy animation với dữ liệu thử, không gửi hoặc lưu hồ sơ." : "Vui lòng kiểm tra lại toàn bộ thông tin trước khi gửi phiếu đăng ký."}
           className="intake-confirm-dialog"
           busy={busy}
           onClose={() => {
@@ -516,7 +580,7 @@ export default function RegistrationIntake({
             setError("");
           }}
         >
-          <p>Huynh đệ xác nhận các thông tin đã điền là chính xác?</p>
+          <p>{demo ? "Bắt đầu xem animation đóng thiệp và gửi phong bì?" : "Huynh đệ xác nhận các thông tin đã điền là chính xác?"}</p>
           {error && <Feedback>{error}</Feedback>}
           <div className="intake-confirm-actions">
             <Button
@@ -530,7 +594,7 @@ export default function RegistrationIntake({
               Quay lại kiểm tra
             </Button>
             <Button busy={busy} onClick={() => void submit(true)}>
-              Xác nhận gửi phiếu
+              {demo ? "Chạy thử animation" : "Xác nhận gửi phiếu"}
             </Button>
           </div>
         </Dialog>

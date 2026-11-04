@@ -1,0 +1,114 @@
+/* One-shot accents follow physical contacts; they never signal server success. */
+.delivery-effects { position: absolute; inset: 0; z-index: 6; overflow: clip; pointer-events: none; }
+.effects-atmosphere { z-index: 1; }
+.delivery-glow { position: absolute; left: calc(50% - 180px); width: 360px; height: 270px; border-radius: 50%; opacity: 0; background: radial-gradient(ellipse, color-mix(in srgb, var(--cyan) 34%, transparent), color-mix(in srgb, var(--lavender) 20%, transparent) 42%, transparent 72%); }
+.glow-fold { top: -30px; animation: delivery-aura 1100ms ease-out calc(var(--paper-compact) + var(--paper-morph) + var(--paper-crease) - 220ms) both; }
+.glow-launch { top: 170px; }
+.delivery-sending .glow-launch { animation: delivery-aura 1000ms ease-out both; }
+.delivery-impact { position: absolute; width: 88px; height: 88px; left: calc(50% - 44px); }
+.delivery-impact > i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--accent); opacity: 0; }
+.delivery-impact > i + i { border-color: var(--reference-accent); }
+.impact-fold { top: 60px; }
+.impact-fold > i { animation: delivery-ring 900ms ease-out calc(var(--paper-compact) + var(--paper-morph) + var(--paper-crease) - 120ms) both; }
+.impact-fold > i + i { animation-delay: calc(var(--paper-compact) + var(--paper-morph) + var(--paper-crease) + 20ms); }
+.impact-seal { top: 293px; }
+:is(.delivery-closing, .delivery-sending) .impact-seal > i { animation: delivery-ring 700ms ease-out calc(var(--paper-seal) - 210ms) both; }
+:is(.delivery-closing, .delivery-sending) .impact-seal > i + i { animation-delay: calc(var(--paper-seal) - 120ms); }
+.delivery-launch-wave { position: absolute; left: calc(50% - 110px); top: 404px; width: 220px; height: 24px; border: 1px solid var(--accent); border-radius: 50%; opacity: 0; }
+.delivery-sending .delivery-launch-wave { animation: delivery-ground-wave 900ms ease-out 180ms both; }
+.delivery-speed-ribbons { position: absolute; width: 400px; height: 490px; left: calc(50% - 200px); top: 0; overflow: hidden; }
+.delivery-speed-ribbons path { stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: 380; stroke-dashoffset: 380; opacity: 0; }
+.delivery-speed-ribbons path:nth-child(2) { stroke: var(--cyan); stroke-width: 3; }
+.delivery-speed-ribbons path:nth-child(3) { stroke: var(--reference-accent); stroke-width: 1; }
+.delivery-sending .delivery-speed-ribbons path { animation: delivery-ribbon 1050ms ease-out 320ms both; }
+.delivery-sending .delivery-speed-ribbons path:nth-child(2) { animation-delay: 440ms; }
+.delivery-sending .delivery-speed-ribbons path:nth-child(3) { animation-delay: 380ms; }
+/* The reflective strip stays on the paper face, not on the scene's 3D ancestors. */
+.paper-leaf-cover { overflow: hidden; }
+.paper-leaf-cover::after,
+.delivery-envelope-front::after { content: ""; position: absolute; top: -50%; left: -90px; width: 70px; height: 200%; pointer-events: none; opacity: 0; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--surface) 90%, transparent), transparent); }
+.paper-leaf-cover::after { animation: delivery-sheen 900ms ease-in-out calc(var(--paper-compact) + var(--paper-morph) + var(--paper-crease) - 180ms) both; }
+.delivery-sending .delivery-envelope-front::after { animation: delivery-sheen 700ms ease-in-out both; }
+/* Closing is server-gated and the paper is already fully inside the envelope. */
+.delivery-closing .delivery-envelope-scene { z-index: 3; animation: envelope-contact 340ms ease-out calc(var(--paper-seal) - 360ms) both; }
+@keyframes envelope-contact {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  45% { transform: translateY(5px) scale(1.035, 0.965); }
+  72% { transform: translateY(-4px) scale(0.985, 1.015); }
+  88% { transform: translateY(1px) scale(1.006, 0.994); }
+}
+@keyframes delivery-aura {
+  0% { opacity: 0; transform: scale(0.65); }
+  30% { opacity: 0.8; }
+  100% { opacity: 0; transform: scale(1.2); }
+}
+@keyframes delivery-ring {
+  0% { opacity: 0; transform: scale(0.3); }
+  15% { opacity: 0.6; }
+  100% { opacity: 0; transform: scale(2.5); }
+}
+@keyframes delivery-ground-wave {
+  0% { opacity: 0; transform: scale(0.55); }
+  15% { opacity: 0.45; }
+  100% { opacity: 0; transform: scale(1.65); }
+}
+@keyframes delivery-sheen {
+  0% { opacity: 0; transform: translateX(0) rotate(-24deg); }
+  22% { opacity: 0.8; }
+  78% { opacity: 0.6; }
+  100% { opacity: 0; transform: translateX(460px) rotate(-24deg); }
+}
+@keyframes delivery-ribbon {
+  0% { opacity: 0; stroke-dashoffset: 380; }
+  25% { opacity: 0.4; }
+  70% { opacity: 0.3; }
+  100% { opacity: 0; stroke-dashoffset: -160; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .delivery-effects, .paper-leaf-cover::after, .delivery-envelope-front::after { display: none; }
+  .delivery-closing .delivery-envelope-scene { z-index: 3; animation: none; }
+}
+
+/* The filled form becomes the inside of the same paper that folds into the cover. */
+.intake-fold-leaf { position: relative; }
+.intake-fold-leaf > form { margin: 0; }
+.gather-print .intake-fold-leaf { z-index: 2; transform-origin: center top; transform-style: preserve-3d; animation: paper-fold var(--paper-crease) linear calc(var(--paper-compact) + var(--paper-morph)) both; }
+.gather-print .intake-fold-leaf > form { position: absolute; inset: 0; height: 100%; overflow: hidden; backface-visibility: hidden; background: var(--surface); border-radius: var(--radius-sm); }
+.gather-print fieldset { position: relative; min-width: 0; }
+.gather-print .intake-step { background: transparent; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none; }
+.gather-print .intake-step-heading { white-space: nowrap; transform-origin: left top; will-change: transform; }
+.gather-print .intake-step-heading h2 { font-size: 16px; line-height: 28px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+.registration-print-summary { position: absolute; top: 4px; left: 96px; right: 12px; display: flex; gap: 4px; align-items: center; font-size: 8px; line-height: 14px; color: var(--text-secondary); opacity: 0; }
+.registration-print-summary span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.registration-print-summary img { width: 11px; height: 15px; object-fit: cover; flex-shrink: 0; border-radius: 1px; }
+.gather-print .registration-card-face { z-index: 1; height: 160px; pointer-events: none; animation: paper-content-in 700ms ease-out calc(var(--paper-compact) * 0.45) both; }
+.gather-print .intake-fold-leaf > .paper-leaf-cover { backface-visibility: hidden; }
+@media (prefers-reduced-motion: reduce) {
+  .registration-print-summary { display: none; }
+}
+
+.gather-print .intake-fold-leaf > form::before { content: ""; position: absolute; top: 0; left: 12px; right: 12px; border-top: 1px dashed var(--line-strong); animation: paper-content-in 400ms ease-out calc(var(--paper-compact) - 400ms) both; }
+/* Reflective paper lighting stays behind ink so letters never wash out. */
+.paper-leaf-cover::after, .delivery-envelope-front::after { z-index: 0; }
+.paper-leaf-cover > :not(.card-cover-frame) { position: relative; z-index: 1; }
+.card-cover-frame, .envelope-wordmark { z-index: 1; }
+/* Freeze layout boxes during gather; only the empty paper surface changes shape. */
+.gather-print { overflow-x: clip; }
+.gather-print .intake-paper-sheet { background: transparent; border: 0; box-shadow: none; animation: none; perspective-origin: 50% 160px; }
+.intake-paper-surface { position: absolute; inset: 0; height: 320px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); box-shadow: var(--shadow-soft); transform-origin: center top; pointer-events: none; }
+.gather-print .registration-print-summary { width: 172px; right: auto; }
+.gather-print .registration-print-summary::after { content: ""; position: absolute; left: -84px; top: 17px; width: 256px; border-bottom: 1px solid var(--line); }
+.gather-print .intake-step { border: 0; }
+/* Cull complete faces at the edge, including independently composited descendants. */
+.gather-print .intake-fold-leaf > form { overflow: visible; transform: translateZ(0.5px); -webkit-backface-visibility: hidden; animation: none; }
+.gather-print .intake-fold-leaf > form * { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.gather-print .intake-fold-leaf > .paper-leaf-cover { transform: rotateX(180deg) translateZ(0.5px); -webkit-backface-visibility: hidden; animation: none; }
+.gather-print .paper-leaf-cover * { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+
+.gather-print .intake-paper-sheet, .gather-print .intake-step { will-change: transform; }
+.gather-print .intake-fold-leaf { will-change: transform, translate; }
+
+
+.registration-intake.intake-delivering { overflow: clip; }
+
+.gather-print .intake-fold-leaf { background: var(--surface); border-radius: var(--radius-sm); }

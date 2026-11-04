@@ -12,3 +12,4 @@ dist
 .vercel/
 out/
 DATA
+graphify-out

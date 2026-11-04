@@ -9,6 +9,10 @@ type Props = {
   onGroup: (group: MemberGroup | "all") => void;
   onPending: () => void;
 };
+function Metric({value}: {value: number}) {
+  const label = value.toLocaleString("vi-VN");
+  return <strong className="dashboard-metric"><span aria-hidden="true" data-count-value={value}>{label}</span><span className="sr-only">{label}</span></strong>;
+}
 const groups = ["children", "youth", "congregation"] as const;
 
 export default function OverviewSummary({
@@ -38,7 +42,7 @@ export default function OverviewSummary({
           aria-label="Tổng huynh đệ đã duyệt"
         >
           <span className="overview-kpi-label">Tổng huynh đệ</span>
-          <strong>{total.toLocaleString("vi-VN")}</strong>
+          <Metric value={total} />
           <small>Hồ sơ đã duyệt</small>
         </section>
         {groups.map((group) => {
@@ -58,7 +62,7 @@ export default function OverviewSummary({
                 <i aria-hidden="true" />
                 {groupLabels[group]}
               </span>
-              <strong>{count.toLocaleString("vi-VN")}</strong>
+              <Metric value={count} />
               <small>
                 {total ? Math.round((count / total) * 100) : 0}% số đã duyệt{" "}
                 <ArrowUpRight size={13} aria-hidden="true" />
@@ -77,7 +81,7 @@ export default function OverviewSummary({
             <Clock3 size={14} aria-hidden="true" />
             Chờ duyệt
           </span>
-          <strong>{waiting.length.toLocaleString("vi-VN")}</strong>
+          <Metric value={waiting.length} />
           <small>
             {waiting.length ? "Xem đăng ký" : "Đã xử lý tất cả"}
             <ArrowDown size={13} aria-hidden="true" />

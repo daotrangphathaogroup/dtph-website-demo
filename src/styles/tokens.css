@@ -1,5 +1,9 @@
 :root {
   color-scheme: light;
+  --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-enter: 280ms;
+  --motion-chart: 700ms;
+  --motion-distance: 8px;
   --background: #f5f6fa;
   --surface: #ffffff;
   --surface-secondary: #e6e7ec;
