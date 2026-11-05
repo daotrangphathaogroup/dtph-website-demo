@@ -1,8 +1,9 @@
 import type {Member} from './types';
-import {displayValue,isStudent} from './registration.ts';
+import {displayValue} from './registration.ts';
 import type {ProfileField} from './registration.ts';
 export const sheetText=(value:unknown)=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLocaleLowerCase('vi-VN');
 export function sheetValue(member:Member,key:string):string|number|undefined {
+ if(member.group==='children'&&['occupation','introducedBy'].includes(key))return undefined;
  const value=member.profileData?.[key];
  if(key==='name')return member.name||value;
  if(key==='id')return member.id??value;
@@ -53,11 +54,11 @@ export function filterSheet(members:Member[],query:string,filters:Record<string,
 export function sortSheet(members:Member[],field:ProfileField|undefined,direction:'asc'|'desc'):Member[]{if(!field)return members;return [...members].sort((a,b)=>{const x=sheetValue(a,field.key),y=sheetValue(b,field.key),emptyX=x===undefined||x==='',emptyY=y===undefined||y==='';if(emptyX||emptyY)return emptyX===emptyY?0:emptyX?1:-1;const comparison=['year','number','team'].includes(field.type)?Number(x)-Number(y):String(x).localeCompare(String(y),'vi',{numeric:true,sensitivity:'base'});return direction==='asc'?comparison:-comparison;});}
 export function sheetExportData(members: Member[], fields: ProfileField[]): (string | number | undefined)[][] {
  return [
-  fields.map(f => f.key === 'job' && members.length > 0 && members.every(m => isStudent(m.profileData?.occupation)) ? 'Trường học' : f.key === 'job' && members.some(m => isStudent(m.profileData?.occupation)) ? 'Nơi công tác / Trường học' : f.label),
+  fields.map(f => f.label),
   ...members.map(m => fields.map(f => {
    const value = sheetValue(m, f.key);
    return f.type === 'date' && value ? displayValue(value, f) : value;
   })),
  ];
 }
-export function sheetCsv(members:Member[],fields:ProfileField[]):string{const quote=(value:unknown)=>{const s=String(value??'');return '"'+(/^[\s]*[=+@\-]/.test(s)||/^[\t\r]/.test(s)?"'"+s:s).replace(/"/g,'""')+'"';};return '\ufeff'+[fields.map(f=>f.key==='job'&&members.length>0&&members.every(m=>isStudent(m.profileData?.occupation))?'Trường học':f.key==='job'&&members.some(m=>isStudent(m.profileData?.occupation))?'Nơi công tác / Trường học':f.label),...members.map(m=>fields.map(f=>{const value=sheetValue(m,f.key);return f.type==='date'&&value?displayValue(value,f):value;}))].map(row=>row.map(quote).join(',')).join('\r\n');}
+export function sheetCsv(members:Member[],fields:ProfileField[]):string{const quote=(value:unknown)=>{const s=String(value??'');return '"'+(/^[\s]*[=+@\-]/.test(s)||/^[\t\r]/.test(s)?"'"+s:s).replace(/"/g,'""')+'"';};return '\ufeff'+[fields.map(f=>f.label),...members.map(m=>fields.map(f=>{const value=sheetValue(m,f.key);return f.type==='date'&&value?displayValue(value,f):value;}))].map(row=>row.map(quote).join(',')).join('\r\n');}

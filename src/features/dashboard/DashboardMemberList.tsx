@@ -29,7 +29,7 @@ export default function DashboardMemberList({
     const unique = new Map<string, ProfileField>();
     for (const group of ["children", "youth", "congregation"] as const)
       for (const field of schemas[group].fields)
-        if (!unique.has(field.key)) unique.set(field.key, field);
+        if (!unique.has(field.key) || (unique.get(field.key)?.hiddenInTable && !field.hiddenInTable)) unique.set(field.key, field);
     const name = unique.get("name")!;
     unique.delete("name");
     return {
@@ -44,11 +44,7 @@ export default function DashboardMemberList({
           required: false,
           options: Object.values(groupLabels),
         },
-        ...Array.from(unique.values(), (field) =>
-          field.key === "job"
-            ? { ...field, label: "Nơi công tác / Trường học" }
-            : field,
-        ),
+        ...unique.values(),
       ],
     };
   }, [schemas, effectiveGroup]);

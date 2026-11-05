@@ -1,5 +1,4 @@
 import {teamAreas} from '../../src/lib/areas.ts';
-import {legacyProvinces} from '../../src/lib/provinces.ts';
 // Synthetic local-only records. Nothing here is imported from real member files.
 export function generateDemoProfiles({seed=20261027,asOf='2026-10-27'}={}){
  let state=seed>>>0;const random=()=>{state=(Math.imul(1664525,state)+1013904223)>>>0;return state/4294967296;},pick=items=>items[Math.floor(random()*items.length)],integer=(min,max)=>min+Math.floor(random()*(max-min+1));
@@ -17,7 +16,7 @@ export function generateDemoProfiles({seed=20261027,asOf='2026-10-27'}={}){
    const joinedYear=pending?year:pick([year,year,year,year,year-1,year-2]),joinedMonth=pending?month:integer(1,joinedYear===year?month:12),joinedDay=integer(1,joinedYear===year&&joinedMonth===month?Math.min(day,28):28);
    const joined=`${joinedYear}-${String(joinedMonth).padStart(2,'0')}-${String(joinedDay).padStart(2,'0')}`;
    const birthday=`${birthYear}-${String(integer(1,12)).padStart(2,'0')}-${String(integer(1,28)).padStart(2,'0')}`;
-   const profileData={name,dharmaName:random()<.15?'':pick(dharma),gender,birthday,occupation,job:occupation==='Không'?'':occupation==='Học sinh'?pick(['Trường Tiểu học Mẫu A','Trường THCS Mẫu B','Trường THPT Mẫu C']):occupation==='Sinh viên'?'Trường Đại học Mẫu':'Đơn vị minh họa '+integer(1,12),address:ward,team,hometown:pick(legacyProvinces),phone:group==='children'&&random()<.5?'':'090000'+String(integer(1,9999)).padStart(4,'0'),relativePhone:'091000'+String(integer(1,9999)).padStart(4,'0'),introducedBy:'',notes:'[DỮ LIỆU MẪU LOCAL] Hồ sơ giả lập để thử giao diện; không phải người thật.',status:'',...(group==='children'?{parentName:pick(family)+' '+pick([...male,...female]),personality:pick(['Điềm tĩnh','Hoạt bát','Thân thiện','Cần thời gian làm quen']),nickname:pick(['Mây','Nắng','Sóc','Gấu','Mít','Bông'])}:{caregiver:'',position:''})};
+   const profileData={name,dharmaName:random()<.15?'':pick(dharma),gender,birthday,occupation,address:ward,team,phone:group==='children'&&random()<.5?'':'090000'+String(integer(1,9999)).padStart(4,'0'),relativePhone:'091000'+String(integer(1,9999)).padStart(4,'0'),introducedBy:'',notes:'[DỮ LIỆU MẪU LOCAL] Hồ sơ giả lập để thử giao diện; không phải người thật.',status:'',...(group==='children'?{schoolClass:String(integer(1,12)),caregiver:'',parentName:pick(family)+' '+pick([...male,...female]),personality:pick(['Điềm tĩnh','Hoạt bát','Thân thiện','Cần thời gian làm quen']),nickname:pick(['Mây','Nắng','Sóc','Gấu','Mít','Bông'])}:{caregiver:'',position:''})};
    rows.push({group,profileData,registrationStatus:pending?'pending':'approved',joined,submittedAt:joined+`T${String(integer(1,14)).padStart(2,'0')}:${String(integer(0,59)).padStart(2,'0')}:00.000Z`,avatarIndex:integer(0,11)});
   }
  }

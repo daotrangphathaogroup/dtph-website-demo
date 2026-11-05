@@ -34,3 +34,7 @@ Before deploying against Supabase, apply the included `supabase/migrations/20261
 - Unit/API tests cover exact 16/40/41 birthday boundaries, invalid/future dates, phone requirements, children-only fields, server routing, nickname persistence, public pending, staff approval and idempotent retries.
 - Chromium checks use an isolated in-memory backend, with real image upload/crop, two same-name referrers distinguished by dharma name, all cluster gates, child/adult paths, Manager approval, and a committed registration with a simulated lost response followed by retry.
 - Screens checked at 320, 390, 760 and 1280px; no horizontal document overflow. Test writes do not alter local member records or Supabase.
+
+## Schema 13 update — 2026-11-05
+
+Children now finish at step 5, “Thông tin học sinh”: optional `schoolClass` (1–12 or `Không`) and nickname. Their referral step is hidden and `intakeValues` excludes `introducedBy`; existing stored referrals/occupations are preserved. Adults retain their referral step, and children-only keys are removed from adult payloads when birthday changes. `caregiver` is staff-only for all groups. Retired `hometown` and `job` keys are removed from schemas and stored JSON by migration 013.

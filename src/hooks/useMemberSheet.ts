@@ -19,7 +19,7 @@ export function useMemberSheet(
   const fields = useMemo(
     () => [
       ...schema.fields.filter((f) => f.key === "name"),
-      ...schema.fields.filter((f) => f.type !== "image" && f.key !== "name"),
+      ...schema.fields.filter((f) => !f.hiddenInTable && f.type !== "image" && f.key !== "name"),
     ],
     [schema],
   );

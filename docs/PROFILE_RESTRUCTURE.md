@@ -2,23 +2,25 @@
 
 Nguồn: file Excel “Bảng các thông tin của từng chúng - ĐHPH”, hai sheet “Tổng quan” (B1:F23) và “Đăng ký thông tin” (B1:O17), nhận ngày 27/10/2026. Không nhập danh sách từ thư mục DATA trong đợt thay đổi này.
 
-## Trường dùng chung
+## Trường hồ sơ hiện tại (05/11/2026, schema 13)
 
-Cả ba nhóm dùng cùng khóa dữ liệu cho thông tin chung: `name`, `dharmaName`, `gender`, `birthday`, `address`, `team`, `hometown`, `avatar`, `phone`, `introducedBy`, `notes`, `status`, `occupation`, `job`, `relativePhone`. `id` và `joined` do hệ thống tạo, không cho ghi đè qua biểu mẫu/API.
+Cả ba nhóm dùng `name`, `dharmaName`, `gender`, `birthday`, `address`, `team`, `avatar`, `phone`, `relativePhone`, `introducedBy`, `notes`, `status`, `occupation`, `caregiver`. `id` và `joined` do hệ thống tạo. `caregiver` là “HĐ chăm sóc”, chọn huynh đệ đã duyệt và chỉ do quản lý cập nhật.
 
-Chúng thiếu nhi thêm `parentName`, `personality`, `nickname`. Chúng thanh niên và Đạo tràng thêm `caregiver`, `position`; mỗi nhóm vẫn có cấu hình riêng.
+Đã bỏ hoàn toàn `hometown` (Quê quán) và `job` (Nơi công tác/Trường học) khỏi schema/API. Migration 013 xóa riêng hai khóa này trong `members.profile_data`, giữ nguyên hồ sơ và các giá trị khác. API từ chối ghi hai khóa đã bỏ.
 
-`job` là một trường duy nhất. Khi nghề nghiệp là Học sinh/Sinh viên, giao diện và cột xuất theo nhóm hồ sơ đó dùng tên Trường học. Nếu xuất hồ sơ có nhiều loại nghề nghiệp, cột mang tên Nơi công tác / Trường học. Chọn Không sẽ xóa và khóa giá trị này. Nghề nghiệp Khác có thể ghi rõ, lưu trong cùng trường nghề nghiệp.
+Chúng thiếu nhi có thêm `parentName`, `personality`, `nickname`, `schoolClass`. `schoolClass` (“Lớp”) chọn chuỗi `1`–`12` hoặc `Không`; để trống khi chưa cập nhật. Nghề nghiệp và người giới thiệu vẫn lưu trong hồ sơ thiếu nhi, quản lý vẫn có thể xem/chỉnh sửa trong hồ sơ; hai trường này ẩn khỏi bảng dữ liệu, bộ lọc cột và đăng ký công khai. Trong bảng tổng hợp nhiều nhóm, giá trị hai trường này của dòng thiếu nhi cũng để trống.
 
-`relativePhone` hiển thị SĐT PH ở Chúng thiếu nhi, SĐT Người thân ở hai nhóm còn lại, gồm cả tiêu đề CSV.
+Chúng thanh niên và Đạo tràng có `position`, hiển thị “Vai trò”: Tổ điều hành, Tổ trưởng, Tổ phó, Thành viên, Huynh đệ mới, Thành viên không thường xuyên, Học sinh. Giữ nguyên khóa dữ liệu `position`; các giá trị cũ ngoài danh sách vẫn được hiển thị và giữ khi sửa trường khác. Chọn vai trò mới chỉ chấp nhận danh sách quy định.
+
+`status` hiển thị “Trạng thái” với bốn mức hoạt động, chỉ dành cho quản lý. `relativePhone` hiển thị SĐT PH cho thiếu nhi và SĐT Người thân cho hai nhóm còn lại.
 
 ## Biểu mẫu công khai
 
-Theo đúng thứ tự sheet 2: Hình ảnh, Họ và tên, Pháp danh, Giới tính, Ngày sinh, Nghề nghiệp, Trường học/Nơi công tác, Nơi ở hiện tại, Tổ, Quê quán, SĐT Cá nhân, [Họ và tên PH ở Chúng thiếu nhi], SĐT PH/SĐT Người thân, Người giới thiệu.
+Trang đăng ký chính tự xác định nhóm từ ngày sinh: dưới 16 là thiếu nhi, 16–40 là thanh niên, trên 40 là Đạo tràng. Bốn bước đầu gồm thông tin cơ bản, khu vực, liên lạc và ảnh. Bước cuối của thiếu nhi gồm lớp và biệt danh, không có người giới thiệu; bước cuối của hai nhóm còn lại là người giới thiệu. Các trang đăng ký riêng dùng schema tương ứng với cùng quy tắc ẩn trường.
 
-Bắt buộc ở cả ba nhóm: hình ảnh, họ tên, giới tính, ngày sinh, nơi ở hiện tại, tổ. SĐT cá nhân bắt buộc thêm ở Chúng thanh niên và Đạo tràng. Những trường còn lại không bắt buộc. Trang/API Cấu hình đăng ký đã được bỏ theo yêu cầu; quy tắc biểu mẫu nằm trong schema mã nguồn và migration.
+Bắt buộc: hình ảnh, họ tên, giới tính, ngày sinh, nơi ở và tổ; SĐT cá nhân bắt buộc thêm cho hai nhóm người lớn. Ghi chú, Trạng thái, ID, Ngày tham gia, HĐ chăm sóc và Vai trò không hiển thị ở đăng ký công khai.
 
-Ghi chú, Tình trạng, ID, Ngày tham gia và các trường quản lý riêng không xuất hiện trên biểu mẫu công khai. Tình trạng/Vị trí khởi đầu trống, chưa áp đặt danh sách lựa chọn theo xác nhận của người dùng.
+Migration local và Supabase đã áp dụng ngày 05/11/2026, không xóa hồ sơ. Thay đổi giao diện/backend được triển khai từ mã nguồn cùng schema 13.
 
 ## Ảnh và người liên quan
 

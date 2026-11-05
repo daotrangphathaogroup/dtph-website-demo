@@ -37,7 +37,6 @@ export default function ProfileForm({
       ...v,
       [key]: value,
       ...(key === 'address' ? {team: getTeam(value) ?? ''} : {}),
-      ...(key === 'occupation' && value === 'Không' ? {job: ''} : {}),
     }));
   function control(f: ProfileField) {
     const label = profileFieldLabel(f, values),
@@ -81,8 +80,6 @@ export default function ProfileForm({
           onProcessing={setProcessing}
         />
       );
-    if (f.key === 'job' && values.occupation === 'Không')
-      return <input id={id} disabled value="" placeholder="Không áp dụng" />;
     if (f.type === 'member')
       return (
         <MemberPicker
@@ -109,6 +106,9 @@ export default function ProfileForm({
                   ? 'Chọn tỉnh/thành theo địa chỉ cũ'
                   : `Chọn ${label.toLocaleLowerCase('vi')}`}
             </option>
+            {f.key === 'position' && value && !f.options?.includes(String(value)) && (
+              <option value={value} disabled>{value} (giá trị cũ)</option>
+            )}
             {f.type === 'ward'
               ? ([1, 2, 3] as const).map((team) => (
                   <optgroup key={team} label={`Tổ ${team}`}>
@@ -209,7 +209,6 @@ export default function ProfileForm({
           if (
             f.required &&
             !f.readOnly &&
-            !(f.key === 'job' && values.occupation === 'Không') &&
             String(values[f.key] ?? '').trim() === ''
           ) {
             setError('Vui lòng cung cấp ' + profileFieldLabel(f, values) + '.');

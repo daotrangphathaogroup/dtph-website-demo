@@ -12,6 +12,7 @@ export const intakeKeys = [
   "relativePhone",
   "avatar",
   "nickname",
+  "schoolClass",
   "introducedBy",
 ] as const;
 export function registrationAge(
@@ -54,7 +55,7 @@ export function intakeValues(
     intakeKeys
       .filter(
         (key) =>
-          !["parentName", "nickname"].includes(key) || group === "children",
+          (!["parentName", "nickname", "schoolClass"].includes(key) || group === "children") && (key !== "introducedBy" || group !== "children"),
       )
       .map((key) => [key, values[key] ?? ""]),
   );
@@ -84,6 +85,8 @@ export function intakeStepError(
       if (values[key] && !/^0[35789]\d{8}$/.test(String(values[key])))
         return "Số điện thoại cần 10 chữ số, bắt đầu bằng đầu số Việt Nam hợp lệ.";
   }
+  if (group === 'children' && values.schoolClass && ![...Array.from({length:12},(_,i)=>String(i+1)),'Không'].includes(String(values.schoolClass)))
+    return 'Vui lòng chọn lớp từ 1 đến 12 hoặc Không.';
   if (step === 3 && !values.avatar)
     return "Vui lòng chụp hoặc tải ảnh đại diện và xác nhận khung cắt 3×4.";
   return "";

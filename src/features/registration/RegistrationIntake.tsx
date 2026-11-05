@@ -41,6 +41,7 @@ const blank: ProfileValues = {
   avatar: "",
   nickname: "",
   introducedBy: "",
+  schoolClass: "",
 };
 export default function RegistrationIntake({
   isStaff = false,
@@ -73,7 +74,7 @@ export default function RegistrationIntake({
     age = registrationAge(birthday, today),
     children = group === "children";
   const steps = children
-    ? [...commonSteps.slice(0, 4), "Biệt danh", commonSteps[4]]
+    ? [...commonSteps.slice(0, 4), "Thông tin học sinh"]
     : commonSteps;
   const finalStep = steps.length - 1;
   const receiptRef = useRef<HTMLElement>(null);
@@ -118,12 +119,13 @@ export default function RegistrationIntake({
     setValues({...blank, name, gender: pick(["Nam", "Nữ"]), birthday, address,
       team: getTeam(address) ?? 1, phone: phone(), relativePhone: phone(),
       parentName: isChild ? pick(["Nguyễn Văn Minh", "Trần Thị Mai", "Lê Thanh Bình"]) : "",
+      schoolClass: isChild ? String(1 + Math.floor(Math.random() * 12)) : "",
       nickname: isChild ? pick(["Bắp", "Sóc", "Mít", "Bông"]) : "",
       avatar: canvas.toDataURL("image/jpeg", 0.85),
     });
     setDemo(true);
-    setCurrent(isChild ? 5 : 4);
-    setReached(isChild ? 5 : 4);
+    setCurrent(4);
+    setReached(4);
     setReceipt(null);
     setReviewPayload("");
     setError("");
@@ -135,14 +137,7 @@ export default function RegistrationIntake({
     if (key === "birthday" && registrationGroup(value, today) !== group) {
       setCurrent(0);
       const nextGroup = registrationGroup(value, today);
-      if (nextGroup && group)
-        setReached((n) =>
-          n < 4
-            ? n
-            : nextGroup === "children"
-              ? n + (group === "children" ? 0 : 1)
-              : Math.min(n, 4),
-        );
+      if (nextGroup && group) setReached(n=>Math.min(n,4));
     }
     setValues((v) => ({
       ...v,
@@ -490,6 +485,14 @@ export default function RegistrationIntake({
                     </>
                   )}
                   {children && index === 4 && (
+                    <>
+                    <Field label="Lớp (nếu có)" htmlFor={`${id}-schoolClass`}>
+                      <select id={`${id}-schoolClass`} value={values.schoolClass} onChange={e=>update('schoolClass',e.target.value)}>
+                        <option value="">Chọn lớp</option>
+                        {Array.from({length:12},(_,i)=><option key={i+1} value={String(i+1)}>Lớp {i+1}</option>)}
+                        <option value="Không">Không</option>
+                      </select>
+                    </Field>
                     <Field
                       label="Biệt danh (nếu có)"
                       htmlFor={`${id}-nickname`}
@@ -501,9 +504,11 @@ export default function RegistrationIntake({
                         onChange={(e) => update("nickname", e.target.value)}
                       />
                     </Field>
+                    </>
                   )}
                   {index === finalStep && (
                     <>
+                      {!children && <>
                       <p className="intake-note">
                         Nếu có người giới thiệu, nhập tên và chọn đúng huynh đệ
                         trong danh sách. Có thể để trống.
@@ -516,6 +521,7 @@ export default function RegistrationIntake({
                           onChange={(v) => update("introducedBy", v)}
                         />
                       </Field>
+                      </>}
                       <div className="intake-review">
                         <strong>{values.name}</strong>
                         <span>
