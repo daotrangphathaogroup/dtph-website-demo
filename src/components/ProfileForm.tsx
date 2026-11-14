@@ -1,8 +1,9 @@
 'use client';
 import {useId, useState} from 'react';
 import type {ProfileField, RegistrationSchema, ProfileValues} from '../lib/registration';
-import {activityStatuses, displayValue, profileFieldLabel} from '../lib/registration';
-import {getTeam, teamAreas} from '../lib/areas';
+import RecognitionTagEditor from './RecognitionTagEditor';
+import {displayValue, profileFieldLabel} from '../lib/registration';
+import {currentWard, getTeam, teamAreas, unassignedWards, wards} from '../lib/areas';
 import {legacyProvinces} from '../lib/provinces';
 import MemberPicker from './MemberPicker';
 import PortraitInput from './PortraitInput';
@@ -39,38 +40,12 @@ export default function ProfileForm({
       ...(key === 'address' ? {team: getTeam(value) ?? ''} : {}),
     }));
   function control(f: ProfileField) {
-    const label = profileFieldLabel(f, values),
+    const label = profileFieldLabel(f),
       id = `${inputPrefix}-${f.key}`,
-      value = values[f.key] ?? '';
+      value = Array.isArray(values[f.key]) ? '' : String(values[f.key] ?? '');
     if (f.readOnly)
-      return <input id={id} value={value} readOnly aria-readonly="true" className="system-field" />;
-    if (f.key === 'status')
-      return (
-        <>
-          <div className="activity-status-options" role="radiogroup" aria-label="Trạng thái">
-            {activityStatuses.map((status, index) => (
-              <label key={status} className={`activity-status-option activity-level-${index}`}>
-                <input
-                  type="radio"
-                  name={id}
-                  value={status}
-                  checked={value === status}
-                  onChange={() => update(f.key, status)}
-                />
-                <span><i aria-hidden="true" />{status}</span>
-              </label>
-            ))}
-          </div>
-          {value && !activityStatuses.includes(String(value)) && (
-            <small>Trạng thái hiện tại: {value}. Chọn một mức hoạt động để cập nhật.</small>
-          )}
-          {value && (
-            <button type="button" className="activity-status-clear" onClick={() => update(f.key, '')}>
-              Bỏ chọn trạng thái
-            </button>
-          )}
-        </>
-      );
+      return <input id={id} value={f.key === 'addressNew' ? currentWard(values.address) : value} readOnly aria-readonly="true" className="system-field" />;
+    if (f.type === 'tags') return <RecognitionTagEditor value={values[f.key]} onChange={tags=>setValues(v=>({...v,[f.key]:tags}))} />;
     if (f.type === 'image')
       return (
         <PortraitInput
@@ -101,13 +76,21 @@ export default function ProfileForm({
           >
             <option value="">
               {f.type === 'ward'
-                ? 'Chọn phường theo địa chỉ cũ'
+                ? 'Chọn phường/xã theo địa chỉ cũ'
                 : f.type === 'province'
                   ? 'Chọn tỉnh/thành theo địa chỉ cũ'
                   : `Chọn ${label.toLocaleLowerCase('vi')}`}
             </option>
             {f.key === 'position' && value && !f.options?.includes(String(value)) && (
               <option value={value} disabled>{value} (giá trị cũ)</option>
+            )}
+            {f.type === 'ward' && value && !wards.includes(value) && (
+              <option value={value}>{value}</option>
+            )}
+            {f.type === 'ward' && (
+              <optgroup label="Chưa có Tổ mặc định">
+                {unassignedWards.map(ward => <option key={ward}>{ward}</option>)}
+              </optgroup>
             )}
             {f.type === 'ward'
               ? ([1, 2, 3] as const).map((team) => (
@@ -211,7 +194,7 @@ export default function ProfileForm({
             !f.readOnly &&
             String(values[f.key] ?? '').trim() === ''
           ) {
-            setError('Vui lòng cung cấp ' + profileFieldLabel(f, values) + '.');
+            setError('Vui lòng cung cấp ' + profileFieldLabel(f) + '.');
             return;
           }
         setBusy(true);
@@ -244,8 +227,8 @@ export default function ProfileForm({
                   f.type === 'image' || f.type === 'member' || f.key === 'status' ? undefined : `${inputPrefix}-${f.key}`
                 }
               >
-                {profileFieldLabel(f, values)}
-                {f.required ? <span className="required" aria-hidden="true"> *</span> : !f.readOnly && !profileFieldLabel(f, values).includes("(nếu có)") && " (nếu có)"}
+                {profileFieldLabel(f)}
+                {f.required ? <span className="required" aria-hidden="true"> *</span> : !f.readOnly && !profileFieldLabel(f).includes("(nếu có)") && " (nếu có)"}
               </label>
               {control(f)}
               {f.key === 'team' && (

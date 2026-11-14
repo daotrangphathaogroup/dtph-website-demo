@@ -43,7 +43,7 @@ export default function MemberSheetToolbar({
             onClick={() => sheet.setShowFilters(!sheet.showFilters)}
           >
             <Filter size={16} />
-            Lọc cột{count > 0 && <span className="filter-count">{count}</span>}
+            Bộ lọc{count > 0 && <span className="filter-count">{count}</span>}
           </Button>
           <details
             ref={optionsRef}
@@ -136,10 +136,10 @@ export default function MemberSheetToolbar({
               <option value="">Tất cả</option>
               {sheet.filterOptions[f.key]?.map((v) => (
                 <option key={v} value={v}>
-                  {displayValue(v, f)}
+                  {f.type==='tags'?String(v):displayValue(v, f)}
                 </option>
               ))}
-              <option value="__empty">Chưa cập nhật</option>
+              <option value="__empty">{f.type === "tags" ? "Chưa gắn thẻ" : "Chưa có thông tin"}</option>
             </select>
           </label>
         ))}

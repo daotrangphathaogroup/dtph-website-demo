@@ -1,3 +1,5 @@
+"use client";
+import {useLayoutEffect, useRef} from "react";
 import IconButton from "./IconButton";
 import type {
   ComponentProps,
@@ -265,8 +267,29 @@ export function SegmentedControl<T extends string>({
   onChange: (value: T) => void;
   items: { value: T; label: ReactNode }[];
 }) {
+  const root = useRef<HTMLDivElement>(null);
+  const marker = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const el = root.current, indicator = marker.current;
+    if (!el || !indicator) return;
+    const update = () => {
+      const selected = el.querySelector<HTMLElement>('[aria-pressed="true"]');
+      if (!selected) { el.removeAttribute('data-motion-ready'); return; }
+      indicator.style.left = `${selected.offsetLeft}px`;
+      indicator.style.top = `${selected.offsetTop}px`;
+      indicator.style.width = `${selected.offsetWidth}px`;
+      indicator.style.height = `${selected.offsetHeight}px`;
+      el.setAttribute('data-motion-ready', 'true');
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    el.querySelectorAll('button').forEach(button => observer.observe(button));
+    return () => observer.disconnect();
+  }, [value, items]);
   return (
-    <div className="segmented-control" role="group" aria-label={label}>
+    <div ref={root} className="segmented-control" role="group" aria-label={label}>
+      <span ref={marker} className="segment-indicator" aria-hidden="true" />
       {items.map((item) => (
         <button
           type="button"

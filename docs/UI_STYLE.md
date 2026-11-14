@@ -14,7 +14,7 @@ contrast and the limits of whole-image palette comparison.
 - Measured neutral canvas #f5f6fa, white working surfaces, measured ink #0c0d0e.
 - Measured blue #3e7ff1 for commit actions, focus and chart marks. Readable secondary
   copy #60636c; subdued green/amber and small activity-level dots convey meaning.
-- Self-hosted Geist including Vietnamese. Page title 30px desktop / 24px mobile,
+- Self-hosted Manrope variable (200–800), including Vietnamese. The original full font, OFL license and pinned source/SHA-256 are stored in `src/app/fonts/`; loaded once with `next/font/local` and inherited by headings, controls, tables and SVG charts. Page title 30px desktop / 24px mobile,
   panel title 16–18px, body 13–14px, secondary 12px, main metric 48px. Weight 500
   for visual hierarchy, 600 only where stronger emphasis is useful.
 - 4px spacing rhythm; 32px desktop / 16px mobile content gutters. Corner hierarchy:

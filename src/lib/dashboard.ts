@@ -1,9 +1,11 @@
+import {currentWard} from './areas.ts';
 import type {Member,MemberGroup} from './types';
 export type AgeBand='under13'|'13to17'|'18to30'|'31to45'|'46to60'|'over60'|'unknown';
 export const ageBands:{key:AgeBand;label:string}[]=[{key:'under13',label:'Dưới 13 tuổi'},{key:'13to17',label:'13–17 tuổi'},{key:'18to30',label:'18–30 tuổi'},{key:'31to45',label:'31–45 tuổi'},{key:'46to60',label:'46–60 tuổi'},{key:'over60',label:'Trên 60 tuổi'},{key:'unknown',label:'Chưa có ngày sinh'}];
 export type DashboardFilters={group:MemberGroup|'all';ward:string;team:string;age:AgeBand|'all';year:string;month:number|null};
 export const emptyDashboardFilters:DashboardFilters={group:'all',ward:'all',team:'all',age:'all',year:'all',month:null};
-export function todayInVietnam(){return new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Ho_Chi_Minh'});}
+const vietnamDate = new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Ho_Chi_Minh'});
+export function todayInVietnam(){return vietnamDate.format(new Date());}
 export function memberAge(member:Member,today=todayInVietnam()):number|null{
  const birth=String(member.profileData?.birthday??member.birthday??'');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(birth)||birth>today||Number.isNaN(Date.parse(birth))||new Date(birth).toISOString().slice(0,10)!==birth)return null;
@@ -11,10 +13,10 @@ export function memberAge(member:Member,today=todayInVietnam()):number|null{
 }
 export function ageBand(age:number|null):AgeBand{return age===null?'unknown':age<13?'under13':age<18?'13to17':age<=30?'18to30':age<=45?'31to45':age<=60?'46to60':'over60';}
 export function registrationDate(member:Member):string{
- if(member.submittedAt){const date=new Date(member.submittedAt);if(!Number.isNaN(date.valueOf()))return date.toLocaleDateString('en-CA',{timeZone:'Asia/Ho_Chi_Minh'});}
+ if(member.submittedAt){const date=new Date(member.submittedAt);if(!Number.isNaN(date.valueOf()))return vietnamDate.format(date);}
  return /^\d{4}-\d{2}-\d{2}$/.test(member.joined??'')?member.joined:'';
 }
-export function memberWard(member:Member){return String(member.profileData?.address??member.address??'').trim();}
+export function memberWard(member:Member){return currentWard(member.profileData?.address??member.address);}
 export function memberTeam(member:Member){return String(member.profileData?.team??member.team??'');}
 export function filterDashboard(members:Member[],filters:DashboardFilters,scope?:MemberGroup,today=todayInVietnam()):Member[]{
  return members.filter(m=>{

@@ -82,7 +82,7 @@ export default function MemberProfileDialog({
               .filter((f) => f.type !== "image")
               .map((field) => (
                 <div key={field.key}>
-                  <dt>{profileFieldLabel(field, values)}</dt>
+                  <dt>{profileFieldLabel(field)}</dt>
                   <dd>
                     {field.key === "status" && values[field.key] ? (
                       <ActivityStatus value={values[field.key]} />

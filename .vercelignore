@@ -6,3 +6,7 @@ node_modules
 docs/previews
 tests
 supabase
+/DATA/
+/DATA_2/
+/DATA_Cleaned/
+/outputs/

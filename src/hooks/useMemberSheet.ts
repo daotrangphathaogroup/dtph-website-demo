@@ -2,7 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Member } from "../lib/types";
 import type { RegistrationSchema } from "../lib/registration";
-import { filterSheet, sortSheet, sheetValue, sheetExportData } from "../lib/sheet";
+import {selectedRecognitionTags} from '../lib/recognition-tags';
+import { compareSheetText, filterSheet, sortSheet, sheetValue, sheetExportData } from "../lib/sheet";
 export type SheetPreferences = {
   hidden: string[];
   widths: Record<string, number>;
@@ -118,7 +119,7 @@ export function useMemberSheet(
   const filterFields = useMemo(
     () =>
       fields.filter((f) =>
-        ["select", "team", "ward", "province", "year"].includes(f.type),
+        f.key === "addressNew" || ["select", "team", "ward", "province", "year", "tags"].includes(f.type),
       ),
     [fields],
   );
@@ -130,12 +131,10 @@ export function useMemberSheet(
           [
             ...new Set(
               members
-                .map((m) => sheetValue(m, f.key))
+                .flatMap((m) => f.type==='tags'?selectedRecognitionTags(m.profileData?.[f.key]).map(t=>t.label):[sheetValue(m, f.key)])
                 .filter((v) => v !== undefined && v !== ""),
             ),
-          ].sort((a, b) =>
-            String(a).localeCompare(String(b), "vi", { numeric: true }),
-          ),
+          ].sort((a, b) => compareSheetText(String(a), String(b))),
         ]),
       ),
     [members, filterFields],
