@@ -350,3 +350,16 @@
     max-height: 65dvh;
   }
 }
+
+.sheet-toolbar {
+  background: linear-gradient(120deg, #f4f8ff, var(--surface) 64%);
+  border-bottom: 1px solid var(--line);
+}
+.sheet-table th[aria-sort="ascending"],
+.sheet-table th[aria-sort="descending"] {
+  background: #edf4ff;
+  box-shadow: inset 0 -2px var(--accent);
+}
+.sheet-table tbody tr:nth-child(even):not(.is-selected):not(:hover) td {
+  background: #f8fafc;
+}

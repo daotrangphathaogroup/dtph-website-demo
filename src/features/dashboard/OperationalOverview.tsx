@@ -1,7 +1,7 @@
 'use client';
 import {useId, useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
-import {Clock3, FilterX, RefreshCw} from 'lucide-react';
+import {ChartPie, Clock3, FilterX, RefreshCw, SlidersHorizontal} from 'lucide-react';
 import {Button, IconButton} from '../../components/ui/primitives';
 import {groupLabels} from '../../lib/types';
 import type {Member, MemberGroup} from '../../lib/types';
@@ -81,6 +81,7 @@ export default function OperationalOverview({members, pending, schemas, canEdit,
   return (
     <div className="ops-dashboard">
       <div className="ops-filters" role="region" aria-label="Bộ lọc tổng quan">
+        <span className="ops-filter-icon" aria-hidden="true"><SlidersHorizontal size={17} /></span>
         <label>Chúng
           <select aria-label="Lọc chúng tổng quan" value={filters.group} onChange={e => changeFilter('group', e.target.value as OperationFilters['group'])}>
             <option value="all">Cả ba chúng</option>
@@ -107,17 +108,23 @@ export default function OperationalOverview({members, pending, schemas, canEdit,
       </div>
       <div className="ops-summary-grid">
         <section className="ops-panel">
-          <header>
-            <h2>Cơ cấu 3 chúng</h2>
-            <p>Hồ sơ đã duyệt</p>
+          <header className="ops-card-heading">
+            <span className="ops-card-icon"><ChartPie size={21} aria-hidden="true" /></span>
+            <div>
+              <h2>Cơ cấu 3 chúng</h2>
+              <p>Hồ sơ đã duyệt</p>
+            </div>
           </header>
           <Donut items={composition} total={report.rows.length} colors={colors} />
         </section>
         <section className="ops-panel" ref={queueMotion}>
           <header className="ops-queue-header">
-            <div>
-              <h2>Đăng ký chờ duyệt</h2>
-              <p className="ops-queue-total"><Clock3 size={17} aria-hidden="true" /> <strong>{formatCount(waiting.length)}</strong> phiếu</p>
+            <div className="ops-card-heading">
+              <span className="ops-card-icon"><Clock3 size={21} aria-hidden="true" /></span>
+              <div>
+                <h2>Đăng ký chờ duyệt</h2>
+                <p className="ops-queue-total"><strong>{formatCount(waiting.length)}</strong> phiếu</p>
+              </div>
             </div>
             <IconButton label="Làm mới số liệu" busy={refreshing} onClick={() => void refresh()}>
               <RefreshCw size={17} />

@@ -141,6 +141,7 @@ export default function WorkspaceShell({
         key={nextGroup ?? key}
         type="button"
         className={`nav-item ${active ? "active" : ""}`}
+        data-group={nextGroup}
         aria-label={label}
         title={collapsed ? label : undefined}
         aria-current={active ? "page" : undefined}
