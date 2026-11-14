@@ -24,7 +24,7 @@ export function usePageMotion(key: string) {
       done = true; observer.disconnect();
       play(surface);
       // Keep expensive sheet/analytics contents out of page-level transforms.
-      const controls = el.querySelector('.ops-summary-grid, .management-summary, .quick-search-panel');
+      const controls = el.querySelector('.ops-filters, .management-summary, .quick-search-panel');
       if (controls) play(controls);
     };
     const observer = new MutationObserver(() => {

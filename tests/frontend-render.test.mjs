@@ -199,7 +199,7 @@ test("Registration completion exposes only one action back to home", () => {
   assert.match(markup, /href="\/"/);
 });
 
-test("Overview shows approved group composition and the pending queue only", () => {
+test("Overview keeps working filters and member table alongside the two summary charts", () => {
   const markup = render(
     h(ManagementDashboard, {
       members: [member(1), member(2)],
@@ -214,7 +214,8 @@ test("Overview shows approved group composition and the pending queue only", () 
   );
   for (const label of ['Hồ sơ đã duyệt','Đăng ký chờ duyệt','Cơ cấu 3 chúng','Chúng thiếu nhi','Chúng thanh niên','Đạo tràng']) assert.ok(markup.includes(label), label);
   assert.match(markup, /Không có phiếu chờ duyệt/);
-  assert.doesNotMatch(markup, /Tổ × Chúng|Phân công cho HĐ chăm sóc|Xuất Excel|Bộ lọc tổng quan/);
+  for (const control of ['Bộ lọc tổng quan','Lọc công việc','Xuất Excel']) assert.ok(markup.includes(control), control);
+  assert.doesNotMatch(markup, /Tổ × Chúng|Phân công cho HĐ chăm sóc|Địa chỉ \(mới\) × Chúng/);
 });
 
 test("Guided intake starts with only basic information and exposes no premature submit or group choice", async () => {
