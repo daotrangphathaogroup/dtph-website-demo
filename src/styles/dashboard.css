@@ -1594,3 +1594,100 @@
     align-items: flex-start;
   }
 }
+
+:where(.group-dashboard, .group-page-heading)[data-group="children"] {--group-accent: #7543ad;}
+:where(.group-dashboard, .group-page-heading)[data-group="youth"] {--group-accent: #a94d3e;}
+:where(.group-dashboard, .group-page-heading)[data-group="congregation"] {--group-accent: #2166ac;}
+
+.group-page-heading .page-heading {
+  border-inline-start: 3px solid var(--group-accent);
+  padding-inline-start: 14px;
+}
+.group-dashboard .group-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, .85fr);
+  gap: 20px;
+  padding: clamp(15px, 2.4vw, 25px);
+  border: 1px solid color-mix(in srgb, var(--group-accent) 19%, var(--line));
+  border-radius: 17px;
+  background: linear-gradient(132deg, color-mix(in srgb, var(--group-accent) 8%, white), var(--surface) 75%);
+}
+.group-indicators {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.group-indicator {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--surface);
+}
+.group-indicator-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--group-accent) 10%, white);
+  color: var(--group-accent);
+}
+.group-indicator div > span {display: block; font-size: 12px; color: var(--text-secondary);}
+.group-indicator strong {display: block; font-size: 30px; font-variant-numeric: tabular-nums;}
+.group-team-summary {align-self: center; min-width: 0;}
+.group-team-summary h2 {display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 13px;}
+.group-team-summary h2 svg {color: var(--group-accent);}
+.group-team-track {display: flex; height: 8px; gap: 2px; overflow: hidden; border-radius: 10px; background: var(--surface-secondary);}
+.group-team-summary [data-tier="0"] {--team-swatch: var(--group-accent);}
+.group-team-summary [data-tier="1"] {--team-swatch: color-mix(in srgb, var(--group-accent) 70%, white);}
+.group-team-summary [data-tier="2"] {--team-swatch: color-mix(in srgb, var(--group-accent) 42%, white);}
+.group-team-summary [data-tier="3"] {--team-swatch: #939da9;}
+.group-team-track > span {flex-basis: 0; background: var(--team-swatch);}
+.group-team-values {display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; font-size: 12px;}
+.group-team-values > span {display: inline-flex; align-items: center; gap: 5px;}
+.group-team-values i {width: 6px; height: 6px; border-radius: 50%; background: var(--team-swatch);}
+.group-workbar {display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;}
+.group-workbar .dashboard-filter-panel {min-width: 0; flex: 1 1 270px;}
+.group-workbar .segmented-control {max-width: 100%; flex-wrap: wrap;}
+.group-workbar .segmented-control button > span {padding: 1px 5px; border-radius: 5px; background: var(--surface-secondary); font-size: 11px;}
+.group-workbar .segmented-control button > .group-pending-count {background: #faebd3; color: #854b0a;}
+.group-workbar .segmented-control button[aria-pressed="true"] {color: var(--group-accent);}
+@media (max-width: 840px) {
+  .group-dashboard .group-summary {grid-template-columns: minmax(0, 1fr);}
+}
+@media (max-width: 440px) {
+  .group-indicator {flex-direction: column;}
+}
+
+.group-indicator {text-align: left; color: var(--ink); cursor: pointer;}
+.group-dashboard .dashboard-filter-panel {margin-bottom: 0;}
+.group-dashboard .statistics-view {gap: 16px;}
+.group-profile-distribution ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 18px 24px;
+  padding: 4px 20px 22px;
+  margin: 0;
+  list-style: none;
+}
+.group-profile-distribution li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px 10px;
+  font-size: 12px;
+}
+.group-profile-distribution .dashboard-card-heading p {font-size: 12px; color: var(--text-secondary);}
+.group-detail-track {
+  height: 5px;
+  grid-column: 1 / -1;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface-secondary);
+}
+.group-detail-track i {display: block; height: 100%; border-radius: inherit; background: var(--group-accent);}
+.group-dashboard .dashboard-donut {box-shadow: 0 0 0 5px var(--surface-secondary);}
+.group-dashboard .dashboard-bar-track i {background: var(--group-accent);}

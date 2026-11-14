@@ -147,7 +147,7 @@ export default function WorkspaceShell({
         aria-current={active ? "page" : undefined}
         onClick={() => navigate(key, nextGroup)}
       >
-        <Icon size={18} aria-hidden="true" />
+        {nextGroup ? <span className="nav-group-icon"><Icon size={16} aria-hidden="true" /></span> : <Icon size={18} aria-hidden="true" />}
         <span className="nav-label">{label}</span>
         {count > 0 && (
           <span className="nav-count" aria-label={`${count} đăng ký chờ duyệt`}>

@@ -22,7 +22,7 @@ export function usePageMotion(key: string) {
       const surface = el.querySelector('.page-heading');
       if (surface) play(surface, 8);
       // Keep expensive sheet/analytics contents out of page-level transforms.
-      const controls = el.querySelector('.ops-filters, .management-summary, .quick-search-panel');
+      const controls = el.querySelector('.ops-filters, .group-summary, .quick-search-panel');
       if (controls) play(controls, 5, 35);
       done = true;
     };

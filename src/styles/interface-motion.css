@@ -229,3 +229,39 @@
     translate: 0 -1px;
   }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .nav-group-icon {transition: background-color 180ms ease, scale 230ms var(--ease-emerge);}
+  .group-workbar .segment-indicator {transition-timing-function: var(--ease-emerge);}
+  .group-dashboard .segmented-control button:not(.selected):active {scale: .97;}
+  .group-dashboard .statistics-view > .dashboard-card {animation: view-emerge 260ms var(--ease-emerge);}
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .nav-item:hover .nav-group-icon {scale: 1.1;}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .group-summary {animation: view-emerge 320ms var(--ease-emerge);}
+  .group-dashboard .statistics-view > .group-profile-distribution {animation: view-emerge 240ms var(--ease-emerge);}
+  .group-dashboard .group-records:not([hidden]) .sheet-toolbar {animation: view-emerge 220ms var(--ease-emerge);}
+  .group-indicator {transition: border-color 180ms ease, box-shadow 200ms ease;}
+}
+@media (hover: hover) and (pointer: fine) {
+  .group-indicator:hover {border-color: color-mix(in srgb, var(--group-accent) 45%, var(--line)); box-shadow: 0 3px 12px rgb(30 55 80 / 6%);}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .group-dashboard .statistics-view .dashboard-bar-track > i {
+    transform-origin: left center;
+    animation: group-bar-reveal 420ms var(--ease-emerge);
+  }
+  .group-dashboard .statistics-view .monthly-track > i {
+    transform-origin: center bottom;
+    animation: bar-rise 420ms var(--ease-emerge);
+  }
+  .group-dashboard .statistics-view .group-detail-track > i {
+    transform-origin: left center;
+    animation: group-bar-reveal 360ms var(--ease-emerge);
+  }
+}
+@keyframes group-bar-reveal {from {transform: scaleX(0);} to {transform: scaleX(1);}}

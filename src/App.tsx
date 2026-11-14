@@ -234,11 +234,14 @@ export default function App({
       onNavigate={navigate}
       onLogout={() => void logout()}
     >
-      <div className={page === "overview" ? "intake-page-heading" : undefined}>
+      <div
+        className={page === "overview" ? "intake-page-heading" : page === "members" ? "group-page-heading" : undefined}
+        data-group={page === "members" ? group : undefined}
+      >
         <PageHeader
           title={heading}
           description={
-            page === "dashboard" || page === "members" || page === "overview"
+            page === "dashboard" || page === "overview"
               ? undefined
               : description
           }

@@ -188,7 +188,7 @@ test("Management opens with records and defers charts to statistics mode", () =>
   assert.match(markup, /Xuất Excel/);
   assert.doesNotMatch(markup, /Tổng hợp/);
   assert.match(markup, /Bảng dữ liệu/);
-  assert.match(markup, /<strong>2<\/strong> hồ sơ đã duyệt/);
+  assert.match(markup, /Hồ sơ đã duyệt<\/span><strong>2<\/strong>/);
   assert.equal(markup.includes('aria-label="Lọc nhóm"'), false);
 });
 test("Registration completion exposes only one action back to home", () => {

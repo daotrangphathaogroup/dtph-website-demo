@@ -203,7 +203,9 @@ function DashboardCharts({
               </div>
               <span className="chart-unit">Người</span>
             </header>
-            <Donut items={composition} total={total} />
+            <Donut items={composition} total={total} colors={scope
+              ? ['var(--group-accent)', 'color-mix(in srgb, var(--group-accent) 70%, white)', 'color-mix(in srgb, var(--group-accent) 42%, white)', '#939da9']
+              : undefined} />
           </section>
         )}
         <section className="dashboard-card dashboard-distribution">
