@@ -3,7 +3,7 @@ import {useEffect, useState} from 'react';
 import {Eye, Search, UserRound} from 'lucide-react';
 import {api} from '../lib/api';
 import {groupLabels} from '../lib/types';
-import {filterSheet} from '../lib/sheet';
+import {compareVietnameseNames, filterSheet} from '../lib/sheet';
 import type {ProfileField} from '../lib/registration';
 import type {Member, MemberGroup} from '../lib/types';
 import {Badge, Button, EmptyState, Feedback, LoadingState, SearchField} from './ui/primitives';
@@ -33,7 +33,7 @@ export default function QuickSearch({members, onOpen}: {members?: Member[]; onOp
         setResults(filterSheet(members, term, {}, searchFields).map(member => ({
           id:member.id,name:member.name,group:member.group,
           dharmaName:String(member.profileData?.dharmaName ?? ''),
-        })));
+        })).sort((a,b) => compareVietnameseNames(a.name,b.name)));
         setSearched(true);
         setBusy(false);
         return;
@@ -41,7 +41,7 @@ export default function QuickSearch({members, onOpen}: {members?: Member[]; onOp
       void api<{results: Result[]}>(`/search?q=${encodeURIComponent(term)}`)
         .then((response) => {
           if (active) {
-            setResults(response.results);
+            setResults([...response.results].sort((a,b) => compareVietnameseNames(a.name,b.name)));
             setSearched(true);
           }
         })

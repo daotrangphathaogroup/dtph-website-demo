@@ -51,7 +51,32 @@ export function filterSheet(members:Member[],query:string,filters:Record<string,
   });
  });
 }
-export function sortSheet(members:Member[],field:ProfileField|undefined,direction:'asc'|'desc'):Member[]{if(!field)return members;return [...members].sort((a,b)=>{const x=sheetValue(a,field.key),y=sheetValue(b,field.key),emptyX=x===undefined||x==='',emptyY=y===undefined||y==='';if(emptyX||emptyY)return emptyX===emptyY?0:emptyX?1:-1;const comparison=['year','number','team'].includes(field.type)?Number(x)-Number(y):String(x).localeCompare(String(y),'vi',{numeric:true,sensitivity:'base'});return direction==='asc'?comparison:-comparison;});}
+const vietnameseOrder = new Intl.Collator('vi-VN', { numeric: true, sensitivity: 'accent' });
+
+function nameParts(fullName: string) {
+ const parts = fullName.trim().split(/\s+/);
+ return [parts.pop() ?? '', parts.join(' ')];
+}
+export function compareVietnameseNames(left: string, right: string): number {
+ const [leftName,leftPrefix]=nameParts(left);
+ const [rightName,rightPrefix]=nameParts(right);
+ return vietnameseOrder.compare(leftName,rightName)||vietnameseOrder.compare(leftPrefix,rightPrefix);
+}
+
+export function sortSheet(members:Member[],field:ProfileField|undefined,direction:'asc'|'desc'):Member[]{
+ if(!field)return members;
+ return [...members].sort((a,b)=>{
+  const left=String(sheetValue(a,field.key)??'').trim();
+  const right=String(sheetValue(b,field.key)??'').trim();
+  if(!left||!right)return Number(Boolean(right))-Number(Boolean(left));
+  const comparison=field.key==='name'
+   ? compareVietnameseNames(left,right)
+   : ['year','number','team'].includes(field.type)
+    ? Number(left)-Number(right)
+    : vietnameseOrder.compare(left,right);
+  return direction==='asc'?comparison:-comparison;
+ });
+}
 export function sheetExportData(members: Member[], fields: ProfileField[]): (string | number | undefined)[][] {
  return [
   fields.map(f => f.label),
