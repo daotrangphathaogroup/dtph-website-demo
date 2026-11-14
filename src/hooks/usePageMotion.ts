@@ -10,34 +10,24 @@ export function usePageMotion(key: string) {
     if (!el || reduced.matches || document.hidden) return;
     const animations: Animation[] = [];
     let frame = 0, done = false;
-    const play = (target: Element) => {
+    const play = (target: Element, distance: number, delay = 0) => {
       const animation = target.animate([
-        {opacity: .35, transform: 'translateY(7px)'},
-        {opacity: 1, transform: 'translateY(0)'},
-      ], {duration: 240, easing: 'cubic-bezier(.2,.8,.2,1)'});
+        {opacity: .55, translate: `0 ${distance}px`},
+        {opacity: 1, translate: '0 0'},
+      ], {duration: 300, delay, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards'});
       animations.push(animation);
     };
     const reveal = () => {
-      if (done || el.querySelector('.feature-skeleton')) return;
+      if (done) return;
       const surface = el.querySelector('.page-heading');
-      if (!surface) return;
-      done = true; observer.disconnect();
-      play(surface);
+      if (surface) play(surface, 8);
       // Keep expensive sheet/analytics contents out of page-level transforms.
       const controls = el.querySelector('.ops-filters, .management-summary, .quick-search-panel');
-      if (controls) play(controls);
+      if (controls) play(controls, 5, 35);
+      done = true;
     };
-    const observer = new MutationObserver(() => {
-      if (el.querySelector('.feature-skeleton')) return;
-      observer.disconnect();
-      frame = requestAnimationFrame(reveal);
-    });
-    // Observe only while a lazy component is loading. Counter text updates must
-    // never keep cancelling the entrance frame and postpone it for a second.
-    if (el.querySelector('.feature-skeleton'))
-      observer.observe(el, {childList: true, subtree: true});
-    else frame = requestAnimationFrame(reveal);
-    const finish = () => {done = true; observer.disconnect(); cancelAnimationFrame(frame); animations.forEach(animation => animation.cancel());};
+    frame = requestAnimationFrame(reveal);
+    const finish = () => {done = true; cancelAnimationFrame(frame); animations.forEach(animation => animation.cancel());};
     el.addEventListener('pointerdown', finish, {once: true});
     el.addEventListener('keydown', finish, {once: true});
     reduced.addEventListener('change', finish);

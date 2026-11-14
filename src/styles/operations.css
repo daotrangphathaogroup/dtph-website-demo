@@ -13,7 +13,10 @@
   padding: clamp(16px, 2.5vw, 26px);
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: var(--surface);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 4%, var(--surface)), var(--surface) 55%);
+}
+.ops-panel:has(.ops-queue) {
+  background: linear-gradient(150deg, color-mix(in srgb, var(--chart-amber) 8%, var(--surface)), var(--surface) 55%);
 }
 .ops-panel h2 {
   margin: 0;

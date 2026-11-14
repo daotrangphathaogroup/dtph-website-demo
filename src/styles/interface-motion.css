@@ -76,7 +76,7 @@
 .management-dashboard[data-entering] .atlas-metric:nth-child(3) {animation-delay: 130ms;}
 .management-dashboard[data-entering] .atlas-metric:nth-child(4) {animation-delay: 195ms;}
 /* Mounted statistics/pending views get a small handoff; tables never animate per row. */
-.dashboard-pending, .statistics-view {animation: view-emerge 300ms var(--ease-emerge);}
+.dashboard-pending {animation: dashboard-fade 240ms var(--ease-emerge);}
 .group-records:not([hidden]) {animation: view-emerge 300ms var(--ease-emerge);}
 @keyframes view-emerge {from {opacity: .6; translate: 0 6px;} to {opacity: 1; translate: 0 0;}}
 @media (prefers-reduced-motion: reduce) {
@@ -101,12 +101,42 @@
   .overview-filter-more[open] .overview-filter-extra,
   .management-filter-popover, .sheet-column-popover {animation: none;}
 }
-/* No full-table GPU layer, repeated blur, or per-row/per-cell animations. */
-.statistics-view, .dashboard-pending, .group-records:not([hidden]) {animation: none;}
-.atlas-panel {contain: layout style;}
-.segment-indicator {transition-duration: 220ms;}
-:is(button, summary, a.button) {
-  -webkit-tap-highlight-color: transparent;
+/* Keep dense tables out of transform animations. Animate the controls when a view opens. */
+.group-records:not([hidden]) {animation: none;}
+@media (prefers-reduced-motion: no-preference) {
+  .group-records:not([hidden]) .sheet-toolbar,
+  .sheet-filters:not([hidden]),
+  .sheet-options[open] .sheet-popover {
+    animation: view-emerge 240ms var(--ease-emerge);
+  }
+  :is(.nav-item, .management-views button, .ops-work-tabs button, .sheet-sort) {
+    transition: background-color 160ms ease, color 160ms ease, border-color 180ms ease, scale 180ms var(--ease-emerge);
+  }
+  :is(.nav-item, .management-views button, .ops-work-tabs button, .sheet-sort):active:not(:disabled) {scale: .97;}
+  .ops-queue-track i {transition: width 320ms var(--ease-emerge);}
+}
+.management-views > button {
+  position: relative;
+  border-bottom-color: transparent;
+}
+.management-views > button[aria-pressed="true"] {border-bottom-color: transparent;}
+.management-views > button::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  scale: .35 1;
+  opacity: 0;
+}
+.management-views > button[aria-pressed="true"]::after {scale: 1; opacity: 1;}
+@media (prefers-reduced-motion: no-preference) {
+  .management-views > button::after {transition: scale 240ms var(--ease-emerge), opacity 160ms ease;}
+}
+@media (hover: hover) and (pointer: fine) {
+  .ops-work-tabs button:hover {border-color: var(--accent); color: var(--ink);}
+  .management-views > button:hover {background: var(--surface-secondary);}
 }
 @media (hover: hover) and (pointer: fine) {
   .sheet-table tbody tr {transition: background-color 120ms ease;}
