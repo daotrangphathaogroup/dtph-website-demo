@@ -8,6 +8,7 @@ import type {RegistrationSchema} from '../lib/registration';
 import {wards,currentWard} from '../lib/areas';
 import {distribution,emptyDashboardFilters,filterDashboard,memberTeam,memberWard,monthlyRegistrations,registrationDate,todayInVietnam} from '../lib/dashboard';
 import type {DashboardFilters as Filters} from '../lib/dashboard';
+import {useGroupViewTransition} from '../hooks/useGroupViewTransition';
 import OperationalOverview from '../features/dashboard/OperationalOverview';
 import DashboardFilters from '../features/dashboard/DashboardFilters';
 import DashboardCharts from '../features/dashboard/DashboardCharts';
@@ -15,14 +16,14 @@ import type {Dimension} from '../features/dashboard/DashboardCharts';
 import DashboardMemberList from '../features/dashboard/DashboardMemberList';
 const currentWards = [...new Set(wards.map(currentWard))].filter(Boolean);
 const formatCount = new Intl.NumberFormat('vi-VN').format;
-type GroupView = 'list' | 'pending' | 'statistics';
+
 type Props={members:Member[];pending:Member[];schemas:Record<MemberGroup,RegistrationSchema>;scope?:MemberGroup;canEdit:boolean;onOpen:(m:Member,edit:boolean)=>void;pendingPanel:(members:Member[])=>ReactNode;lastUpdated:string;onRefresh:()=>Promise<void>};
 export default function ManagementDashboard(props:Props){
   return props.scope?<GroupDashboard {...props} scope={props.scope}/>:<OperationalOverview {...props}/>;
 }
 function GroupDashboard({members,pending,schemas,scope,canEdit,onOpen,pendingPanel,lastUpdated,onRefresh}:Props & {scope:MemberGroup}){
   const [filters,setFilters]=useState<Filters>({...emptyDashboardFilters}),[dimension,setDimension]=useState<Dimension>('ward'),[refreshing,setRefreshing]=useState(false),[resets,setResets]=useState({page:0,query:0});
-  const [view,setView]=useState<GroupView>('list');
+  const {view, selectView, stage} = useGroupViewTransition();
   const asOf=todayInVietnam();
   const approved=useMemo(()=>filterDashboard(members,filters,scope,asOf),[members,filters,scope,asOf]);
   const waiting=useMemo(()=>filterDashboard(pending,filters,scope,asOf),[pending,filters,scope,asOf]);
@@ -63,11 +64,11 @@ function GroupDashboard({members,pending,schemas,scope,canEdit,onOpen,pendingPan
   return <div className="management-dashboard group-dashboard" data-group={scope}>
     <section className="group-summary" aria-label="Hồ sơ theo bộ lọc">
       <div className="group-indicators">
-        <button type="button" className="group-indicator" onClick={()=>setView('list')}>
+        <button type="button" className="group-indicator" onClick={()=>selectView('list')}>
           <span className="group-indicator-icon"><UsersRound size={19} aria-hidden="true" /></span>
           <div><span>Hồ sơ đã duyệt</span><strong>{formatCount(total)}</strong></div>
         </button>
-        <button type="button" className="group-indicator" onClick={()=>setView('pending')}>
+        <button type="button" className="group-indicator" onClick={()=>selectView('pending')}>
           <span className="group-indicator-icon"><Clock3 size={19} aria-hidden="true" /></span>
           <div><span>Đăng ký chờ duyệt</span><strong>{formatCount(waiting.length)}</strong></div>
         </button>
@@ -83,9 +84,10 @@ function GroupDashboard({members,pending,schemas,scope,canEdit,onOpen,pendingPan
       </div>
     </section>
     <div className="group-workbar">
-      <SegmentedControl label="Chế độ quản lý" value={view} onChange={setView} items={views}/>
+      <SegmentedControl label="Chế độ quản lý" value={view} onChange={selectView} items={views}/>
       <DashboardFilters filters={filters} scope={scope} wardOptions={wardOptions} years={years} period={period} refreshing={refreshing} onChange={change} onReset={reset} onRefresh={()=>void refresh()}/>
     </div>
+    <div className="group-view-stage" ref={stage}>
     {view==='pending'&&<div className="dashboard-pending">{waiting.length?pendingPanel(waiting):<EmptyState title="Không có đăng ký chờ duyệt" description="Các đăng ký mới phù hợp với bộ lọc sẽ hiển thị tại đây."/>}</div>}
     {view==='statistics'&&<div className="statistics-view">
       <section className="group-profile-distribution dashboard-card">
@@ -99,5 +101,6 @@ function GroupDashboard({members,pending,schemas,scope,canEdit,onOpen,pendingPan
       </section>
       <DashboardCharts scope={scope} total={total} composition={composition} bars={bars} months={months} pendingMonths={monthlyRegistrations(waiting)} month={filters.month} period={period} dimension={dimension} onDimension={setDimension}/></div>}
     <div hidden={view!=='list'} className="group-records"><DashboardMemberList members={approved} hasMembers={members.length>0} schemas={schemas} scope={scope} effectiveGroup={scope} canEdit={canEdit} asOf={asOf} lastUpdated={lastUpdated} onOpen={onOpen} queryReset={resets.query} pageReset={resets.page}/></div>
+    </div>
   </div>;
 }

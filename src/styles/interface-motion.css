@@ -234,7 +234,6 @@
   .nav-group-icon {transition: background-color 180ms ease, scale 230ms var(--ease-emerge);}
   .group-workbar .segment-indicator {transition-timing-function: var(--ease-emerge);}
   .group-dashboard .segmented-control button:not(.selected):active {scale: .97;}
-  .group-dashboard .statistics-view > .dashboard-card {animation: view-emerge 260ms var(--ease-emerge);}
 }
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .nav-item:hover .nav-group-icon {scale: 1.1;}
@@ -242,8 +241,6 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .group-summary {animation: view-emerge 320ms var(--ease-emerge);}
-  .group-dashboard .statistics-view > .group-profile-distribution {animation: view-emerge 240ms var(--ease-emerge);}
-  .group-dashboard .group-records:not([hidden]) .sheet-toolbar {animation: view-emerge 220ms var(--ease-emerge);}
   .group-indicator {transition: border-color 180ms ease, box-shadow 200ms ease;}
 }
 @media (hover: hover) and (pointer: fine) {
@@ -265,3 +262,8 @@
   }
 }
 @keyframes group-bar-reveal {from {transform: scaleX(0);} to {transform: scaleX(1);}}
+
+
+/* The view transition hook coordinates these surfaces as one transition. */
+.group-view-stage .dashboard-pending,
+.group-view-stage .group-records:not([hidden]) .sheet-toolbar {animation: none;}
