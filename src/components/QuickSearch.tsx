@@ -2,12 +2,13 @@
 import {useDeferredValue, useMemo, useState} from 'react';
 import {Eye, Search, UserRound} from 'lucide-react';
 import {groupLabels} from '../lib/types';
-import {filterSheet} from '../lib/sheet';
+import {filterSheet, sortSheet} from '../lib/sheet';
 import type {ProfileField} from '../lib/registration';
 import type {Member} from '../lib/types';
 import {Badge, Button, EmptyState, LoadingState, SearchField} from './ui/primitives';
+const nameField: ProfileField = {key:'name',label:'Họ tên',type:'text',required:false};
 const searchFields: ProfileField[] = [
-  {key:'name',label:'Họ tên',type:'text',required:false},
+  nameField,
   {key:'dharmaName',label:'Pháp danh',type:'text',required:false},
   {key:'id',label:'Mã số',type:'text',required:false},
   {key:'phone',label:'SĐT',type:'phone',required:false},
@@ -17,7 +18,7 @@ export default function QuickSearch({members, onOpen}: {members: Member[]; onOpe
   const term = useDeferredValue(query).trim();
   const busy = query.trim().length >= 2 && query.trim() !== term;
   const searched = query.trim().length >= 2 && term.length >= 2 && !busy;
-  const results = useMemo(() => term.length < 2 ? [] : filterSheet(members, term, {}, searchFields), [members, term]);
+  const results = useMemo(() => term.length < 2 ? [] : sortSheet(filterSheet(members, term, {}, searchFields), nameField, 'asc'), [members, term]);
   return (
     <section className="quick-search-panel" aria-label="Tìm kiếm huynh đệ">
       <SearchField

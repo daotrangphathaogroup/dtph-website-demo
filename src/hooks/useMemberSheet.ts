@@ -179,7 +179,7 @@ export function useMemberSheet(
     setExportError("");
     try {
       const exported = selected.size
-        ? members.filter((m) => selected.has(m.id))
+        ? sortSheet(members.filter((m) => selected.has(m.id)), fields.find((f) => f.key === sort.key), sort.direction)
         : filtered;
       const {downloadExcel} = await import("../lib/excel-export");
       await downloadExcel(sheetExportData(exported, visible), `${preferenceScope}-huynh-de.xlsx`);
