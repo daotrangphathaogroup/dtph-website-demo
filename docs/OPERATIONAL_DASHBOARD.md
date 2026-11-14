@@ -41,3 +41,12 @@ Chuyển động dùng hook hiện có, chỉ reveal panel/thanh, có giảm chu
 Các screenshot QA dùng dữ liệu giả nằm trong `.local/audits/operations-*`. Chưa triển khai cloud hoặc thay đổi dữ liệu Supabase.
 
 Bản production build và deployment trace check đã đạt. Local được khôi phục bằng `npm run dev` (backend local), xác nhận `/api/bootstrap` thật trả200; không chuyển sang `npm start` vốn yêu cầu cấu hình cloud.
+
+## Đề xuất tiếp theo cho Tổng quan thu gọn
+
+Tổng quan có hai khối chính: cơ cấu hồ sơ đã duyệt của ba chúng và hàng chờ duyệt. Các mục dưới đây là đề xuất triển khai tiếp.
+
+1. **Ưu tiên — phiếu chờ lâu nhất.** Đặt ngay cạnh tổng số phiếu chờ. Hiện số ngày chờ và chúng tương ứng. Tính từ `submittedAt` theo ngày Việt Nam. Nếu có phiếu nhưng thiếu thời điểm gửi hợp lệ, ghi rõ số phiếu chưa rõ ngày gửi. Khi mở danh sách, xếp phiếu có ngày gửi hợp lệ từ cũ đến mới để nhân sự xử lý theo thứ tự.
+2. **Xu hướng đăng ký mới theo tuần.** Dùng cột chồng ba màu cho 8 tuần gần nhất để thấy tuần nào có nhiều phiếu mới và đến từ chúng nào. Chỉ đếm phiếu có ngày gửi hợp lệ. Nếu có hồ sơ nhập hàng loạt, cần phân biệt nguồn nhập với đăng ký qua form trước khi đưa vào chuỗi.
+3. **Thời gian xử lý phiếu.** Khi có đủ lịch sử, dùng trung vị thời gian từ gửi đến duyệt để theo dõi tốc độ xử lý. Backend có `approved_at` nhưng chưa trả trường đó trong dữ liệu dashboard. Loại hồ sơ duyệt tự động hoặc nhập hàng loạt khỏi phép đo thủ công khi xác định được nguồn.
+4. **Rà soát độ đầy đủ dữ liệu sau khi nhập.** Dùng một thanh ngang tỷ lệ hồ sơ thiếu ngày sinh, địa chỉ hoặc kênh liên lạc theo từng chúng trong đợt làm sạch dữ liệu. Các nhóm thiếu có thể chồng lấp. SĐT phụ huynh và các trường tùy chọn không được tính là lỗi bắt buộc.

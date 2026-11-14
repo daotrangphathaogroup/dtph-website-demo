@@ -1,5 +1,6 @@
-import { Check, Eye, RefreshCw, X } from "lucide-react";
+import { AlertTriangle, Check, Eye, RefreshCw, X } from "lucide-react";
 import type { Member } from "../../lib/types";
+import type { findRegistrationMatches } from "../../lib/registration-matches";
 import { groupLabels } from "../../lib/types";
 import {
   Button,
@@ -9,6 +10,7 @@ import {
 } from "../../components/ui/primitives";
 type Props = {
   members: Member[];
+  registrationMatches?: ReturnType<typeof findRegistrationMatches>;
   canApprove: boolean;
   saving: Set<string>;
   rejecting: Member | null;
@@ -20,6 +22,7 @@ type Props = {
 };
 export default function PendingRegistrations({
   members,
+  registrationMatches,
   canApprove,
   saving,
   rejecting,
@@ -81,6 +84,12 @@ export default function PendingRegistrations({
                     )}
                     <span>{m.name}</span>
                   </button>
+                  {!!registrationMatches?.get(m.id)?.length && (
+                    <small className="review-match-label">
+                      <AlertTriangle size={13} aria-hidden="true" />
+                      {registrationMatches.get(m.id)?.some(match => match.likely) ? "Có thể trùng hồ sơ" : "Có hồ sơ cùng tên"}
+                    </small>
+                  )}
                 </td>
                 <td>{groupLabels[m.group]}</td>
                 <td>

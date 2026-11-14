@@ -9,6 +9,9 @@ import {
   PageHeader,
 } from "./components/ui/primitives";
 
+import Dialog from "./components/ui/Dialog";
+import { Button } from "./components/ui/primitives";
+import { findRegistrationMatches } from "./lib/registration-matches";
 import PendingRegistrations from "./features/members/PendingRegistrations";
 import { emptyState, usePortalData } from "./hooks/usePortalData";
 import { defaultSchemas } from "./lib/registration";
@@ -95,6 +98,16 @@ export default function App({
       return next;
     });
   }
+  const [reviewingDuplicate, setReviewingDuplicate] = useState<Member | null>(null);
+  const registrationMatches = useMemo(() => {
+    const waiting = data.pendingRegistrations ?? [];
+    return findRegistrationMatches(waiting, [...data.store.members, ...waiting]);
+  }, [data.pendingRegistrations, data.store.members]);
+  function requestApproval(member: Member) {
+    if (registrationMatches.get(member.id)?.length) setReviewingDuplicate(member);
+    else void approve(member);
+  }
+
   async function approve(member: Member) {
     const key = "review:" + member.id;
     if (pending.current.has(key)) return;
@@ -295,7 +308,8 @@ export default function App({
                   saving={saving}
                   rejecting={rejecting}
                   onView={(m) => openProfile(m, false)}
-                  onApprove={(m) => void approve(m)}
+                  onApprove={requestApproval}
+                  registrationMatches={registrationMatches}
                   onRejectRequest={setRejecting}
                   onReject={(m) => void reject(m)}
                   onRefresh={() => void refreshWithNotice()}
@@ -309,6 +323,7 @@ export default function App({
       )}
       {detail && (
         <MemberProfileDialog
+          key={detail.id}
           member={detail}
           schema={schemas[detail.group]}
           editing={editing}
@@ -316,9 +331,35 @@ export default function App({
           approving={saving.has("review:" + detail.id)}
           onClose={() => setDetail(null)}
           onEdit={setEditing}
-          onApprove={() => void approve(detail)}
+          onApprove={() => requestApproval(detail)}
           onSave={saveProfile}
         />
+      )}
+      {reviewingDuplicate && (
+        <Dialog title="Kiểm tra hồ sơ có thể trùng" description={reviewingDuplicate.name} onClose={() => setReviewingDuplicate(null)}>
+          <ul className="review-matches">
+            {(registrationMatches.get(reviewingDuplicate.id) ?? []).map(({member, reason}) => (
+              <li key={member.id}>
+                <div>
+                  <strong>{member.name}</strong>
+                  <small>{groupLabels[member.group]} · {member.id} · {member.registrationStatus === "pending" ? "Chờ duyệt" : "Đã duyệt"}</small>
+                  <small>{reason}</small>
+                </div>
+                <Button variant="secondary" onClick={() => {
+                  setReviewingDuplicate(null);
+                  openProfile(member, false);
+                }}>Xem hồ sơ</Button>
+              </li>
+            ))}
+          </ul>
+          <footer className="form-actions">
+            <Button variant="secondary" onClick={() => setReviewingDuplicate(null)}>Quay lại</Button>
+            <Button onClick={() => {
+              setReviewingDuplicate(null);
+              void approve(reviewingDuplicate);
+            }}>Vẫn duyệt</Button>
+          </footer>
+        </Dialog>
       )}
     </WorkspaceShell>
   );

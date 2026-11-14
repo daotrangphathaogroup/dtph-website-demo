@@ -10,12 +10,12 @@ const palette = [
   "var(--chart-muted)",
 ];
 export type Dimension = "ward" | "age" | "gender";
-function Donut({ items, total }: { items: Distribution[]; total: number }) {
+export function Donut({ items, total, colors = palette }: { items: Distribution[]; total: number; colors?: readonly string[] }) {
   let angle = 0;
   const segments = items.map((item, i) => {
     const from = angle;
     angle += total ? (item.count / total) * 100 : 0;
-    return `${palette[i % palette.length]} ${from}% ${angle}%`;
+    return `${colors[i % colors.length]} ${from}% ${angle}%`;
   });
   return (
     <div className="dashboard-composition">
@@ -43,7 +43,7 @@ function Donut({ items, total }: { items: Distribution[]; total: number }) {
           <li key={item.label}>
             <span
               className="chart-dot"
-              style={{ background: palette[i % palette.length] }}
+              style={{ background: colors[i % colors.length] }}
             />
             <span>{item.label}</span>
             <b>{item.count.toLocaleString("vi-VN")}</b>

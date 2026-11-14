@@ -18,7 +18,7 @@ export function useChartMotion(){
       if(!entries.some(entry=>entry.isIntersecting))return;
       observer.disconnect();if(reduced.matches||document.hidden)return;
       play(el,[{opacity:.5,translate:'0 8px'},{opacity:1,translate:'0 0'}]);
-      el.querySelectorAll('.ops-bar-track > span').forEach((bar,i)=>play(bar,[{scale:'0 1'},{scale:'1 1'}],Math.min(i*14,200)));
+      el.querySelectorAll('.ops-queue-track > i').forEach((bar,i)=>play(bar,[{scale:'0 1'},{scale:'1 1'}],Math.min(i*14,200)));
     },{threshold:.12});
     observer.observe(el);
     const preference=()=>{if(reduced.matches){observer.disconnect();settle();}};

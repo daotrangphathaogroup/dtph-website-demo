@@ -30,7 +30,7 @@ export function transitionReview(m:Member,today:string){
 }
 export function pendingDate(m:Member,today:string){
   const timestamp=Date.parse(m.submittedAt??'');
-  return Number.isFinite(timestamp)&&timestamp<=Date.parse(today+'T23:59:59+07:00')?timestamp:Infinity;
+  return Number.isFinite(timestamp)&&timestamp<=Date.parse(today+'T23:59:59.999+07:00')?timestamp:Infinity;
 }
 export type MemberWork = {unassigned:boolean;links:boolean;contact:string;transition:string;team:boolean;caregiver:string};
 export function matchesWork(flag:MemberWork,kind:WorkKind){return kind==='all'||Boolean(flag[kind]);}

@@ -132,6 +132,7 @@ test("Pending review and member details preserve Admin actions and Manager view-
     const pending = render(
       h(PendingRegistrations, {
         members: [m],
+        registrationMatches: new Map([[m.id, [{member: member(2), reason: "Trùng họ tên, trùng ngày sinh", likely: true}]]]),
         canApprove: canEdit,
         saving: new Set(),
         rejecting: null,
@@ -143,6 +144,7 @@ test("Pending review and member details preserve Admin actions and Manager view-
       }),
     );
     assert.match(pending, /aria-label="Xem hồ sơ/);
+    assert.match(pending, /Có thể trùng hồ sơ/);
     assert.equal(pending.includes('aria-label="Duyệt đăng ký'), canEdit);
     assert.equal(pending.includes('aria-label="Từ chối đăng ký'), canEdit);
     const detail = render(
@@ -197,7 +199,7 @@ test("Registration completion exposes only one action back to home", () => {
   assert.match(markup, /href="\/"/);
 });
 
-test("Overview combines filters, metrics, charts and records while group pages keep working modes", () => {
+test("Overview shows approved group composition and the pending queue only", () => {
   const markup = render(
     h(ManagementDashboard, {
       members: [member(1), member(2)],
@@ -210,12 +212,9 @@ test("Overview combines filters, metrics, charts and records while group pages k
       onRefresh: async () => {},
     }),
   );
-  for (const label of ['Hồ sơ đã duyệt','Đăng ký chờ duyệt','Chưa phân công','Cần xác minh liên lạc','Tổ × Chúng','Phân công cho HĐ chăm sóc','Địa chỉ (mới) × Chúng','Xuất Excel']) assert.ok(markup.includes(label), label);
-  assert.match(markup, /Lọc chúng tổng quan/);
-  assert.match(markup, /Lọc tổ tổng quan/);
-  assert.match(markup, /Lọc khu vực tổng quan/);
-  assert.doesNotMatch(markup, /Lọc năm đăng ký|Lọc tháng đăng ký|Đăng ký theo tháng|Chế độ quản lý|Cơ cấu 3 chúng|Điểm tốt được ghi nhận/);
-  assert.match(markup, /Ma trận số hồ sơ/);
+  for (const label of ['Hồ sơ đã duyệt','Đăng ký chờ duyệt','Cơ cấu 3 chúng','Chúng thiếu nhi','Chúng thanh niên','Đạo tràng']) assert.ok(markup.includes(label), label);
+  assert.match(markup, /Không có phiếu chờ duyệt/);
+  assert.doesNotMatch(markup, /Tổ × Chúng|Phân công cho HĐ chăm sóc|Xuất Excel|Bộ lọc tổng quan/);
 });
 
 test("Guided intake starts with only basic information and exposes no premature submit or group choice", async () => {
