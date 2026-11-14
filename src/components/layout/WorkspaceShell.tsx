@@ -25,6 +25,7 @@ import { IconButton } from "../ui/primitives";
 import type { Session } from "../../lib/api";
 import type { MemberGroup } from "../../lib/types";
 import { groupLabels } from "../../lib/types";
+import {usePageMotion} from '../../hooks/usePageMotion';
 export type WorkspacePage =
   "dashboard" | "overview" | "search" | "members" | "accounts" | "password";
 type Props = {
@@ -45,6 +46,7 @@ export default function WorkspaceShell({
   onLogout,
   children,
 }: Props) {
+  const contentRef = usePageMotion(`${page}:${page === 'members' ? group : ''}`);
   const [collapsed, setCollapsed] = useState(!staff),
     [mobile, setMobile] = useState(false),
     [accountOpen, setAccountOpen] = useState(false);
@@ -311,6 +313,7 @@ export default function WorkspaceShell({
       >
         <div className="workspace-content-column">
           <main
+            ref={contentRef}
             id="main-content"
             className={`content ${page === "dashboard" || page === "members" ? "dashboard-content" : ""}`}
             tabIndex={-1}

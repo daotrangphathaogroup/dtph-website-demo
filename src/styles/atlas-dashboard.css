@@ -1,0 +1,25 @@
+/* Atlas: measured neutral canvas, restrained pastel light, bespoke data geometry. */
+:root {--background:#f5f7f9;--ink:#212226;--text-secondary:#626466;--muted:#626466;--sidebar-surface:#fafbfb;--sidebar-width:208px;--management-sidebar-width:208px;--children-color:#ae72ee;--youth-color:#ed8c78;--congregation-color:#2177d1;--atlas-blue:#2177d1;--atlas-violet:#ae72ee;--atlas-green:#5b766f;--atlas-neutral:#f6f6f6;}
+.app-shell .topbar {background:#ffffffed;box-shadow:0 1px 16px #21222603;backdrop-filter:blur(14px);}
+.app-shell .sidebar {padding:22px 11px;border-right-color:var(--line);background:linear-gradient(180deg,#fafbfb,#f5f7f9);}
+.app-shell .nav-item {border-radius:9px;min-height:42px;font-size:12px;}
+.app-shell .nav-item.active {background:var(--surface);color:var(--ink);box-shadow:0 1px 3px #21222608,inset 0 0 0 1px var(--line);}
+.app-shell .nav-item.active > svg {color:var(--atlas-blue);}
+.app-shell .nav-section-label {font-size:10px;letter-spacing:.04em;}
+.app-shell .management-sidebar {background:#fafbfb;border-color:var(--line);padding-inline:16px;}
+.app-shell .management-sidebar-icon {border-radius:50%;background:#edf3ff;}
+.app-shell .management-sidebar-empty {background:linear-gradient(145deg,#ffffff,#f3f7fb);border-radius:14px;padding:18px 14px;box-shadow:0 3px 12px #21222603;}
+.app-shell .management-sidebar-empty p {font-size:11px;}
+.app-shell .management-sidebar-empty small {font-size:10px;line-height:1.8;}
+.dashboard-content {padding:26px 26px 36px;}
+.dashboard-content > div:first-child .page-heading {margin-bottom:20px;}
+.dashboard-content > div:first-child .page-heading h1 {font-size:27px;letter-spacing:-.055em;font-weight:550;}
+.segment-children {background:var(--children-color);}.segment-youth {background:var(--youth-color);}.segment-congregation {background:var(--congregation-color);}
+.icon-orbit,.icon-merit {color:#9661c7;}.icon-care {color:#33856b;}.icon-geography {color:#ca8b38;}.icon-demographic {color:#c26372;}
+.mint-chip {color:#2c7865;background:#eff9f4;border-color:#d5ebe0;}.violet-chip {color:#8652b7;background:#f8f3ff;border-color:#e9def7;}
+.flow-month-hit {outline:none;cursor:crosshair;}
+.flow-month-hit:focus-visible {stroke:var(--accent);stroke-width:1;stroke-dasharray:3 3;}
+@media(max-width:760px){.dashboard-content {padding:22px 16px 30px;}.app-shell .management-sidebar {padding:12px 16px;}}
+
+/* Small chart labels remain readable at native browser scale. */
+/* The tick meters shrink with their table cells on compact screens. */

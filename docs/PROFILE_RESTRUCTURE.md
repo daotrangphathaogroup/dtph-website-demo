@@ -2,7 +2,7 @@
 
 Nguồn: file Excel “Bảng các thông tin của từng chúng - ĐHPH”, hai sheet “Tổng quan” (B1:F23) và “Đăng ký thông tin” (B1:O17), nhận ngày 27/10/2026. Không nhập danh sách từ thư mục DATA trong đợt thay đổi này.
 
-## Trường hồ sơ hiện tại (05/11/2026, schema 13)
+## Trường hồ sơ hiện tại (05/11/2026, schema 14)
 
 Cả ba nhóm dùng `name`, `dharmaName`, `gender`, `birthday`, `address`, `team`, `avatar`, `phone`, `relativePhone`, `introducedBy`, `notes`, `status`, `occupation`, `caregiver`. `id` và `joined` do hệ thống tạo. `caregiver` là “HĐ chăm sóc”, chọn huynh đệ đã duyệt và chỉ do quản lý cập nhật.
 
@@ -12,7 +12,7 @@ Chúng thiếu nhi có thêm `parentName`, `personality`, `nickname`, `schoolCla
 
 Chúng thanh niên và Đạo tràng có `position`, hiển thị “Vai trò”: Tổ điều hành, Tổ trưởng, Tổ phó, Thành viên, Huynh đệ mới, Thành viên không thường xuyên, Học sinh. Giữ nguyên khóa dữ liệu `position`; các giá trị cũ ngoài danh sách vẫn được hiển thị và giữ khi sửa trường khác. Chọn vai trò mới chỉ chấp nhận danh sách quy định.
 
-`status` hiển thị “Trạng thái” với bốn mức hoạt động, chỉ dành cho quản lý. `relativePhone` hiển thị SĐT PH cho thiếu nhi và SĐT Người thân cho hai nhóm còn lại.
+`status` hiển thị “Tình trạng”: kiểu `tags`, mảng ID thẻ ghi nhận điểm tốt. Có thể gắn nhiều thẻ, chỉ trong Chỉnh sửa hồ sơ (Admin/Dev). Tên/màu của thẻ được khai báo tại `src/lib/recognition-tags.ts`. Phân loại hoạt động cũ được lưu riêng ở `legacyActivityStatus`, không tự đổi thành điểm tốt. Migration 014 chuyển kiểu dữ liệu một lần, giữ nguyên hồ sơ và có thể chạy lại an toàn. `relativePhone` hiển thị SĐT PH cho thiếu nhi và SĐT Người thân cho hai nhóm còn lại.
 
 ## Biểu mẫu công khai
 
@@ -20,7 +20,7 @@ Trang đăng ký chính tự xác định nhóm từ ngày sinh: dưới 16 là 
 
 Bắt buộc: hình ảnh, họ tên, giới tính, ngày sinh, nơi ở và tổ; SĐT cá nhân bắt buộc thêm cho hai nhóm người lớn. Ghi chú, Trạng thái, ID, Ngày tham gia, HĐ chăm sóc và Vai trò không hiển thị ở đăng ký công khai.
 
-Migration local và Supabase đã áp dụng ngày 05/11/2026, không xóa hồ sơ. Thay đổi giao diện/backend được triển khai từ mã nguồn cùng schema 13.
+Migration local và Supabase đã áp dụng ngày 05/11/2026, không xóa hồ sơ. Thay đổi giao diện/backend được triển khai từ mã nguồn cùng schema 14.
 
 ## Ảnh và người liên quan
 
@@ -37,3 +37,9 @@ Lệnh bảo trì được tách riêng ở `scripts/reset-member-data.mjs`. L�
 Supabase dùng migration `202610270001_workbook_profiles.sql`; script reset cloud áp dụng schema và xóa dữ liệu trong cùng giao dịch sau khi sao lưu thành công. Chứng chỉ CA đúng có thể truyền qua `DATABASE_SSL_CA_FILE`; không tắt xác minh TLS.
 
 Sau khi cập nhật database cloud, cần triển khai phiên bản mã nguồn mới lên Vercel để form và API nhận cùng cấu trúc. Việc cập nhật Supabase không tự triển khai Vercel.
+
+## Thẻ tình trạng
+
+Sheet hiển thị các chấm màu theo đúng thẻ của hồ sơ. Chú giải neo tại ô (portal để không bị vùng cuộn cắt): desktop hover 700 ms, hủy nếu rời sớm; touch mở ngay khi chạm. Có mũi tên về ô, tự đổi phía nếu sát đầu màn hình, đóng bằng Escape, blur, chạm ngoài hoặc cuộn trang. Không sửa trực tiếp trên sheet/chú giải. Hồ sơ hiển thị tên thẻ đầy đủ, phần chỉnh sửa dùng các nút chọn nhiều thẻ. Lọc cột theo từng thẻ, tìm kiếm và Excel dùng tên tiếng Việt thay vì ID.
+
+Schema 14 và migration Supabase `202611050002_recognition_tags.sql` cần phát hành cùng backend/frontend mới; không áp dụng migration chuyển kiểu này vào cloud khi bản cloud vẫn dùng xử lý chuỗi mức hoạt động cũ.

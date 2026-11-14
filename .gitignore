@@ -11,6 +11,8 @@ dist
 .next/
 .vercel/
 out/
-DATA
+/DATA/
+/DATA_2/
+/DATA_Cleaned/
+/outputs/
 graphify-out
-tests

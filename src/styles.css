@@ -9,3 +9,12 @@
 @import './styles/registration-effects.css';
 
 @import './styles/motion.css';
+
+
+@import "./styles/recognition-tags.css";
+
+@import "./styles/atlas-dashboard.css";
+
+@import "./styles/interface-motion.css";
+
+@import "./styles/operations.css";

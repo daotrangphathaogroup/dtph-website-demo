@@ -7,3 +7,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Project navigation
+
+Use the Graphify skill for every project task, per the user's preference. Query the existing graph before source exploration; verify current files where the graph is stale. Use the skill's incremental workflow when an update is needed.

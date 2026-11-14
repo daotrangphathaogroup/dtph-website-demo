@@ -72,7 +72,7 @@ export default function MemberDataTable({
                 />
               </th>
               <th className="sheet-number" scope="col">
-                #
+                STT
               </th>
               {sheet.visible.map((f) => (
                 <th
@@ -89,7 +89,8 @@ export default function MemberDataTable({
                 >
                   <button
                     className="sheet-sort"
-                    onClick={() =>
+                    onClick={() => {
+                      sheet.setPage(1);
                       sheet.setSort({
                         key: f.key,
                         direction:
@@ -97,9 +98,9 @@ export default function MemberDataTable({
                           sheet.sort.direction === "asc"
                             ? "desc"
                             : "asc",
-                      })
-                    }
-                    title={f.label}
+                      });
+                    }}
+                    title={f.key === "name" ? "Sắp xếp theo tên gọi, rồi đến họ và tên đệm" : `Sắp xếp theo ${f.label}`}
                   >
                     <span>{f.label}</span>
                     {sheet.sort.key === f.key ? (
@@ -181,7 +182,7 @@ export default function MemberDataTable({
                             ? "sheet-missing"
                             : ""
                       }
-                      title={displayValue(value, f)}
+                      title={f.key === "status" ? undefined : displayValue(value, f)}
                     >
                       {f.key === "name" ? (
                         <button
@@ -199,10 +200,10 @@ export default function MemberDataTable({
                           )}
                           <span>{String(value ?? m.name)}</span>
                         </button>
+                      ) : f.key === "status" ? (
+                        <ActivityStatus value={m.profileData?.status} compact name={m.name} />
                       ) : value === undefined || value === "" ? (
                         "—"
-                      ) : f.key === "status" ? (
-                        <ActivityStatus value={value} />
                       ) : (
                         displayValue(value, f)
                       )}

@@ -1,3 +1,4 @@
+import {currentWard} from './areas.ts';
 import type {Member} from './types';
 import type {ProfileValues} from './registration';
 
@@ -8,6 +9,7 @@ export function memberProfileValues(member: Member): ProfileValues {
   for (const key of ['birthday', 'phone', 'email', 'address', 'avatar'] as const) {
     if (values[key] == null) values[key] = member[key] ?? '';
   }
+  values.addressNew = currentWard(values.address);
   if (values.team == null) values.team = member.team ?? '';
   values.name = member.name || values.name || '';
   values.id = member.id;

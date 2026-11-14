@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useId, useRef, useState } from "react";
 import type { ComponentProps } from "react";
 import { createPortal } from "react-dom";
 import { LoaderCircle } from "lucide-react";
@@ -23,27 +23,43 @@ export default function IconButton({
     left: number;
     top: number;
     above: boolean;
+    anchor: number;
+    closing?: boolean;
   } | null>(null);
+  const tooltip = useRef<HTMLSpanElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null),
     id = useId();
-  function close() {
+  function close(immediate = false) {
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
-    setPosition(null);
+    if (immediate || matchMedia('(prefers-reduced-motion: reduce)').matches) {setPosition(null); return;}
+    setPosition(old => old ? {...old, closing: true} : null);
+    timer.current = setTimeout(() => {setPosition(null); timer.current = null;}, 90);
   }
   function show(button: HTMLButtonElement, delay: number) {
-    close();
+    close(true);
     // Native dialog's top layer should retain the native title tooltip.
     if (button.closest("dialog")) return;
     timer.current = setTimeout(() => {
+      if (!button.isConnected || button.disabled) return;
       const r = button.getBoundingClientRect();
+      const left = r.left + r.width / 2;
       setPosition({
-        left: Math.max(126, Math.min(innerWidth - 126, r.left + r.width / 2)),
+        left,
+        anchor: r.left + r.width / 2 - left,
         top: r.top > 60 ? r.top - 8 : r.bottom + 8,
         above: r.top > 60,
       });
     }, delay);
   }
+  useLayoutEffect(() => {
+    if (!position || position.closing || !tooltip.current) return;
+    const half = tooltip.current.offsetWidth / 2;
+    const center = position.left + position.anchor;
+    const left = Math.max(half + 8, Math.min(innerWidth - half - 8, center));
+    if (Math.abs(left - position.left) > .5)
+      setPosition(old => old ? {...old, left, anchor: center - left} : null);
+  }, [position?.top, position?.closing, label]);
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
@@ -53,14 +69,15 @@ export default function IconButton({
   useEffect(() => {
     if (!position) return;
     const key = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
+      if (e.key === "Escape") close(true);
     };
-    window.addEventListener("scroll", close, true);
-    window.addEventListener("resize", close);
+    const dismiss = () => close(true);
+    window.addEventListener("scroll", dismiss, true);
+    window.addEventListener("resize", dismiss);
     document.addEventListener("keydown", key);
     return () => {
-      window.removeEventListener("scroll", close, true);
-      window.removeEventListener("resize", close);
+      window.removeEventListener("scroll", dismiss, true);
+      window.removeEventListener("resize", dismiss);
       document.removeEventListener("keydown", key);
     };
   }, [position]);
@@ -70,13 +87,13 @@ export default function IconButton({
         type={type}
         aria-label={label}
         title={position ? undefined : label}
-        aria-describedby={position ? id : undefined}
+        aria-describedby={position && !position.closing ? id : undefined}
         aria-busy={busy || undefined}
         className={`icon-button ${className}`}
         disabled={disabled || busy}
         {...props}
         onPointerEnter={(e) => {
-          if (e.pointerType !== "touch") show(e.currentTarget, 450);
+          if (e.pointerType !== "touch") show(e.currentTarget, 280);
           onPointerEnter?.(e);
         }}
         onPointerLeave={(e) => {
@@ -89,11 +106,11 @@ export default function IconButton({
           onFocus?.(e);
         }}
         onBlur={(e) => {
-          close();
+          close(true);
           onBlur?.(e);
         }}
         onClick={(e) => {
-          close();
+          close(true);
           onClick?.(e);
         }}
       >
@@ -106,8 +123,12 @@ export default function IconButton({
       {position &&
         createPortal(
           <span
+            ref={tooltip}
             id={id}
-            role="tooltip"
+            role={position.closing ? undefined : "tooltip"}
+            aria-hidden={position.closing || undefined}
+            data-side={position.above ? "above" : "below"}
+            data-closing={position.closing || undefined}
             className="action-tooltip"
             style={{
               left: position.left,
@@ -116,6 +137,7 @@ export default function IconButton({
             }}
           >
             {label}
+            <i className="action-tooltip-arrow" aria-hidden="true" style={{left: `clamp(10px, calc(50% + ${position.anchor}px), calc(100% - 10px))`}} />
           </span>,
           document.body,
         )}

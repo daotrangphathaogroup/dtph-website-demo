@@ -36,7 +36,7 @@ export function RegistrationPrintSummary({step, values, childrenGroup}: {step: n
   const join = (...items: unknown[]) => items.filter(Boolean).join(' · ');
   const birthday = String(values.birthday ?? '').split('-').reverse().join('/');
   const lines = [join(values.gender, birthday), join(values.address, `Tổ ${values.team}`),
-    join(values.phone, childrenGroup && values.parentName, values.relativePhone) || 'Không có số liên lạc',
+    join(values.phone, childrenGroup && values.parentName, childrenGroup && values.relativePhone) || 'Không có số liên lạc',
     'Ảnh đại diện', ...(childrenGroup ? [join(values.schoolClass && (values.schoolClass === 'Không' ? 'Không đi học' : `Lớp ${values.schoolClass}`),values.nickname) || 'Chưa cập nhật'] : [values.introducedBy ? 'Đã chọn người giới thiệu' : 'Không có người giới thiệu'])];
   return <div className="registration-print-summary" aria-hidden="true">
     {step === 3 && values.avatar && <img src={String(values.avatar)} alt="" />}

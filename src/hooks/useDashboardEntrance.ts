@@ -23,7 +23,7 @@ export function useDashboardEntrance(revision: unknown, enabled = true) {
       cancelAnimationFrame(frame);
       clearTimeout(timer);
       element.removeAttribute('data-entering');
-      for (const event of ['pointerdown', 'pointermove', 'focusin', 'keydown', 'input', 'change']) interactionRoot.removeEventListener(event, interrupt);
+      for (const event of ['pointerdown', 'focusin', 'keydown', 'input', 'change']) interactionRoot.removeEventListener(event, interrupt);
       document.removeEventListener('visibilitychange', visibility);
       reduced.removeEventListener('change', preference);
       for (const counter of counters) counter.textContent = Number(counter.dataset.countValue).toLocaleString('vi-VN');
@@ -49,7 +49,7 @@ export function useDashboardEntrance(revision: unknown, enabled = true) {
       tick(start);
     });
     timer = setTimeout(interrupt, 1100);
-    for (const event of ['pointerdown', 'pointermove', 'focusin', 'keydown', 'input', 'change']) interactionRoot.addEventListener(event, interrupt, {once: true});
+    for (const event of ['pointerdown', 'focusin', 'keydown', 'input', 'change']) interactionRoot.addEventListener(event, interrupt, {once: true});
     document.addEventListener('visibilitychange', visibility);
     reduced.addEventListener('change', preference);
     return finish;

@@ -1,0 +1,18 @@
+{
+  "family": "Manrope",
+  "source": "https://raw.githubusercontent.com/google/fonts/b31870aff700ab7a1d74fa0c6887d95beb9e0037/ofl/manrope/Manrope%5Bwght%5D.ttf",
+  "source_commit": "b31870aff700ab7a1d74fa0c6887d95beb9e0037",
+  "license": "SIL Open Font License 1.1",
+  "sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
+  "bytes": 164700,
+  "axes": [
+    {
+      "tag": "wght",
+      "min": 200.0,
+      "default": 200.0,
+      "max": 800.0
+    }
+  ],
+  "vietnamese_glyphs_verified": 103,
+  "format": "TrueType variable, original full glyph coverage"
+}

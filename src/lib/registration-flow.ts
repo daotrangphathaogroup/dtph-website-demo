@@ -55,7 +55,7 @@ export function intakeValues(
     intakeKeys
       .filter(
         (key) =>
-          (!["parentName", "nickname", "schoolClass"].includes(key) || group === "children") && (key !== "introducedBy" || group !== "children"),
+          (!["parentName", "relativePhone", "nickname", "schoolClass"].includes(key) || group === "children") && (key !== "introducedBy" || group !== "children"),
       )
       .map((key) => [key, values[key] ?? ""]),
   );
@@ -74,14 +74,14 @@ export function intakeStepError(
       return "Vui lòng nhập ngày sinh hợp lệ, từ năm 1900 đến hôm nay.";
   }
   if (step === 1) {
-    if (!String(values.address ?? "").trim()) return "Vui lòng chọn phường.";
+    if (!String(values.address ?? "").trim()) return "Vui lòng chọn phường/xã theo địa chỉ cũ.";
     if (!["1", "2", "3"].includes(String(values.team)))
       return "Vui lòng chọn Tổ 1, 2 hoặc 3.";
   }
   if (step === 2) {
     if (group !== "children" && !values.phone)
       return "Vui lòng nhập số điện thoại cá nhân.";
-    for (const key of ["phone", "relativePhone"])
+    for (const key of group === "children" ? ["phone", "relativePhone"] : ["phone"])
       if (values[key] && !/^0[35789]\d{8}$/.test(String(values[key])))
         return "Số điện thoại cần 10 chữ số, bắt đầu bằng đầu số Việt Nam hợp lệ.";
   }

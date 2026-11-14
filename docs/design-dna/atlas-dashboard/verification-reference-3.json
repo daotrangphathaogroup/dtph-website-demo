@@ -1,0 +1,141 @@
+{
+  "implementation": ".local/audits/atlas-overview-desktop.png",
+  "reference": "docs/design-dna/atlas-dashboard/reference-3.measurement.json",
+  "measurement": {
+    "k": 8
+  },
+  "entries": [
+    {
+      "specHex": "#f5f7f9",
+      "role": "background",
+      "nearestImageHex": "#fafbfc",
+      "deltaE": 1.56,
+      "specCoverage": 0.7488,
+      "imageCoverage": 0.9708
+    },
+    {
+      "specHex": "#e07660",
+      "role": "unassigned",
+      "nearestImageHex": "#848587",
+      "deltaE": 50.86,
+      "specCoverage": 0.1092,
+      "imageCoverage": 0.0029
+    },
+    {
+      "specHex": "#9c4868",
+      "role": "unassigned",
+      "nearestImageHex": "#848587",
+      "deltaE": 40.73,
+      "specCoverage": 0.0952,
+      "imageCoverage": 0
+    },
+    {
+      "specHex": "#b2b0b3",
+      "role": "unassigned",
+      "nearestImageHex": "#c0bada",
+      "deltaE": 16.38,
+      "specCoverage": 0.0202,
+      "imageCoverage": 0.0177
+    },
+    {
+      "specHex": "#1a2022",
+      "role": "text",
+      "nearestImageHex": "#31353c",
+      "deltaE": 10.87,
+      "specCoverage": 0.0126,
+      "imageCoverage": 0.0052
+    },
+    {
+      "specHex": "#09b2f8",
+      "role": "unassigned",
+      "nearestImageHex": "#c0bada",
+      "deltaE": 37.59,
+      "specCoverage": 0.0052,
+      "imageCoverage": 0.0033
+    },
+    {
+      "specHex": "#8b0ac6",
+      "role": "accent",
+      "nearestImageHex": "#2e7fd4",
+      "deltaE": 69.66,
+      "specCoverage": 0.0044,
+      "imageCoverage": 0
+    },
+    {
+      "specHex": "#0cb24f",
+      "role": "unassigned",
+      "nearestImageHex": "#848587",
+      "deltaE": 72.55,
+      "specCoverage": 0.0044,
+      "imageCoverage": 0
+    }
+  ],
+  "implementationClusters": [
+    {
+      "imageHex": "#fafbfc",
+      "imageCoverage": 0.9708,
+      "nearestSpecHex": "#f5f7f9",
+      "nearestSpecRole": "background",
+      "deltaE": 1.56
+    },
+    {
+      "imageHex": "#c0bada",
+      "imageCoverage": 0.0123,
+      "nearestSpecHex": "#b2b0b3",
+      "nearestSpecRole": "unassigned",
+      "deltaE": 16.38
+    },
+    {
+      "imageHex": "#848587",
+      "imageCoverage": 0.0054,
+      "nearestSpecHex": "#b2b0b3",
+      "nearestSpecRole": "unassigned",
+      "deltaE": 16.61
+    },
+    {
+      "imageHex": "#31353c",
+      "imageCoverage": 0.0052,
+      "nearestSpecHex": "#1a2022",
+      "nearestSpecRole": "text",
+      "deltaE": 10.87
+    },
+    {
+      "imageHex": "#2e7fd4",
+      "imageCoverage": 0.0033,
+      "nearestSpecHex": "#09b2f8",
+      "nearestSpecRole": "unassigned",
+      "deltaE": 25.07
+    },
+    {
+      "imageHex": "#ee9481",
+      "imageCoverage": 0.0028,
+      "nearestSpecHex": "#e07660",
+      "nearestSpecRole": "unassigned",
+      "deltaE": 13.1
+    },
+    {
+      "imageHex": "#f6ba17",
+      "imageCoverage": 0.0001,
+      "nearestSpecHex": "#e07660",
+      "nearestSpecRole": "unassigned",
+      "deltaE": 58.86
+    },
+    {
+      "imageHex": "#d42d54",
+      "imageCoverage": 0,
+      "nearestSpecHex": "#e07660",
+      "nearestSpecRole": "unassigned",
+      "deltaE": 31.27
+    }
+  ],
+  "meanDeltaE": 1.99,
+  "maxDeltaE": 50.86,
+  "coverageDrift": 0.4441,
+  "thresholds": {
+    "meanDeltaE": 5,
+    "maxDeltaE": 20,
+    "coverageDrift": 0.35,
+    "significantCoverage": 0.005
+  },
+  "pass": false
+}

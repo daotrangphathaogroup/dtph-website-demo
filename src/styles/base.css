@@ -2,7 +2,7 @@
   box-sizing: border-box;
 }
 html {
-  font-family: var(--font-geist), Inter, Arial, sans-serif;
+  font-family: var(--font-manrope), Arial, sans-serif;
   background: var(--background);
   color: var(--ink);
   font-synthesis: none;

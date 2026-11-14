@@ -12,7 +12,7 @@ import {
   registrationGroup,
 } from "../../lib/registration-flow";
 import { todayInVietnam } from "../../lib/dashboard";
-import { getTeam, teamAreas } from "../../lib/areas";
+import { getTeam, teamAreas, unassignedWards } from "../../lib/areas";
 import { Button, Feedback, Field } from "../../components/ui/primitives";
 import Dialog from "../../components/ui/Dialog";
 import {useInlineDelivery} from "../../hooks/useInlineDelivery";
@@ -117,10 +117,10 @@ export default function RegistrationIntake({
     ctx.beginPath(); ctx.ellipse(180, 390, 130, 120, 0, 0, Math.PI * 2); ctx.fill();
     const isChild = registrationGroup(birthday, today) === "children";
     setValues({...blank, name, gender: pick(["Nam", "Nữ"]), birthday, address,
-      team: getTeam(address) ?? 1, phone: phone(), relativePhone: phone(),
+      team: getTeam(address) ?? 1, phone: phone(), relativePhone: isChild ? phone() : "",
       parentName: isChild ? pick(["Nguyễn Văn Minh", "Trần Thị Mai", "Lê Thanh Bình"]) : "",
       schoolClass: isChild ? String(1 + Math.floor(Math.random() * 12)) : "",
-      nickname: isChild ? pick(["Bắp", "Sóc", "Mít", "Bông"]) : "",
+      nickname: isChild ? String(100 + Math.floor(Math.random() * 900)).padStart(4, "0") : "",
       avatar: canvas.toDataURL("image/jpeg", 0.85),
     });
     setDemo(true);
@@ -371,14 +371,14 @@ export default function RegistrationIntake({
                   )}
                   {index === 1 && (
                     <>
-                      <Field required label="Địa chỉ / Phường" htmlFor={`${id}-address`}>
+                      <Field required label="Địa chỉ (cũ)" htmlFor={`${id}-address`}>
                         <select
                           id={`${id}-address`}
                           required
                           value={values.address}
                           onChange={(e) => update("address", e.target.value)}
                         >
-                          <option value="">Chọn phường</option>
+                          <option value="">Chọn phường/xã</option>
                           {([1, 2, 3] as const).map((team) => (
                             <optgroup key={team} label={`Tổ ${team}`}>
                               {teamAreas[team].map((ward) => (
@@ -386,13 +386,16 @@ export default function RegistrationIntake({
                               ))}
                             </optgroup>
                           ))}
+                          <optgroup label="Chưa có Tổ mặc định">
+                            {unassignedWards.map(ward => <option key={ward}>{ward}</option>)}
+                          </optgroup>
                         </select>
                       </Field>
                       <Field
                         required
                         label="Tổ"
                         htmlFor={`${id}-team`}
-                        hint="Tự chọn theo phường. Có thể đổi tổ theo nhu cầu sinh hoạt."
+                        hint="Hệ thống gợi ý Tổ khi có phân công. Bạn có thể tự chọn Tổ."
                       >
                         <select
                           id={`${id}-team`}
@@ -446,12 +449,8 @@ export default function RegistrationIntake({
                           />
                         </Field>
                       )}
-                      <Field
-                        label={
-                          children
-                            ? "SĐT Phụ huynh (nếu có)"
-                            : "SĐT Người thân (nếu có)"
-                        }
+                      {children && <Field
+                        label="SĐT Phụ huynh (nếu có)"
                         htmlFor={`${id}-relative`}
                       >
                         <input
@@ -466,7 +465,7 @@ export default function RegistrationIntake({
                             update("relativePhone", e.target.value)
                           }
                         />
-                      </Field>
+                      </Field>}
                     </>
                   )}
                   {index === 3 && (
@@ -494,7 +493,7 @@ export default function RegistrationIntake({
                       </select>
                     </Field>
                     <Field
-                      label="Biệt danh (nếu có)"
+                      label="Mã số (nếu có)"
                       htmlFor={`${id}-nickname`}
                     >
                       <input

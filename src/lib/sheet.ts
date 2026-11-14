@@ -1,10 +1,15 @@
+import {currentWard} from './areas.ts';
+import {recognitionTagText,selectedRecognitionTags} from './recognition-tags.ts';
 import type {Member} from './types';
 import {displayValue} from './registration.ts';
 import type {ProfileField} from './registration.ts';
 export const sheetText=(value:unknown)=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLocaleLowerCase('vi-VN');
 export function sheetValue(member:Member,key:string):string|number|undefined {
  if(member.group==='children'&&['occupation','introducedBy'].includes(key))return undefined;
- const value=member.profileData?.[key];
+ if(key==='addressNew')return currentWard(member.profileData?.address??member.address);
+ if(key==='status')return recognitionTagText(member.profileData?.status);
+ const rawValue=member.profileData?.[key];
+ const value=Array.isArray(rawValue)?rawValue.join(' · '):rawValue;
  if(key==='name')return member.name||value;
  if(key==='id')return member.id??value;
  if(key==='joined')return member.joined??value;
@@ -32,7 +37,7 @@ export function filterSheet(members:Member[],query:string,filters:Record<string,
  const terms=normalized.match(/\bto\s*[123]\b|\d{4}-\d{2}-\d{2}|\d{1,2}[/.\-]\d{1,2}[/.\-]\d{4}|[\p{L}\p{N}]+/gu)??[];
  const phoneQuery=!dateSearchValue(normalized)&&/^[+\d\s().-]+$/.test(normalized)&&phoneSearchValue(normalized).length>=7?phoneSearchValue(normalized):undefined;
  return members.filter(member=>{
-  if(!Object.entries(filters).every(([key,value])=>!value||(value==='__empty'?sheetValue(member,key)===undefined||sheetValue(member,key)==='':String(sheetValue(member,key))===value)))return false;
+  if(!Object.entries(filters).every(([key,value])=>!value||(key==='status'&&value!=='__empty'?selectedRecognitionTags(member.profileData?.status).some(t=>t.label===value):value==='__empty'?sheetValue(member,key)===undefined||sheetValue(member,key)==='':String(sheetValue(member,key))===value)))return false;
   if(!terms.length)return true;
   const values=fields.filter(f=>f.type!=='image').flatMap(field=>{
    const value=sheetValue(member,field.key);
@@ -51,31 +56,29 @@ export function filterSheet(members:Member[],query:string,filters:Record<string,
   });
  });
 }
-const vietnameseOrder = new Intl.Collator('vi-VN', { numeric: true, sensitivity: 'accent' });
-
-function nameParts(fullName: string) {
- const parts = fullName.trim().split(/\s+/);
- return [parts.pop() ?? '', parts.join(' ')];
-}
-export function compareVietnameseNames(left: string, right: string): number {
- const [leftName,leftPrefix]=nameParts(left);
- const [rightName,rightPrefix]=nameParts(right);
- return vietnameseOrder.compare(leftName,rightName)||vietnameseOrder.compare(leftPrefix,rightPrefix);
-}
-
+export const compareSheetText = new Intl.Collator('vi-VN', {numeric:true,sensitivity:'accent'}).compare;
+const nameParts = (name:string) => {
+ const parts = name.split(/\s+/);
+ return [parts.pop() ?? '',parts.join(' ')];
+};
 export function sortSheet(members:Member[],field:ProfileField|undefined,direction:'asc'|'desc'):Member[]{
  if(!field)return members;
- return [...members].sort((a,b)=>{
-  const left=String(sheetValue(a,field.key)??'').trim();
-  const right=String(sheetValue(b,field.key)??'').trim();
-  if(!left||!right)return Number(Boolean(right))-Number(Boolean(left));
-  const comparison=field.key==='name'
-   ? compareVietnameseNames(left,right)
-   : ['year','number','team'].includes(field.type)
-    ? Number(left)-Number(right)
-    : vietnameseOrder.compare(left,right);
-  return direction==='asc'?comparison:-comparison;
+ const sortValues=members.map(member=>{
+  const value=String(sheetValue(member,field.key)??'').trim();
+  const key=field.type==='date'?dateSearchValue(value)??'':value;
+  return {member,key,name:field.key==='name'?nameParts(key):undefined};
  });
+ return sortValues.sort((a,b)=>{
+  if(!a.key||!b.key)return Number(Boolean(b.key))-Number(Boolean(a.key));
+  const comparison=a.name&&b.name
+   ? compareSheetText(a.name[0],b.name[0])||compareSheetText(a.name[1],b.name[1])
+   : field.type==='date'
+    ? (a.key<b.key?-1:a.key>b.key?1:0)
+    : ['year','number','team'].includes(field.type) && Number.isFinite(Number(a.key)) && Number.isFinite(Number(b.key))
+     ? Number(a.key)-Number(b.key)
+     : compareSheetText(a.key,b.key);
+  return direction==='asc'?comparison:-comparison;
+ }).map(row=>row.member);
 }
 export function sheetExportData(members: Member[], fields: ProfileField[]): (string | number | undefined)[][] {
  return [

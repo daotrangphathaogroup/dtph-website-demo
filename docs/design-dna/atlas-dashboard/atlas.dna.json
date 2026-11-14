@@ -1,0 +1,847 @@
+{
+  "meta": {
+    "name": "Atlas Đạo tràng",
+    "description": "Measured neutral and pastel SaaS references adapted to a staff management workspace. References 1–2 supply the dominant white/gray surface and card hierarchy; reference 3 contributes asymmetry, orbital data geometry and colorful accents, not its warm portfolio background. Chart values remain actual filtered profile data.",
+    "source_references": [
+      {
+        "type": "image",
+        "file": "codex-clipboard-6a7764f1-95e8-4521-a1e4-a51609ee963e.png",
+        "width": 1199,
+        "height": 937
+      },
+      {
+        "type": "image",
+        "file": "codex-clipboard-54eb4391-062b-4c25-b130-6058e1d4c204.png",
+        "width": 1200,
+        "height": 900
+      },
+      {
+        "type": "image",
+        "file": "codex-clipboard-c7b1181c-1ba4-46d2-a66b-0fbe67e5a119.png",
+        "width": 736,
+        "height": 920
+      }
+    ],
+    "created_at": "2026-11-06"
+  },
+  "design_system": {
+    "color": {
+      "palette_type": "Neutral white-gray workspace, pastel corner light and consistent group accents",
+      "primary": {
+        "hex": "#212226",
+        "role": "Measured reference 2 foreground for headings and numerals"
+      },
+      "secondary": {
+        "hex": "#ae72ee",
+        "role": "Measured reference 1 violet, reserved for selective accent motifs"
+      },
+      "accent": {
+        "hex": "#2177d1",
+        "role": "Measured reference 2 blue; interactive and analytical accent"
+      },
+      "neutral": {
+        "scale": [
+          "#fafbfb",
+          "#f6f6f6",
+          "#d7d8d6",
+          "#9da2a4",
+          "#626466",
+          "#212226"
+        ],
+        "usage": "Measured neutral ramp ordered light to dark. Foreground #212226, secondary text #626466, neutral surfaces #fafbfb and #f6f6f6."
+      },
+      "semantic": {
+        "success": "#356e51",
+        "warning": "#86692f",
+        "error": "#c6405a",
+        "info": "#3889c3"
+      },
+      "surface": {
+        "background": "#fafbfb",
+        "card": "#ffffff",
+        "elevated": "#ffffff"
+      },
+      "contrast_strategy": "Dark labels on predominantly neutral surfaces; numerical geometry and legends carry meaning; group colors remain consistent.",
+      "measurement": {
+        "k": 8,
+        "sampling": {
+          "method": "deterministic_stratified",
+          "max_pixels": 160000,
+          "sampled_pixels": 160000
+        },
+        "palette_blend": {
+          "weights": [
+            0.04,
+            0.95,
+            0.01
+          ],
+          "order": [
+            1,
+            2,
+            3
+          ],
+          "method": "Weighted reference histograms, no changed hex samples. Reference 2 supplies the dominant neutral/blue identity; 1 and 3 contribute small colorful accents. Layout inspiration is evaluated separately."
+        }
+      },
+      "measured_palette": [
+        {
+          "hex": "#f6f6f6",
+          "coverage": 0.034996,
+          "role": "background",
+          "measured_coverage": 0.8749,
+          "reference": 1
+        },
+        {
+          "hex": "#d7d8d6",
+          "coverage": 0.003224,
+          "role": "unassigned",
+          "measured_coverage": 0.0806,
+          "reference": 1
+        },
+        {
+          "hex": "#a8ada4",
+          "coverage": 0.000612,
+          "role": "unassigned",
+          "measured_coverage": 0.0153,
+          "reference": 1
+        },
+        {
+          "hex": "#5b766f",
+          "coverage": 0.000384,
+          "role": "unassigned",
+          "measured_coverage": 0.0096,
+          "reference": 1
+        },
+        {
+          "hex": "#262423",
+          "coverage": 0.00036,
+          "role": "text",
+          "measured_coverage": 0.009,
+          "reference": 1
+        },
+        {
+          "hex": "#2047e8",
+          "coverage": 0.000244,
+          "role": "accent",
+          "measured_coverage": 0.0061,
+          "reference": 1
+        },
+        {
+          "hex": "#93a63a",
+          "coverage": 8.8e-05,
+          "role": "unassigned",
+          "measured_coverage": 0.0022,
+          "reference": 1
+        },
+        {
+          "hex": "#ae72ee",
+          "coverage": 8.8e-05,
+          "role": "unassigned",
+          "measured_coverage": 0.0022,
+          "reference": 1
+        },
+        {
+          "hex": "#fafbfb",
+          "coverage": 0.90079,
+          "role": "background",
+          "measured_coverage": 0.9482,
+          "reference": 2
+        },
+        {
+          "hex": "#d3d3cf",
+          "coverage": 0.01558,
+          "role": "unassigned",
+          "measured_coverage": 0.0164,
+          "reference": 2
+        },
+        {
+          "hex": "#9da2a4",
+          "coverage": 0.010355,
+          "role": "unassigned",
+          "measured_coverage": 0.0109,
+          "reference": 2
+        },
+        {
+          "hex": "#212226",
+          "coverage": 0.009595,
+          "role": "text",
+          "measured_coverage": 0.0101,
+          "reference": 2
+        },
+        {
+          "hex": "#626466",
+          "coverage": 0.007695,
+          "role": "unassigned",
+          "measured_coverage": 0.0081,
+          "reference": 2
+        },
+        {
+          "hex": "#2177d1",
+          "coverage": 0.00304,
+          "role": "accent",
+          "measured_coverage": 0.0032,
+          "reference": 2
+        },
+        {
+          "hex": "#7ac4f8",
+          "coverage": 0.00209,
+          "role": "unassigned",
+          "measured_coverage": 0.0022,
+          "reference": 2
+        },
+        {
+          "hex": "#d2a966",
+          "coverage": 0.000855,
+          "role": "unassigned",
+          "measured_coverage": 0.0009,
+          "reference": 2
+        },
+        {
+          "hex": "#f5f7f9",
+          "coverage": 0.007488,
+          "role": "background",
+          "measured_coverage": 0.7488,
+          "reference": 3
+        },
+        {
+          "hex": "#e07660",
+          "coverage": 0.001092,
+          "role": "unassigned",
+          "measured_coverage": 0.1092,
+          "reference": 3
+        },
+        {
+          "hex": "#9c4868",
+          "coverage": 0.000952,
+          "role": "unassigned",
+          "measured_coverage": 0.0952,
+          "reference": 3
+        },
+        {
+          "hex": "#b2b0b3",
+          "coverage": 0.000202,
+          "role": "unassigned",
+          "measured_coverage": 0.0202,
+          "reference": 3
+        },
+        {
+          "hex": "#1a2022",
+          "coverage": 0.000126,
+          "role": "text",
+          "measured_coverage": 0.0126,
+          "reference": 3
+        },
+        {
+          "hex": "#09b2f8",
+          "coverage": 5.2e-05,
+          "role": "unassigned",
+          "measured_coverage": 0.0052,
+          "reference": 3
+        },
+        {
+          "hex": "#8b0ac6",
+          "coverage": 4.4e-05,
+          "role": "accent",
+          "measured_coverage": 0.0044,
+          "reference": 3
+        },
+        {
+          "hex": "#0cb24f",
+          "coverage": 4.4e-05,
+          "role": "unassigned",
+          "measured_coverage": 0.0044,
+          "reference": 3
+        }
+      ],
+      "spatial_samples": [
+        {
+          "role": "pastel_sage",
+          "x": 28,
+          "y": 12,
+          "hex": "#dcdab4",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "pastel_blue",
+          "x": 395,
+          "y": 12,
+          "hex": "#7ba3bc",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "pastel_peach",
+          "x": 600,
+          "y": 18,
+          "hex": "#ebc7ad",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "pastel_lemon",
+          "x": 716,
+          "y": 18,
+          "hex": "#d9e09d",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "pastel_bottom",
+          "x": 12,
+          "y": 850,
+          "hex": "#6b91ab",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "sidebar",
+          "x": 92,
+          "y": 575,
+          "hex": "#f9fbfa",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "surface",
+          "x": 450,
+          "y": 225,
+          "hex": "#fefefe",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "nav_selected",
+          "x": 95,
+          "y": 205,
+          "hex": "#d4d5da",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "border",
+          "x": 380,
+          "y": 238,
+          "hex": "#ffffff",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "chart_grid",
+          "x": 513,
+          "y": 607,
+          "hex": "#eaf7fe",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "chart_fill",
+          "x": 476,
+          "y": 565,
+          "hex": "#e6f2fe",
+          "method": "5x5 RGB channel median"
+        },
+        {
+          "role": "charcoal_tab",
+          "x": 279,
+          "y": 208,
+          "hex": "#9b9ea3",
+          "method": "5x5 RGB channel median"
+        }
+      ],
+      "brand_exceptions": {
+        "logo": "Original multicolor Phật Hào logo retained as an image",
+        "status_colors": "Existing success/warning semantics preserved"
+      },
+      "accessibility_adjustments": [
+        {
+          "hex": "#626e74",
+          "source": "#717e84",
+          "usage": "Secondary small text darkened for readability",
+          "contrast_on_card": 5.2
+        },
+        {
+          "hex": "#306b94",
+          "source": "#3889c3",
+          "usage": "Blue text darkened; original measured blue retained for decorative chart strokes",
+          "contrast_on_card": 5.69
+        }
+      ],
+      "reference_adaptation": "Reference 2 controls the neutral surface and blue. The measured violet from reference 1 is an additional accent, rather than forcing colorful charts into the neutral reference 2 palette. Reference 3 is structural inspiration, not a background-color match. The measured warm coral from reference 3 is used as the female demographic series; per-source coverages remain traceable rather than being treated as one normalized image histogram.",
+      "measured_source_palettes": {
+        "1": [
+          {
+            "hex": "#f6f6f6",
+            "coverage": 0.8749,
+            "role": "background"
+          },
+          {
+            "hex": "#d7d8d6",
+            "coverage": 0.0806,
+            "role": "unassigned"
+          },
+          {
+            "hex": "#a8ada4",
+            "coverage": 0.0153,
+            "role": "unassigned"
+          },
+          {
+            "hex": "#5b766f",
+            "coverage": 0.0096,
+            "role": "unassigned"
+          },
+          {
+            "hex": "#262423",
+            "coverage": 0.009,
+            "role": "text"
+          },
+          {
+            "hex": "#2047e8",
+            "coverage": 0.0061,
+            "role": "accent"
+          },
+          {
+            "hex": "#93a63a",
+            "coverage": 0.0022,
+            "role": "unassigned"
+          },
+          {
+            "hex": "#ae72ee",
+            "coverage": 0.0022,
+            "role": "unassigned"
+          }
+        ],
+        "2": [
+          {
+            "hex": "#fafbfb",
+            "coverage": 0.9482,
+            "role": "background"
+          },
+          {
+            "hex": "#d3d3cf",
+            "coverage": 0.0164,
+            "role": "unassigned"
+          },
+          {
+            "hex": "#9da2a4",
+            "coverage": 0.0109,
+            "role": "unassigned"
+          },
+          {
+            "hex": "#212226",
+            "coverage": 0.0101,
+            "role": "text"
+          },
+          {
+            "hex": "#626466",
+            "coverage": 0.0081,
+            "role": "unassigned"
+          },
+          {
+            "hex": "#2177d1",
+            "coverage": 0.0032,
+            "role": "accent"
+          },
+          {
+            "hex": "#7ac4f8",
+            "coverage": 0.0022,
+            "role": "unassigned"
+          },
+          {
+            "hex": "#d2a966",
+            "coverage": 0.0009,
+            "role": "unassigned"
+          }
+        ],
+        "3": [
+          {
+            "hex": "#f5f7f9",
+            "coverage": 0.7488,
+            "role": "background"
+          },
+          {
+            "hex": "#e07660",
+            "coverage": 0.1092,
+            "role": "unassigned"
+          },
+          {
+            "hex": "#9c4868",
+            "coverage": 0.0952,
+            "role": "unassigned"
+          },
+          {
+            "hex": "#b2b0b3",
+            "coverage": 0.0202,
+            "role": "unassigned"
+          },
+          {
+            "hex": "#1a2022",
+            "coverage": 0.0126,
+            "role": "text"
+          },
+          {
+            "hex": "#09b2f8",
+            "coverage": 0.0052,
+            "role": "unassigned"
+          },
+          {
+            "hex": "#8b0ac6",
+            "coverage": 0.0044,
+            "role": "accent"
+          },
+          {
+            "hex": "#0cb24f",
+            "coverage": 0.0044,
+            "role": "unassigned"
+          }
+        ]
+      }
+    },
+    "typography": {
+      "type_scale": {
+        "display": {
+          "size": "48px",
+          "weight": 500,
+          "line_height": 1.15,
+          "tracking": "-0.035em"
+        },
+        "heading_1": {
+          "size": "27px",
+          "weight": 600,
+          "line_height": 1.25,
+          "tracking": "-0.03em"
+        },
+        "heading_2": {
+          "size": "21px",
+          "weight": 600,
+          "line_height": 1.4,
+          "tracking": "-0.015em"
+        },
+        "heading_3": {
+          "size": "14px",
+          "weight": 500,
+          "line_height": 1.45,
+          "tracking": "0em"
+        },
+        "body": {
+          "size": "14px",
+          "weight": 400,
+          "line_height": 1.5,
+          "tracking": "0em"
+        },
+        "body_small": {
+          "size": "12px",
+          "weight": 400,
+          "line_height": 1.5,
+          "tracking": "0em"
+        },
+        "caption": {
+          "size": "10px",
+          "weight": 400,
+          "line_height": 1.5,
+          "tracking": "0em"
+        },
+        "overline": {
+          "size": "8px",
+          "weight": 500,
+          "line_height": 1.5,
+          "tracking": "0.08em"
+        }
+      },
+      "font_families": {
+        "heading": "Manrope",
+        "body": "Manrope",
+        "mono": "ui-monospace, monospace"
+      },
+      "font_style_notes": "Locally bundled full Manrope variable font (200–800), including verified Vietnamese glyphs. Same family in headings, controls, tables and SVG charts. Existing size hierarchy retained."
+    },
+    "spacing": {
+      "base_unit": "4px",
+      "scale": [
+        "4px",
+        "8px",
+        "12px",
+        "16px",
+        "20px",
+        "24px",
+        "32px",
+        "40px"
+      ],
+      "content_density": "compact but legible",
+      "section_rhythm": "12–16px between related cards, 20–24px inside major panels"
+    },
+    "layout": {
+      "grid_system": "Twelve-column asymmetric analytical workspace",
+      "max_content_width": "1800px",
+      "columns": 12,
+      "gutter": "17px",
+      "breakpoints": {
+        "wide": 1050,
+        "medium": 800,
+        "small": 620
+      },
+      "alignment_tendency": "Source order follows reading hierarchy: summary, filters, workflow, flow/orbit, geography/care, merit/teams, demographic, records"
+    },
+    "shape": {
+      "border_radius": {
+        "small": "7px",
+        "medium": "13px",
+        "large": "18px",
+        "pill": "999px"
+      },
+      "border_usage": "Hairline neutral borders, precise chart boundaries",
+      "divider_style": "Faint 1px neutral row lines"
+    },
+    "elevation": {
+      "shadow_style": "almost flat; soft shadow only for floating app frame, menus and dialog",
+      "levels": {
+        "low": "0 1px 2px #26272804",
+        "medium": "0 16px 48px #26272812",
+        "high": "0 20px 64px #26272820"
+      },
+      "depth_cues": "white canvas over pastel frame, thin borders, soft popover shadow"
+    },
+    "iconography": {
+      "style": "thin rounded outline icons with small pastel color fields",
+      "stroke_weight": "1.5px",
+      "size_scale": [
+        "14px",
+        "16px",
+        "18px",
+        "20px",
+        "24px"
+      ],
+      "preferred_set": "Existing Lucide React"
+    },
+    "motion": {
+      "easing": "ease-out",
+      "duration_scale": {
+        "micro": "120ms",
+        "normal": "160ms",
+        "macro": "0ms"
+      },
+      "entrance_pattern": "instant, no entrance animation inferred from still image",
+      "exit_pattern": "instant",
+      "philosophy": "minimal functional; respect reduced motion"
+    },
+    "components": {
+      "button_style": "Compact charcoal primary, white outlined secondary, 5px corners; selected segmented tabs dark with light labels",
+      "input_style": "White surface, fine grey outline, 36–40px height, quiet blue focus ring",
+      "card_style": "Pastel corner light on selected cards, opaque white base, subtle low shadow, distinct chart footprints",
+      "navigation_pattern": "Continuous top bar, slim left navigation, reserved management right rail",
+      "modal_style": "Centered opaque white dialog with thin border; no backdrop blur",
+      "list_style": "Compact sheet with faint row rules, same toolbar/tabs/pagination, horizontal scrolling on small displays",
+      "component_notes": "Summary is reconstructed as total + three group cards. Analytical charts use bounded ribbons, concentric percentage tracks, bubble-area matrix, 100-cell care grid, team tick meters and mirrored demographic bars. No random or fabricated metrics."
+    }
+  },
+  "design_style": {
+    "aesthetic": {
+      "mood": "Clear, distinctive and quietly expressive",
+      "visual_metaphor": "An atlas of three interconnected communities",
+      "era_influence": "Contemporary restrained SaaS dashboards",
+      "genre": "premium minimal SaaS workspace",
+      "personality_traits": [
+        "precise",
+        "calm",
+        "welcoming",
+        "visually considered"
+      ],
+      "adjectives": [
+        "airy",
+        "neutral",
+        "compact",
+        "polished"
+      ]
+    },
+    "visual_language": {
+      "complexity": "minimal",
+      "ornamentation": "subtle pastel exterior and tiny colored icons",
+      "whitespace_usage": "Generous outside the workspace, compact and consistent within it",
+      "visual_weight_distribution": "Dark values and active tabs anchor otherwise light cards",
+      "focal_strategy": "statistics followed by a pale blue area chart",
+      "contrast_level": "dark-on-light dominant, low contrast structural borders",
+      "texture_usage": "none"
+    },
+    "composition": {
+      "hierarchy_method": "Large actual numerals, contrast in card footprint, selective pastel corner washes",
+      "balance_type": "Asymmetric twelve-column bento; 8/4, 7/5, 6/6, then full-width demographic",
+      "flow_direction": "left navigation, top-to-bottom content",
+      "grouping_strategy": "Operational summary then relational analytics then complete data sheet",
+      "negative_space_role": "separates app from surroundings and gives individual cards breathing room"
+    },
+    "imagery": {
+      "photo_treatment": "Existing portraits kept; no decorative stock photography",
+      "illustration_style": "none",
+      "graphic_elements": "Data-driven SVG curves and concentric rings, precise small multiples and colorful tag dots; no decorative data or stock avatars.",
+      "pattern_usage": "fine chart grid only",
+      "image_shape": "Existing portrait 3x4 and original logo"
+    },
+    "interaction_feel": {
+      "feedback_style": "immediate selected state and clear loading/empty/error states",
+      "hover_behavior": "small background or border change; chart marker tooltip",
+      "transition_personality": "snappy",
+      "loading_style": "static low contrast skeleton, no shimmer",
+      "microinteraction_density": "low"
+    },
+    "brand_voice_in_ui": {
+      "tone": "calm and helpful Vietnamese appropriate to Đạo Tràng",
+      "formality": "respectful, concise",
+      "cta_style": "direct familiar action labels",
+      "empty_state_approach": "explain available next steps without fabricated data",
+      "error_tone": "clear and recoverable"
+    }
+  },
+  "visual_effects": {
+    "overview": {
+      "effect_intensity": "subtle-accent",
+      "performance_tier": "lightweight",
+      "fallback_strategy": "static CSS only; narrower frame on mobile; no animation to disable beyond functional spinner",
+      "primary_technology": "CSS only, static SVG for data charts"
+    },
+    "background_effects": {
+      "type": "static-pastel-corner-light",
+      "description": "Static radial gradients tint a small portion of selected cards; source 3 warm outer framing is intentionally excluded from the staff product.",
+      "technology": "CSS gradients",
+      "params": {
+        "color_palette": [
+          "#dcdab4",
+          "#7ba3bc",
+          "#ebc7ad",
+          "#d9e09d",
+          "#6b91ab"
+        ],
+        "speed": 0,
+        "density": "three broad soft color fields",
+        "opacity": 1,
+        "blend_mode": "normal"
+      }
+    },
+    "particle_systems": {
+      "enabled": false,
+      "type": "none",
+      "description": "No particles in reference",
+      "technology": "none",
+      "params": {
+        "count": 0,
+        "shape": "none",
+        "size_range": [
+          0,
+          0
+        ],
+        "movement_pattern": "none",
+        "color_behavior": "none",
+        "interaction": "none",
+        "spawn_area": "none"
+      }
+    },
+    "3d_elements": {
+      "enabled": false,
+      "type": "none",
+      "description": "No 3D content",
+      "technology": "none",
+      "params": {
+        "renderer": "none",
+        "lighting": "none",
+        "camera": "none",
+        "materials": "none",
+        "geometry": "none",
+        "post_processing": [],
+        "interaction_model": "none"
+      }
+    },
+    "shader_effects": {
+      "enabled": false,
+      "type": "none",
+      "description": "No shader distortion observed",
+      "technology": "none",
+      "params": {
+        "uniforms": {},
+        "vertex_manipulation": "none",
+        "fragment_output": "none",
+        "noise_type": "none",
+        "distortion": 0
+      }
+    },
+    "scroll_effects": {
+      "parallax": {
+        "enabled": false,
+        "layers": 0,
+        "depth_range": [
+          0,
+          0
+        ],
+        "speed_curve": "none"
+      },
+      "scroll_triggered_animations": {
+        "enabled": false,
+        "trigger_points": [],
+        "animation_type": "none",
+        "scrub_behavior": "none"
+      },
+      "scroll_morphing": {
+        "enabled": false,
+        "description": "No scroll morphing"
+      }
+    },
+    "text_effects": {
+      "type": "none",
+      "description": "Normal readable type",
+      "technology": "CSS",
+      "params": {
+        "split_strategy": "none",
+        "animation_per_unit": "none",
+        "stagger": 0,
+        "effect_style": "none"
+      }
+    },
+    "cursor_effects": {
+      "enabled": false,
+      "type": "none",
+      "description": "Keep native pointer",
+      "params": {
+        "shape": "native",
+        "size": "auto",
+        "blend_mode": "normal",
+        "trail": "none",
+        "interaction_zone": "none"
+      }
+    },
+    "image_effects": {
+      "type": "none",
+      "description": "No distortion, reveal or parallax",
+      "technology": "CSS object-fit only",
+      "params": {
+        "filter_pipeline": [],
+        "hover_transform": "none",
+        "reveal_animation": "none",
+        "distortion_type": "none"
+      }
+    },
+    "glassmorphism_neumorphism": {
+      "enabled": false,
+      "style": "none",
+      "params": {
+        "blur_radius": "0px",
+        "transparency": 0,
+        "border_treatment": "opaque neutral 1px",
+        "shadow_type": "soft popup only",
+        "light_source_angle": 0
+      }
+    },
+    "canvas_drawings": {
+      "enabled": false,
+      "type": "none",
+      "description": "Use responsive static SVG area chart; existing image crop canvas remains functional, not a visual effect",
+      "technology": "none",
+      "params": {
+        "draw_method": "none",
+        "animation_loop": false,
+        "color_scheme": "none",
+        "responsiveness": "none",
+        "interaction": "none"
+      }
+    },
+    "svg_animations": {
+      "enabled": false,
+      "type": "none",
+      "description": "SVG chart and icons are static; tooltip follows pointer/focus without SVG animation",
+      "params": {
+        "animation_method": "none",
+        "path_morphing": false,
+        "stroke_animation": false,
+        "filter_effects": "none"
+      }
+    },
+    "composite_notes": "Reference 1 provides compact multicolor card hierarchy, reference 2 provides measured neutral palette and light surface depth, reference 3 provides orbital/bento motifs. Static SVG geometry plus functional tooltips. Existing registration delivery animation and tag hover timing are preserved."
+  }
+}
