@@ -177,3 +177,55 @@
   :is(.button, .icon-button, .text-button, .account-dropdown button):active:not(:disabled) {scale: .98;}
   input[type=checkbox] {transition: accent-color 140ms ease, box-shadow 140ms ease;}
 }
+
+/* Hover feedback stays on the control or chart mark, so nearby content remains still. */
+@media (hover: hover) and (pointer: fine) {
+  :is(.button, .icon-button):hover:not(:disabled):not([aria-disabled="true"]) {
+    box-shadow: 0 3px 10px rgb(28 55 90 / 11%);
+  }
+  :is(.ops-work-tabs button, .sheet-sort, .table-person):hover:not(:disabled) {
+    color: var(--blue-ink);
+  }
+  .sheet-sort:hover:not(:disabled) > svg {
+    opacity: 1;
+  }
+  .dashboard-legend li:hover {
+    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+  }
+  :is(.ops-queue li, .dashboard-bar-row):hover > b {
+    color: var(--blue-ink);
+  }
+  :is(.ops-queue li, .dashboard-bar-row):hover :is(.ops-queue-track, .dashboard-bar-track) > i {
+    filter: saturate(1.25);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .dashboard-legend li {
+    transition: background-color 180ms ease, border-color 180ms ease;
+  }
+  .dashboard-legend .chart-dot {
+    transition: scale 200ms var(--ease-emerge);
+  }
+  .dashboard-legend li:hover .chart-dot {scale: 1.35;}
+  .dashboard-donut:not(.is-empty) {
+    transition: scale 240ms var(--ease-emerge), box-shadow 220ms ease;
+  }
+  .dashboard-donut:not(.is-empty):hover {
+    scale: 1.035;
+    box-shadow: 0 6px 20px rgb(28 55 90 / 12%);
+  }
+  :is(.ops-queue-track, .dashboard-bar-track) > i {
+    transition: width 320ms var(--ease-emerge), filter 200ms ease;
+  }
+  :is(.ops-queue li, .dashboard-bar-row) > b {
+    transition: color 180ms ease;
+  }
+  :is(.button, .icon-button, .ops-work-tabs button, .table-person) > svg {
+    transition: translate 200ms var(--ease-emerge);
+  }
+  :is(.button, .icon-button, .ops-work-tabs button, .table-person):hover:not(:active):not(:disabled):not([aria-disabled="true"]) > svg:not(.is-spinning) {
+    translate: 0 -1px;
+  }
+}
