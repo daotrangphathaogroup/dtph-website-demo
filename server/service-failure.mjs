@@ -7,4 +7,3 @@ export function serviceFailure(error){
  if(/^08\w{3}$/.test(code)||['ECONNRESET','ETIMEDOUT','ECONNREFUSED','ENETUNREACH','ENOTFOUND','EHOSTUNREACH'].includes(code)||/Connection terminated|timeout.*connect|connect.*timeout|Circuit breaker|unable to establish connection/i.test(message))return 'database-connection';
  return 'initialization';
 }
-export function databaseMode(connectionString){try{const url=new URL(connectionString);return url.hostname.endsWith('.pooler.supabase.com')?(url.port==='6543'?'transaction':'session'):'direct';}catch{return 'unknown';}}

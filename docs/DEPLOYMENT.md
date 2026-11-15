@@ -25,7 +25,7 @@ Không xuất password_hash. Migration lặp lại không ghi đè mật khẩu/
 Giữ liên kết GitHub. Environment Variables Production:
 
 - APP_ORIGIN=https://dtph-website-demo.vercel.app (hoặc origin tên miền thật, không dấu / cuối).
-- DATABASE_URL: Supabase transaction pooler port 6543, mật khẩu URL encoded.
+- DATABASE_URL: Supabase transaction pooler port 6543, mật khẩu URL encoded. Runtime tự chuyển URL shared pooler `*.pooler.supabase.com:5432` sang port 6543 để các instance Vercel không giữ kết nối session riêng; URL direct và MIGRATION_DATABASE_URL không bị thay đổi.
 - DATABASE_SSL_CA nếu cần xác minh CA.
 - ADMIN_SESSION_SECRET: chuỗi random >=32 ký tự, ổn định qua redeploy.
 - R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET.
