@@ -13,19 +13,15 @@ export type Dimension = "ward" | "age" | "gender";
 export function Donut({ items, total, colors = palette }: { items: Distribution[]; total: number; colors?: readonly string[] }) {
   let angle = 0;
   const segments = items.map((item, i) => {
-    const from = angle;
-    angle += total ? (item.count / total) * 100 : 0;
-    return `${colors[i % colors.length]} ${from}% ${angle}%`;
+    const start = angle;
+    const share = total ? (item.count / total) * 100 : 0;
+    angle += share;
+    return {start, share, color: colors[i % colors.length], label: item.label, count: item.count};
   });
   return (
     <div className="dashboard-composition">
       <div
         className={`dashboard-donut ${!total ? "is-empty" : ""}`}
-        style={{
-          background: total
-            ? `conic-gradient(${segments.join(",")})`
-            : undefined,
-        }}
         role="img"
         aria-label={
           total
@@ -33,6 +29,17 @@ export function Donut({ items, total, colors = palette }: { items: Distribution[
             : "Chưa có dữ liệu"
         }
       >
+        <svg className="donut-ring" viewBox="0 0 200 200" aria-hidden="true">
+          <circle className="donut-track" cx="100" cy="100" r="84" />
+          {segments.filter(segment => segment.share > 0).map(segment => {
+            const gap = Math.min(1.3, segment.share * 0.15);
+            return <circle key={segment.label} className="donut-segment" cx="100" cy="100" r="84" pathLength="100"
+              stroke={segment.color} strokeDasharray={`${segment.share - gap} ${100 - segment.share + gap}`}
+              strokeDashoffset={-segment.start - gap / 2}>
+              <title>{segment.label}: {segment.count.toLocaleString('vi-VN')} huynh đệ</title>
+            </circle>;
+          })}
+        </svg>
         <div>
           <strong>{total.toLocaleString("vi-VN")}</strong>
           <span>huynh đệ</span>
@@ -40,7 +47,7 @@ export function Donut({ items, total, colors = palette }: { items: Distribution[
       </div>
       <ul className="dashboard-legend">
         {items.map((item, i) => (
-          <li key={item.label}>
+          <li key={item.label} style={{borderInlineStartColor: colors[i % colors.length]}}>
             <span
               className="chart-dot"
               style={{ background: colors[i % colors.length] }}

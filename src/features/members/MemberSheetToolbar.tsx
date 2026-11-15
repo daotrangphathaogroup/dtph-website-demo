@@ -157,9 +157,9 @@ export default function MemberSheetToolbar({
       </div>
       {sheet.exportError && <Feedback>{sheet.exportError}</Feedback>}
       <div className="sheet-context">
-        <span>
-          {sheet.filtered.length.toLocaleString("vi-VN")} hồ sơ
-          {sheet.query || count ? " phù hợp" : " trong danh sách"}
+        <span className="sheet-record-count">
+          <strong>{sheet.filtered.length.toLocaleString("vi-VN")}</strong>{' '}
+          <span>hồ sơ{sheet.query || count ? " phù hợp" : " trong danh sách"}</span>
         </span>
         {sheet.selected.size > 0 && (
           <span className="selection-status">

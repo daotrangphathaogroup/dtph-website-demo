@@ -208,6 +208,7 @@
   padding-top: 20px;
 }
 .dashboard-donut {
+  position: relative;
   width: 164px;
   height: 164px;
   display: grid;
@@ -216,16 +217,19 @@
   border-radius: 50%;
 }
 .dashboard-donut.is-empty {
-  background: var(--surface-secondary);
+  background: transparent;
 }
 .dashboard-donut > div {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 116px;
   height: 116px;
-  background: var(--surface);
+  background: transparent;
   border-radius: 50%;
 }
 .dashboard-donut strong {
@@ -982,7 +986,7 @@
 .dashboard-analysis .dashboard-donut > div {
   width: 114px;
   height: 114px;
-  background: var(--surface);
+  background: transparent;
 }
 .dashboard-analysis .dashboard-donut strong {
   font-size: 30px;
@@ -1696,7 +1700,7 @@
   background: var(--surface-secondary);
 }
 .group-detail-track i {display: block; height: 100%; border-radius: inherit; background: var(--group-accent);}
-.group-dashboard .dashboard-donut {box-shadow: 0 0 0 5px var(--surface-secondary);}
+
 .group-dashboard .dashboard-bar-track i {background: var(--group-accent);}
 
 .group-view-stage {min-width: 0; display: flow-root;}
@@ -1745,4 +1749,39 @@
 .group-profile-distribution ul {padding: 0; margin: 0;}
 @media (max-width: 440px) {
   .group-summary .group-indicator {align-items: flex-start;}
+}
+
+/* Chart detail: restrained depth, clear marks and matching series keys. */
+.donut-ring {position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; transform: rotate(-90deg);}
+.donut-ring circle {fill: none; stroke-width: 22;}
+.donut-track {stroke: #edf1f7;}
+.dashboard-donut::after {content: ""; position: absolute; inset: 18%; border-radius: 50%; border: 1px solid #eef1f6; pointer-events: none;}
+.dashboard-legend li {padding: 8px 10px; border: 1px solid var(--line); border-inline-start-width: 3px; border-radius: 8px; background: var(--surface);}
+.dashboard-legend b {color: var(--ink); font-weight: 600;}
+.ops-panel .dashboard-legend li {border-inline-start-width: 3px;}
+.dashboard-analysis > .dashboard-card {border: 1px solid var(--line); box-shadow: 0 3px 14px rgb(35 69 120 / 4%);}
+.dashboard-month-chart {background: linear-gradient(160deg, #f9fbff, var(--surface) 35%);}
+.dashboard-month-chart .dashboard-card-heading {padding-bottom: 14px; border-bottom: 1px solid #edf1f7;}
+.dashboard-month-chart .dashboard-card-heading h2 {font-size: 16px; font-weight: 600;}
+.area-chart-observations circle {fill: var(--surface); stroke: var(--chart-stroke); stroke-width: 1.5;}
+.area-chart-selection {fill: var(--chart-stroke); opacity: .045;}
+.area-chart-line.comparison {stroke-dasharray: 5 4; stroke-width: 2;}
+.area-chart-dot {filter: drop-shadow(0 2px 3px #3e7ff130);}
+.area-chart-tooltip {min-width: 160px; padding: 12px 14px; border: 1px solid #e1e8f2; box-shadow: 0 8px 24px #23457814, 0 2px 5px #2345780a; border-radius: 11px;}
+.area-chart-tooltip > span {font-weight: 600; color: var(--ink); margin-bottom: 4px;}
+.area-chart-tooltip > div {display: grid; grid-template-columns: 7px minmax(0, 1fr) auto; gap: 7px; align-items: center; font-size: 11px;}
+.area-chart-tooltip i {width: 7px; height: 7px; border-radius: 50%; background: var(--chart-stroke);}
+.area-chart-tooltip i.comparison {background: var(--chart-comparison);}
+.area-chart-tooltip strong {color: var(--ink); font-variant-numeric: tabular-nums;}
+.chart-series-key > span {padding: 4px 9px; border-radius: 6px; background: #f6f8fc;}
+.monthly-bars {border-bottom: 1px solid var(--line); padding-bottom: 8px;}
+.monthly-track i {border-radius: 7px 7px 3px 3px; background: linear-gradient(180deg, color-mix(in srgb, var(--group-accent, var(--accent)) 65%, #a8eaff), var(--group-accent, var(--accent))); box-shadow: inset 0 1px #ffffff70;}
+.monthly-value {color: var(--group-accent, var(--blue-ink)); font-weight: 600; font-variant-numeric: tabular-nums;}
+.dashboard-bar-track {height: 8px; background: #eef2f8;}
+.dashboard-bar-track i, .group-dashboard .dashboard-bar-track i {background: linear-gradient(90deg, color-mix(in srgb, var(--group-accent, var(--accent)) 60%, #a8eaff), var(--group-accent, var(--accent))); box-shadow: inset 0 1px #ffffff55;}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .donut-segment {transition: stroke-width 200ms ease, filter 200ms ease;}
+  .donut-segment:hover {stroke-width: 26; filter: brightness(1.06);}
+  .monthly-column .monthly-track i {transition: filter 180ms ease;}
+  .monthly-column:hover .monthly-track i {filter: brightness(1.12);}
 }

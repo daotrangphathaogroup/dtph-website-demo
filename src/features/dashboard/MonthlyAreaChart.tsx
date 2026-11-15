@@ -101,6 +101,10 @@ export default function MonthlyAreaChart({
             />
             <stop offset="100%" stopColor="var(--surface)" stopOpacity="0.08" />
           </linearGradient>
+          <linearGradient id={`${id}-stroke`} gradientUnits="userSpaceOnUse" x1={chart.left} y1="0" x2={chart.width - chart.right} y2="0">
+            <stop offset="0%" stopColor="#4c6fff" />
+            <stop offset="100%" stopColor="#179edb" />
+          </linearGradient>
           <pattern
             id={`${id}-dots`}
             width="7"
@@ -163,12 +167,17 @@ export default function MonthlyAreaChart({
           <path
             d={chart.line}
             className="area-chart-line"
+            style={{stroke: `url(#${id}-stroke)`}}
             fill="none"
             vectorEffect="non-scaling-stroke"
           />
         </g>
+        <g className="area-chart-observations" aria-hidden="true">
+          {chart.points.filter(point => point.count > 0).map(point => <circle key={point.month} cx={point.x} cy={point.y} r="2.5" />)}
+        </g>
         {selected && (
           <g aria-hidden="true">
+            <rect className="area-chart-selection" x={selected.x - 12} y={20} width={24} height={chart.baseline - 20} rx={8} />
             <line
               className="area-chart-marker"
               x1={selected.x}
@@ -202,9 +211,9 @@ export default function MonthlyAreaChart({
           }}
         >
           <span>Tháng {selected.month}</span>
-          <strong>{selected.count.toLocaleString("vi-VN")} đã duyệt</strong>
+          <div><i /><span>Đã duyệt</span><strong>{selected.count.toLocaleString("vi-VN")}</strong></div>
           {pendingMonths.length > 0 && (
-            <span>{pendingMonths[selected.month - 1] ?? 0} chờ duyệt</span>
+            <div><i className="comparison" /><span>Chờ duyệt</span><strong>{(pendingMonths[selected.month - 1] ?? 0).toLocaleString("vi-VN")}</strong></div>
           )}
         </output>
       )}

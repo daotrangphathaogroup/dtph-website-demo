@@ -118,7 +118,7 @@
 }
 .ops-panel .dashboard-legend b,
 .ops-queue li > b {font-variant-numeric: tabular-nums;}
-.ops-panel .dashboard-donut > div {box-shadow: inset 0 0 0 1px var(--line);}
+
 .ops-records h2 small {
   display: inline-block;
   padding: 2px 8px;
@@ -150,28 +150,29 @@
 .ops-dashboard > .dashboard-month-chart .chart-title p {display: block; font-size: 12px; color: var(--text-secondary);}
 
 /* Direct scope choices, geography, then the registration period. */
-.ops-filters {display: grid; gap: 14px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); min-width: 0; container-type: inline-size;}
+.ops-filters {display: grid; gap: 14px; padding: 16px 18px; border: 1px solid #dfe7f2; border-radius: 16px; background: linear-gradient(125deg, #f7faff, var(--surface) 48%); box-shadow: 0 3px 16px rgb(35 69 120 / 5%); min-width: 0; container-type: inline-size;}
 .ops-filter-top {display: flex; align-items: center; justify-content: space-between; gap: 12px;}
 .ops-group-filter {display: flex; flex-wrap: wrap; gap: 6px; min-width: 0;}
 .ops-filters button {font-size: 12px;}
-.ops-group-filter > button {display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 7px 12px; border: 1px solid transparent; border-radius: 8px; background: var(--surface-secondary); color: var(--text-secondary);}
-.ops-group-filter > button[aria-pressed="true"] {background: #eaf2ff; color: #2056a6; border-color: #afc8f0;}
-.ops-group-filter i {width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: var(--scope-color);}
+.ops-group-filter > button {display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--text-secondary);}
+.ops-group-filter > button[aria-pressed="true"] {background: linear-gradient(180deg, #edf5ff, #e4eeff); color: #2056a6; border-color: #afc8f0; box-shadow: inset 0 1px #ffffff, 0 2px 5px rgb(40 85 160 / 8%);}
+.ops-group-filter > button[data-group][aria-pressed="true"] {background: color-mix(in srgb, var(--scope-color) 10%, white); border-color: color-mix(in srgb, var(--scope-color) 45%, white); color: color-mix(in srgb, var(--scope-color) 70%, #233044);}
+.ops-group-filter i {width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: var(--scope-color); box-shadow: 0 0 0 3px color-mix(in srgb, var(--scope-color) 12%, white);}
 .ops-group-filter [data-group="children"] {--scope-color: var(--children-color);}
 .ops-group-filter [data-group="youth"] {--scope-color: var(--youth-color);}
 .ops-group-filter [data-group="congregation"] {--scope-color: var(--congregation-color);}
 .ops-filter-top > .button {flex-shrink: 0; padding-inline: 8px;}
 .ops-filter-details {display: grid; grid-template-columns: minmax(0, 1fr) minmax(140px, 210px) 150px; gap: 14px;}
-.ops-filters :is(label, legend) {font-size: 11px; color: var(--text-secondary); font-weight: 500;}
+.ops-filters :is(label, legend) {font-size: 11px; color: #596779; font-weight: 500;}
 .ops-filters label {display: grid; gap: 6px; min-width: 0;}
 .ops-filters legend {margin-bottom: 6px;}
-.ops-filters select {min-width: 0; width: 100%; min-height: 36px; font-size: 12px; background-color: var(--surface);}
+.ops-filters select {min-width: 0; width: 100%; min-height: 36px; font-size: 12px; background-color: var(--surface); border-color: #dce3ee; border-radius: 9px; box-shadow: 0 1px 3px rgb(35 69 120 / 3%);}
 .ops-team-filter > div {display: flex; flex-wrap: wrap; gap: 5px;}
 .ops-team-filter button, .ops-month-filter button {min-height: 36px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--text-secondary); padding: 6px 11px; font-variant-numeric: tabular-nums;}
-.ops-filters :is(.ops-team-filter, .ops-month-filter) button[aria-pressed="true"] {background: #eaf2ff; border-color: #afc8f0; color: #2056a6; font-weight: 600;}
+.ops-filters :is(.ops-team-filter, .ops-month-filter) button[aria-pressed="true"] {background: linear-gradient(180deg, #edf5ff, #e4eeff); border-color: #afc8f0; color: #2056a6; font-weight: 600; box-shadow: inset 0 1px #fff, 0 1px 3px rgb(40 85 160 / 8%);}
 .ops-filter-period {display: grid; padding-top: 14px; border-top: 1px solid var(--line);}
-.ops-month-filter > div {display: grid; grid-template-columns: 1.6fr repeat(12, minmax(0, 1fr)); gap: 4px;}
-.ops-month-filter button {padding-inline: 3px; font-size: 11px;}
+.ops-month-filter > div {display: grid; grid-template-columns: 1.6fr repeat(12, minmax(0, 1fr)); gap: 4px; padding: 4px; border: 1px solid #e5eaf2; border-radius: 11px; background: #f5f8fc;}
+.ops-month-filter button {padding-inline: 3px; font-size: 11px; background: transparent; border-color: transparent;}
 @media (hover: hover) {
   .ops-filters :is(.ops-group-filter, .ops-team-filter, .ops-month-filter) button:hover {border-color: #afc8f0; background: #f1f6fe; color: #2056a6;}
 }
@@ -190,3 +191,11 @@
   .ops-filter-details {grid-template-columns: minmax(0, 1fr) 125px; gap: 12px;}
   .ops-team-filter button {padding-inline: 9px;}
 }
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .ops-filters button {transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;}
+  .ops-filters button:not(:disabled):hover {transform: translateY(-1px);}
+  .ops-filters button:not(:disabled):active {transform: translateY(0) scale(.98);}
+}
+.ops-queue-track {background: #f0f3f8;}
+.ops-queue-track i {background-image: linear-gradient(90deg, #ffffff33, transparent); box-shadow: inset 0 1px #ffffff55;}
