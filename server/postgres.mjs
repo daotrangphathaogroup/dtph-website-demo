@@ -1,4 +1,10 @@
 import pg from 'pg';
+// Vercel instances must share transaction slots instead of reserving a session.
+export function runtimeDatabaseUrl(connectionString){
+ let url;try{url=new URL(connectionString);}catch{return connectionString;}
+ if(['postgres:','postgresql:'].includes(url.protocol)&&url.hostname.endsWith('.pooler.supabase.com')&&(!url.port||url.port==='5432')){url.port='6543';return url.toString();}
+ return connectionString;
+}
 /** SET LOCAL is applied in every transaction; safe with Supavisor transaction pooling. */
 export function createPostgresDatabase({connectionString,ca,poolFactory=options=>new pg.Pool(options)}){
  // PEM copied into environment settings can contain indentation or escaped newlines.
