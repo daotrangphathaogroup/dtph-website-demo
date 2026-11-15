@@ -176,7 +176,7 @@ export default function OperationalOverview({members, pending, schemas, canEdit,
       <section className="ops-records" aria-label="Danh sách hồ sơ">
         <h2>{workLabels[work]} <small>{formatCount(records.length)}</small></h2>
         <div className="ops-work-tabs" role="group" aria-label="Lọc công việc">
-          {(Object.keys(workLabels) as WorkKind[]).map(kind => (
+          {(['all', 'transition', 'team'] as const).map(kind => (
             <button key={kind} type="button" aria-pressed={work === kind} onClick={() => setWork(kind)}>
               {workLabels[kind]} <span>{formatCount(report.counts[kind])}</span>
             </button>
