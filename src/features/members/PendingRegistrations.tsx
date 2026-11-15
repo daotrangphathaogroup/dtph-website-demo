@@ -1,4 +1,5 @@
-import { AlertTriangle, Check, Eye, RefreshCw, X } from "lucide-react";
+import {useId, useState} from "react";
+import { ChevronDown, AlertTriangle, Check, Eye, RefreshCw, X } from "lucide-react";
 import type { Member } from "../../lib/types";
 import type { findRegistrationMatches } from "../../lib/registration-matches";
 import { groupLabels } from "../../lib/types";
@@ -32,15 +33,17 @@ export default function PendingRegistrations({
   onReject,
   onRefresh,
 }: Props) {
+  const [expanded, setExpanded] = useState(true);
+  const contentId = useId();
   if (!members.length) return null;
   return (
     <Card className="pending-panel">
       <CardHeader
         title={
-          <>
-            <span className="pending-dot" />
-            {members.length} đăng ký mới chờ duyệt
-          </>
+          <button type="button" className="pending-disclosure" aria-expanded={expanded} aria-controls={contentId} onClick={() => setExpanded(value => !value)}>
+            <ChevronDown size={18} aria-hidden="true" />
+            <span>{members.length} đăng ký mới chờ duyệt</span>
+          </button>
         }
         description={
           canApprove
@@ -57,6 +60,7 @@ export default function PendingRegistrations({
           </IconButton>
         }
       />
+      <div id={contentId} hidden={!expanded}>
       <div className="table-wrap">
         <table className="pending-table">
           <caption className="sr-only">Đăng ký mới chờ duyệt</caption>
@@ -162,6 +166,7 @@ export default function PendingRegistrations({
           </div>
         </div>
       )}
+      </div>
     </Card>
   );
 }

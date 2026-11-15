@@ -5,7 +5,7 @@ import { Pencil, Check } from "lucide-react";
 import type { Member } from "../../lib/types";
 import { groupLabels } from "../../lib/types";
 import type { ProfileValues, RegistrationSchema } from "../../lib/registration";
-import { displayValue, profileFieldLabel } from "../../lib/registration";
+import { displayValue, profileFieldLabel, profileVisibleFields } from "../../lib/registration";
 import { memberProfileValues } from "../../lib/member-profile";
 import { initials } from "../../lib/utils";
 import Dialog from "../../components/ui/Dialog";
@@ -46,6 +46,7 @@ export default function MemberProfileDialog({
       {editing && canEdit ? (
         <ProfileForm
           key={member.id}
+          compact
           schema={schema}
           initial={values}
           memberId={member.id}
@@ -54,46 +55,33 @@ export default function MemberProfileDialog({
         />
       ) : (
         <>
-          <div className="detail-person">
-            <span className="avatar large">
-              {values.avatar ? (
-                <img
-                  src={String(values.avatar)}
-                  alt="Ảnh đại diện"
-                  width={72}
-                  height={96}
-                />
-              ) : (
-                initials(member.name)
-              )}
-            </span>
-            <div>
-              <h3>{member.name}</h3>
-              <div className="detail-badges">
-                <Badge tone="blue">{member.id}</Badge>
-                {member.registrationStatus === "pending" && (
-                  <Badge tone="gold">Chờ duyệt</Badge>
-                )}
-              </div>
-            </div>
-          </div>
-          <dl className="detail-grid">
-            {schema.fields
-              .filter((f) => f.type !== "image")
-              .map((field) => (
-                <div key={field.key}>
-                  <dt>{profileFieldLabel(field)}</dt>
-                  <dd>
-                    {field.key === "status" && values[field.key] ? (
-                      <ActivityStatus value={values[field.key]} />
-                    ) : (
-                      (member.references?.[field.key]?.name ??
-                      displayValue(values[field.key], field))
-                    )}
-                  </dd>
+          <article className="identity-card" data-group={member.group}>
+            <aside className="identity-portrait">
+              {values.avatar ? <img src={String(values.avatar)} alt="Ảnh đại diện" width={108} height={144} /> : <span className="identity-initials">{initials(member.name)}</span>}
+              <span>{groupLabels[member.group]}</span>
+            </aside>
+            <div className="identity-content">
+              <header className="identity-heading">
+                <div>
+                  <h3>{member.name}</h3>
+                  <span className="identity-id">ID · {member.id}</span>
                 </div>
-              ))}
-          </dl>
+                {member.registrationStatus === "pending" && <Badge tone="gold">Chờ duyệt</Badge>}
+              </header>
+              <dl className="detail-grid">
+                {profileVisibleFields(schema)
+                  .filter(field => field.type !== "image" && !["id", "name"].includes(field.key))
+                  .map(field => (
+                    <div key={field.key} data-field={field.key}>
+                      <dt>{profileFieldLabel(field)}</dt>
+                      <dd>{field.key === "status"
+                        ? <ActivityStatus value={values[field.key]} />
+                        : member.references?.[field.key]?.name ?? displayValue(values[field.key], field)}</dd>
+                    </div>
+                  ))}
+              </dl>
+            </div>
+          </article>
           <footer className="form-actions">
             {canEdit && member.registrationStatus === "pending" && (
               <Button busy={approving} onClick={onApprove}>

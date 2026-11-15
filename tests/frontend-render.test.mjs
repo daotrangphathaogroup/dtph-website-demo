@@ -19,7 +19,7 @@ const { default: RegistrationComplete } =
   await import("../src/components/RegistrationComplete.tsx");
 const { default: QuickSearch } = await import("../src/components/QuickSearch.tsx");
 const { default: PublicShell } = await import("../src/components/PublicShell.tsx");
-const { defaultSchemas } = await import("../src/lib/registration.ts");
+const { defaultSchemas, profileVisibleFields } = await import("../src/lib/registration.ts");
 const noop = () => {},
   waiting = { children: 2, youth: 0, congregation: 1 };
 const member = (n) => ({
@@ -233,7 +233,7 @@ test("Guided intake starts with only basic information and exposes no premature 
 test('Member profile displays stored core columns when profileData is incomplete', () => {
  const m={...member(1),name:'Hồ sơ dữ liệu cũ',birthday:'2001-03-04',phone:'0909876543',address:'Tân Phong',avatar:'/api/avatars/example.webp',team:2,profileData:{dharmaName:'Tâm An'}};
  const markup=render(h(MemberProfileDialog,{member:m,schema:defaultSchemas.youth,editing:false,canEdit:false,approving:false,onClose:noop,onEdit:noop,onApprove:noop,onSave:async()=>{}}));
- for(const expected of ['<dd>Hồ sơ dữ liệu cũ</dd>','<dd>04/03/2001</dd>','<dd>0909876543</dd>','<dd>Tân Phong</dd>','<dd>Tổ 2</dd>','<dd>Tâm An</dd>'])assert.ok(markup.includes(expected),`Missing profile value: ${expected}`);
+ for(const expected of ['<h3>Hồ sơ dữ liệu cũ</h3>','<dd>04/03/2001</dd>','<dd>0909876543</dd>','<dd>Tân Phong</dd>','<dd>Tổ 2</dd>','<dd>Tâm An</dd>'])assert.ok(markup.includes(expected),`Missing profile value: ${expected}`);
 });
 
 test('Every group profile shows all configured information including staff fields, zero and linked names', () => {
@@ -245,8 +245,8 @@ test('Every group profile shows all configured information including staff field
   profileData.caregiver='PH3';
   const m={...member(1),group,profileData,references:{introducedBy:{id:'PH2',name:'Người giới thiệu A'},caregiver:{id:'PH3',name:'Huynh đệ chăm sóc B'}}};
   const markup=render(h(MemberProfileDialog,{member:m,schema,editing:false,canEdit:false,approving:false,onClose:noop,onEdit:noop,onApprove:noop,onSave:async()=>{}}));
-  assert.equal((markup.match(/<dt>/g)||[]).length,schema.fields.filter(f=>f.type!=='image').length);
-  assert.match(markup,/Người giới thiệu A/);
+  assert.equal((markup.match(/<dt>/g)||[]).length,profileVisibleFields(schema).filter(f=>f.type!=='image'&&!['name','id'].includes(f.key)).length);
+  if(group==='children'){assert.doesNotMatch(markup,/Người giới thiệu A|Nghề nghiệp/);}else assert.match(markup,/Người giới thiệu A/);
   assert.match(markup,/Dòng một\nDòng hai/);
   assert.match(markup,/Tinh tấn/);assert.match(markup,/Hòa đồng/);
   if(group==='children'){assert.match(markup,/Thông tin nickname/);assert.doesNotMatch(markup,/Thông tin personality/);assert.match(markup,/Thông tin parentName/);}
@@ -265,4 +265,18 @@ test("Public shell preserves home navigation and optional hidden navigation", ()
   assert.match(markup, /Điều hướng chính/);
   assert.match(markup, /id="public-content"/);
   assert.doesNotMatch(render(h(PublicShell, {hideNavigation:true}, "Content")), /Điều hướng chính/);
+});
+
+test('Compact profile editor omits fields outside the group and retains separate derived address',()=>{
+ for(const group of ['children','youth','congregation']){
+  const markup=render(h(ProfileForm,{schema:defaultSchemas[group],compact:true,onSave:async()=>{}}));
+  assert.ok(markup.includes('Địa chỉ (cũ)'));
+  assert.ok(markup.includes('Địa chỉ (mới)'));
+  assert.match(markup,/Ngày bắt đầu tham gia chúng/);
+  assert.match(markup,/Vai trò/);
+  if(group==='children'){
+   assert.doesNotMatch(markup,/Nghề nghiệp|Người giới thiệu/);
+   assert.match(markup,/Họ và tên PH/);
+  }else assert.doesNotMatch(markup,/Mã số|SĐT PH|Họ và tên PH|Chọn lớp/);
+ }
 });

@@ -89,38 +89,12 @@ function Bars({ items }: { items: Distribution[] }) {
     </div>
   );
 }
-function DashboardCharts({
-  scope,
-  total,
-  composition,
-  bars,
-  months,
-  pendingMonths,
-  month,
-  period,
-  dimension,
-  onDimension,
-}: {
-  scope?: string;
-  total: number;
-  composition: Distribution[];
-  bars: Distribution[];
-  months: number[];
-  pendingMonths: number[];
-  month: number | null;
-  period: string;
-  dimension: Dimension;
-  onDimension: (d: Dimension) => void;
+export function RegistrationMonthChart({months, pendingMonths, month, period, total, defaultView = 'area'}: {
+  months: number[]; pendingMonths: number[]; month: number | null; period: string; total: number; defaultView?: 'area' | 'bars';
 }) {
   const maxMonth = Math.max(1, ...months);
-  const [chartView, setChartView] = useState<"area" | "bars">(
-    scope ? "bars" : "area",
-  );
+  const [chartView, setChartView] = useState<'area' | 'bars'>(defaultView);
   return (
-    <>
-      <div
-        className={`dashboard-analysis ${!scope ? "overview-analysis" : ""}`}
-      >
         <section className="dashboard-card dashboard-month-chart">
           <header className="dashboard-card-heading">
             <div className="chart-title">
@@ -187,6 +161,37 @@ function DashboardCharts({
             </p>
           )}
         </section>
+  );
+}
+function DashboardCharts({
+  scope,
+  total,
+  composition,
+  bars,
+  months,
+  pendingMonths,
+  month,
+  period,
+  dimension,
+  onDimension,
+}: {
+  scope?: string;
+  total: number;
+  composition: Distribution[];
+  bars: Distribution[];
+  months: number[];
+  pendingMonths: number[];
+  month: number | null;
+  period: string;
+  dimension: Dimension;
+  onDimension: (d: Dimension) => void;
+}) {
+  return (
+    <>
+      <div
+        className={`dashboard-analysis ${!scope ? "overview-analysis" : ""}`}
+      >
+        <RegistrationMonthChart months={months} pendingMonths={pendingMonths} month={month} period={period} total={months.reduce((sum, count) => sum + count, 0)} defaultView={scope ? 'bars' : 'area'} />
 
         {scope && (
           <section className="dashboard-card dashboard-structure">

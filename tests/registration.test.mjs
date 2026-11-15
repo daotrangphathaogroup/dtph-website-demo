@@ -24,7 +24,7 @@ test('Workbook profiles: exact public fields, full staff data, image and linked 
      assert.equal(schema.fields.find(f=>f.key==='schoolClass').required,false);
      assert.equal(schema.fields.find(f=>f.key==='nickname').label,'Mã số');
     }
-    const staff=(await call('/registration-schemas/'+group,'GET',undefined,dev)).body.schema;assert.equal(staff.fields.length,group==='children'?20:17);
+    const staff=(await call('/registration-schemas/'+group,'GET',undefined,dev)).body.schema;assert.equal(staff.fields.length,group==='children'?22:18);
     assert.ok(staff.fields.find(f=>f.key==='addressNew').readOnly);
     assert.ok(staff.fields.find(f=>f.key==='id').readOnly);assert.ok(staff.fields.find(f=>f.key==='joined').readOnly);
     for(const old of ['birthYear','studentCode','clubSinceYear','attendance2026','studyDate','remarks','parentPhone','studentPhone'])assert.ok(!staff.fields.some(f=>f.key===old));
@@ -66,8 +66,10 @@ test('Workbook profiles: exact public fields, full staff data, image and linked 
   await t.test('new child fields, hidden retained values and role options are validated',async()=>{
    const child=(await call('/registration-schemas/children','GET',undefined,dev)).body.schema;
    for(const key of ['occupation','introducedBy']){assert.ok(child.fields.find(f=>f.key===key).hiddenInTable);}
-   const edited=await call('/members/'+ids.children,'PATCH',{profileData:{schoolClass:'12',caregiver:ids.youth,occupation:'Học sinh',introducedBy:ids.youth}},dev);
-   assert.equal(edited.status,200);assert.equal(edited.body.member.profileData.schoolClass,'12');assert.equal(edited.body.member.references.caregiver.id,ids.youth);
+   const edited=await call('/members/'+ids.children,'PATCH',{profileData:{schoolClass:'12',caregiver:ids.youth,occupation:'Học sinh',introducedBy:ids.youth,childrenStartYear:2020,position:'Học sinh'}},dev);
+   assert.equal(edited.status,200);assert.equal(edited.body.member.profileData.schoolClass,'12');assert.equal(edited.body.member.profileData.childrenStartYear,2020);
+   assert.equal((await call('/members/'+ids.children,'PATCH',{profileData:{youthStartYear:2021}},dev)).status,400);
+   assert.equal((await call('/members/'+ids.children,'PATCH',{profileData:{childrenStartYear:'01/01/2020'}},dev)).status,400);assert.equal(edited.body.member.references.caregiver.id,ids.youth);
    const kept=await call('/members/'+ids.children,'PATCH',{profileData:{nickname:'Bông'}},dev);
    assert.equal(kept.body.member.profileData.occupation,'Học sinh');assert.equal(kept.body.member.profileData.introducedBy,ids.youth);
    for(const value of ['1','12','Không']) assert.equal((await call('/registrations/children','POST',{values:validValues({schoolClass:value}),requestId:randomUUID()})).status,201);

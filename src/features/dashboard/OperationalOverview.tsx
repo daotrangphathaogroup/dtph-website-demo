@@ -1,17 +1,17 @@
 'use client';
-import {useId, useMemo, useState} from 'react';
+import {useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
 import {ChartPie, Clock3, FilterX, RefreshCw, SlidersHorizontal} from 'lucide-react';
 import {Button, IconButton} from '../../components/ui/primitives';
 import {groupLabels} from '../../lib/types';
 import type {Member, MemberGroup} from '../../lib/types';
 import type {RegistrationSchema} from '../../lib/registration';
-import {memberWard, todayInVietnam} from '../../lib/dashboard';
+import {emptyDashboardFilters, filterDashboard, memberWard, monthlyRegistrations, registrationDate, todayInVietnam} from '../../lib/dashboard';
 import {emptyOperationFilters, filterOperations, matchesWork, operationGroups, operationsReport, pendingDate, workLabels} from '../../lib/operations';
 import {useChartMotion} from '../../hooks/useChartMotion';
 import type {OperationFilters, WorkKind} from '../../lib/operations';
 import DashboardMemberList from './DashboardMemberList';
-import {Donut} from './DashboardCharts';
+import {Donut, RegistrationMonthChart} from './DashboardCharts';
 
 const colors = ['var(--children-color)', 'var(--youth-color)', 'var(--congregation-color)'];
 const vietnamDate = new Intl.DateTimeFormat("en-CA", {timeZone: "Asia/Ho_Chi_Minh"});
@@ -29,15 +29,21 @@ type Props = {
 };
 
 export default function OperationalOverview({members, pending, schemas, canEdit, onOpen, lastUpdated, pendingPanel, onRefresh}: Props) {
-  const [showPending, setShowPending] = useState(true);
+  const [year, setYear] = useState("all");
+  const [month, setMonth] = useState<number | null>(null);
   const [filters, setFilters] = useState(emptyOperationFilters);
   const [work, setWork] = useState<WorkKind>('all');
   const [refreshing, setRefreshing] = useState(false);
-  const pendingId = useId();
+
   const queueMotion = useChartMotion();
   const today = todayInVietnam();
   const directory = useMemo(() => members.filter(member => member.registrationStatus === 'approved'), [members]);
-  const approved = useMemo(() => filterOperations(directory, filters), [directory, filters]);
+  const periodFilters = useMemo(() => ({...emptyDashboardFilters, year, month}), [year, month]);
+  const approved = useMemo(() => filterDashboard(filterOperations(directory, filters), periodFilters), [directory, filters, periodFilters]);
+  const yearRecords = useMemo(() => filterDashboard(filterOperations(directory, filters), {...periodFilters, month: null}), [directory, filters, periodFilters]);
+  const yearPending = useMemo(() => filterDashboard(filterOperations(pending, filters), {...periodFilters, month: null}), [pending, filters, periodFilters]);
+  const years = useMemo(() => [...new Set([today.slice(0, 4), ...directory.concat(pending).map(member => registrationDate(member).slice(0, 4)).filter(Boolean)])].sort().reverse(), [directory, pending, today]);
+  const period = month ? `Tháng ${month} · ${year === 'all' ? 'Tất cả các năm' : year}` : year === 'all' ? 'Mọi thời điểm' : `Năm ${year}`;
   const report = useMemo(() => operationsReport(approved, directory, today), [approved, directory, today]);
   const records = useMemo(() => report.rows.filter(member => {
     const flags = report.flags.get(member.id);
@@ -45,9 +51,9 @@ export default function OperationalOverview({members, pending, schemas, canEdit,
   }), [report, work]);
   const wardOptions = useMemo(() => [...new Set([...directory, ...pending].map(memberWard).filter(Boolean))]
     .sort((a, b) => a.localeCompare(b, 'vi')), [directory, pending]);
-  const waiting = useMemo(() => filterOperations(pending.filter(member => member.registrationStatus === 'pending'), filters)
-    .sort((a, b) => (pendingDate(a, today) - pendingDate(b, today)) || a.id.localeCompare(b.id)), [pending, filters, today]);
-  const filtered = filters.group !== 'all' || filters.team !== 'all' || filters.ward !== 'all';
+  const waiting = useMemo(() => filterDashboard(filterOperations(pending.filter(member => member.registrationStatus === 'pending'), filters), periodFilters)
+    .sort((a, b) => (pendingDate(a, today) - pendingDate(b, today)) || a.id.localeCompare(b.id)), [pending, filters, today, periodFilters]);
+  const filtered = filters.group !== 'all' || filters.team !== 'all' || filters.ward !== 'all' || year !== 'all' || month !== null;
 
   function changeFilter<K extends keyof OperationFilters>(key: K, value: OperationFilters[K]) {
     setFilters(previous => ({...previous, [key]: value}));
@@ -102,7 +108,19 @@ export default function OperationalOverview({members, pending, schemas, canEdit,
             <option value="unknown">Chưa rõ khu vực</option>
           </select>
         </label>
-        {filtered && <Button variant="ghost" onClick={() => {setFilters(emptyOperationFilters); setWork('all');}}>
+        <label>Năm
+          <select aria-label="Lọc năm tổng quan" value={year} onChange={e => setYear(e.target.value)}>
+            <option value="all">Tất cả các năm</option>
+            {years.map(value => <option key={value}>{value}</option>)}
+          </select>
+        </label>
+        <label>Tháng
+          <select aria-label="Lọc tháng tổng quan" value={month ?? 'all'} onChange={e => setMonth(e.target.value === 'all' ? null : Number(e.target.value))}>
+            <option value="all">Tất cả các tháng</option>
+            {Array.from({length: 12}, (_, index) => <option key={index} value={index + 1}>Tháng {index + 1}</option>)}
+          </select>
+        </label>
+        {filtered && <Button variant="ghost" onClick={() => {setFilters(emptyOperationFilters); setWork('all'); setYear('all'); setMonth(null);}}>
           <FilterX size={15} /> Xóa bộ lọc
         </Button>}
       </div>
@@ -112,7 +130,7 @@ export default function OperationalOverview({members, pending, schemas, canEdit,
             <span className="ops-card-icon"><ChartPie size={21} aria-hidden="true" /></span>
             <div>
               <h2>Cơ cấu 3 chúng</h2>
-              <p>Hồ sơ đã duyệt</p>
+              <p>Hồ sơ đã duyệt · {period}</p>
             </div>
           </header>
           <Donut items={composition} total={report.rows.length} colors={colors} />
@@ -143,16 +161,11 @@ export default function OperationalOverview({members, pending, schemas, canEdit,
               </li>
             ))}
           </ul>
-          {waiting.length > 0 ? (
-            <Button variant="secondary" aria-expanded={showPending} aria-controls={pendingId} onClick={() => setShowPending(open => !open)}>
-              {showPending ? 'Ẩn danh sách chờ duyệt' : 'Xem danh sách chờ duyệt'}
-            </Button>
-          ) : <p className="ops-queue-empty">Không có phiếu chờ duyệt.</p>}
+          {!waiting.length && <p className="ops-queue-empty">Không có phiếu chờ duyệt.</p>}
         </section>
       </div>
-      <div id={pendingId} hidden={!showPending || !waiting.length}>
-        {showPending && waiting.length > 0 && pendingPanel(waiting)}
-      </div>
+      <RegistrationMonthChart months={monthlyRegistrations(yearRecords)} pendingMonths={monthlyRegistrations(yearPending)} month={month} period={year === 'all' ? 'Tất cả các năm · theo ngày ghi nhận hồ sơ' : `Năm ${year} · theo ngày ghi nhận hồ sơ`} total={yearRecords.length} />
+      {waiting.length > 0 && pendingPanel(waiting)}
       <section className="ops-records" aria-label="Danh sách hồ sơ">
         <h2>{workLabels[work]} <small>{formatCount(records.length)}</small></h2>
         <div className="ops-work-tabs" role="group" aria-label="Lọc công việc">
@@ -163,7 +176,7 @@ export default function OperationalOverview({members, pending, schemas, canEdit,
           ))}
         </div>
         <DashboardMemberList
-          key={JSON.stringify([filters.group, filters.team, filters.ward, work])}
+          key={JSON.stringify([filters.group, filters.team, filters.ward, work, year, month])}
           members={records}
           hasMembers={directory.length > 0}
           schemas={schemas}

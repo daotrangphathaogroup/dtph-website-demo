@@ -148,3 +148,17 @@
   padding: 14px 14px 0;
   min-width: 0;
 }
+
+.dashboard-updated {font-size: 11px; color: var(--text-secondary); margin: -8px 0 14px; text-align: right;}
+.ops-filters {flex-wrap: wrap;}
+.ops-filters label {flex-basis: 120px; max-width: none;}
+.pending-disclosure {display: inline-flex; gap: 8px; align-items: center; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; padding: 3px 0; cursor: pointer;}
+.pending-disclosure > svg {transition: rotate 180ms ease; flex-shrink: 0;}
+.pending-disclosure[aria-expanded="false"] > svg {rotate: -90deg;}
+.group-team-values {display: grid; grid-template-columns: repeat(auto-fit, minmax(95px, 1fr)); gap: 8px;}
+.group-team-values > span {display: grid; grid-template-columns: 6px minmax(0, 1fr); gap: 4px 6px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: var(--surface);}
+.group-team-values > span b {grid-column: 2; font-size: 20px; font-variant-numeric: tabular-nums;}
+.group-team-values > span small {grid-column: 2; font-size: 10px; color: var(--text-secondary);}
+@media (prefers-reduced-motion: reduce) {.pending-disclosure > svg {transition: none;}}
+.ops-dashboard > .dashboard-month-chart {grid-column: auto; grid-row: auto;}
+.ops-dashboard > .dashboard-month-chart .chart-title p {display: block; font-size: 12px; color: var(--text-secondary);}

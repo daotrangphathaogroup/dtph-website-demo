@@ -1,0 +1,51 @@
+.dialog.profile-dialog {
+  width: min(1060px, calc(100vw - 32px));
+  max-width: 1060px;
+}
+.identity-card {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 22px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(140deg, #eff5ff, #fff 48%);
+}
+.identity-card[data-group="children"] {background: linear-gradient(140deg, #f6f0ff, #fff 48%);}
+.identity-card[data-group="youth"] {background: linear-gradient(140deg, #fff2ed, #fff 48%);}
+.identity-portrait {display: flex; flex-direction: column; align-items: center; gap: 12px; min-width: 0;}
+.identity-portrait img,
+.identity-initials {width: 108px; height: 144px; object-fit: cover; border-radius: 9px; background: #e5edf8; box-shadow: 0 0 0 1px var(--line);}
+.identity-initials {display: grid; place-items: center; font-size: 32px; color: #245ca9;}
+.identity-portrait > span:last-child {font-size: 11px; text-align: center; color: var(--text-secondary);}
+.identity-content {min-width: 0;}
+.identity-heading {display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid var(--line); margin-bottom: 14px;}
+.identity-heading h3 {margin: 0 0 5px; font-size: 23px; line-height: 1.35; overflow-wrap: anywhere;}
+.identity-id {font-size: 11px; color: var(--text-secondary); overflow-wrap: anywhere;}
+.identity-card .detail-grid {grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 18px;}
+.identity-card .detail-grid > div {padding: 0; background: transparent; border-radius: 0; min-width: 0;}
+.identity-card .detail-grid dt {font-size: 11px; margin: 0 0 4px;}
+.identity-card .detail-grid dd {font-size: 13px; line-height: 1.6; overflow-wrap: anywhere;}
+.identity-card .detail-grid [data-field="notes"],
+.identity-card .detail-grid [data-field="status"] {grid-column: 1 / -1;}
+.profile-form-compact .form-grid {grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 16px;}
+.profile-form-compact .field[data-field="avatar"] {grid-column: 1 / -1;}
+.profile-form-compact .field.span-two {grid-column: 1 / -1;}
+.profile-form-compact .field-title {font-size: 12px;}
+.profile-form-compact :is(input, select) {min-height: 38px;}
+.profile-form-compact textarea {min-height: 70px;}
+.profile-form-compact .form-actions {position: sticky; bottom: 0; margin-top: 18px; padding-block: 14px; background: var(--surface); border-top: 1px solid var(--line);}
+@media (max-width: 760px) {
+  .identity-card {grid-template-columns: 82px minmax(0, 1fr); padding: 14px; gap: 14px;}
+  .identity-portrait img, .identity-initials {width: 78px; height: 104px;}
+  .identity-heading h3 {font-size: 19px;}
+  .identity-card .detail-grid {grid-template-columns: repeat(2, minmax(0, 1fr));}
+  .profile-form-compact .form-grid {grid-template-columns: repeat(2, minmax(0, 1fr));}
+}
+@media (max-width: 480px) {
+  .identity-card {grid-template-columns: minmax(0, 1fr);}
+  .identity-portrait {flex-direction: row; justify-content: flex-start;}
+  .identity-card .detail-grid {gap: 12px;}
+  .profile-form-compact .form-grid {grid-template-columns: minmax(0, 1fr);}
+}
+.identity-card .detail-grid [data-field="notes"] dd {white-space: pre-wrap;}

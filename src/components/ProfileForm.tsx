@@ -2,7 +2,7 @@
 import {useId, useState} from 'react';
 import type {ProfileField, RegistrationSchema, ProfileValues} from '../lib/registration';
 import RecognitionTagEditor from './RecognitionTagEditor';
-import {displayValue, profileFieldLabel} from '../lib/registration';
+import {displayValue, profileFieldLabel, profileVisibleFields} from '../lib/registration';
 import {currentWard, getTeam, teamAreas, unassignedWards, wards} from '../lib/areas';
 import {legacyProvinces} from '../lib/provinces';
 import MemberPicker from './MemberPicker';
@@ -12,6 +12,7 @@ type Props = {
   schema: RegistrationSchema;
   initial?: ProfileValues;
   publicForm?: boolean;
+  compact?: boolean;
   memberId?: string;
   onSave: (values: ProfileValues) => Promise<void>;
   onCancel?: () => void;
@@ -20,11 +21,12 @@ export default function ProfileForm({
   schema,
   initial = {},
   publicForm = false,
+  compact = false,
   memberId,
   onSave,
   onCancel,
 }: Props) {
-  const fields = schema.fields.filter((f) => !publicForm || !f.staffOnly);
+  const fields = profileVisibleFields(schema).filter((f) => !publicForm || !f.staffOnly);
   const [values, setValues] = useState<ProfileValues>(() =>
       Object.fromEntries(fields.map((f) => [f.key, initial[f.key] ?? ''])),
     ),
@@ -183,7 +185,7 @@ export default function ProfileForm({
   }
   return (
     <form
-      className={`profile-form ${publicForm ? 'profile-form-simple' : ''}`}
+      className={`profile-form ${publicForm ? 'profile-form-simple' : ''} ${compact ? 'profile-form-compact' : ''}`}
       onSubmit={async (e) => {
         e.preventDefault();
         if (busy || processing) return;
@@ -220,6 +222,7 @@ export default function ProfileForm({
             <div
               className={`field ${['image', 'textarea'].includes(f.type) || f.key === 'status' ? 'span-two' : ''}`}
               key={f.key}
+              data-field={f.key}
             >
               <label
                 className="field-title"
@@ -234,7 +237,7 @@ export default function ProfileForm({
               {f.key === 'team' && (
                 <small className="muted">Tự điền theo phường; có thể chọn lại Tổ.</small>
               )}
-              {f.readOnly && <small className="muted">Hệ thống tự tạo</small>}
+              {f.readOnly && <small className="muted">{f.key === "addressNew" ? "Tự đối chiếu từ địa chỉ cũ" : "Hệ thống tự tạo"}</small>}
             </div>
           ))}
         </div>

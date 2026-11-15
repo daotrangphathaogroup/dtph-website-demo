@@ -19,7 +19,12 @@ const formatCount = new Intl.NumberFormat('vi-VN').format;
 
 type Props={members:Member[];pending:Member[];schemas:Record<MemberGroup,RegistrationSchema>;scope?:MemberGroup;canEdit:boolean;onOpen:(m:Member,edit:boolean)=>void;pendingPanel:(members:Member[])=>ReactNode;lastUpdated:string;onRefresh:()=>Promise<void>};
 export default function ManagementDashboard(props:Props){
-  return props.scope?<GroupDashboard {...props} scope={props.scope}/>:<OperationalOverview {...props}/>;
+  const timestamp = new Date(props.lastUpdated);
+  const valid = !Number.isNaN(timestamp.valueOf());
+  return <>
+    <p className="dashboard-updated" role="status">Cập nhật lần cuối tại {valid ? <time dateTime={timestamp.toISOString()}>{timestamp.toLocaleTimeString('vi-VN', {timeZone: 'Asia/Ho_Chi_Minh', hour12: false})} {timestamp.toLocaleDateString('vi-VN', {timeZone: 'Asia/Ho_Chi_Minh'})}</time> : 'đang tải…'}</p>
+    {props.scope?<GroupDashboard {...props} scope={props.scope}/>:<OperationalOverview {...props}/>}
+  </>;
 }
 function GroupDashboard({members,pending,schemas,scope,canEdit,onOpen,pendingPanel,lastUpdated,onRefresh}:Props & {scope:MemberGroup}){
   const [filters,setFilters]=useState<Filters>({...emptyDashboardFilters}),[dimension,setDimension]=useState<Dimension>('ward'),[refreshing,setRefreshing]=useState(false),[resets,setResets]=useState({page:0,query:0});
@@ -50,7 +55,9 @@ function GroupDashboard({members,pending,schemas,scope,canEdit,onOpen,pendingPan
     );
   }, [approved, detailKey]);
   const bars=useMemo(()=>distribution(approved,dimension,asOf),[approved,dimension,asOf]);
-  const months=useMemo(()=>monthlyRegistrations(approved),[approved]);
+  const chartApproved = useMemo(() => filterDashboard(members, {...filters, month: null}, scope, asOf), [members, filters, scope, asOf]);
+  const chartPending = useMemo(() => filterDashboard(pending, {...filters, month: null}, scope, asOf), [pending, filters, scope, asOf]);
+  const months=useMemo(()=>monthlyRegistrations(chartApproved),[chartApproved]);
   function change<K extends keyof Filters>(key:K,value:Filters[K]){setFilters(old=>({...old,[key]:value}));setResets(old=>({...old,page:old.page+1}));}
   function reset(){setFilters({...emptyDashboardFilters});setResets(old=>({page:old.page+1,query:old.query+1}));}
   async function refresh(){setRefreshing(true);try{await onRefresh();}finally{setRefreshing(false);}}
@@ -79,7 +86,7 @@ function GroupDashboard({members,pending,schemas,scope,canEdit,onOpen,pendingPan
           {composition.map((item, index) => item.count > 0 && <span key={item.label} data-tier={index} style={{flexGrow: item.count}} />)}
         </div>
         <div className="group-team-values">
-          {composition.map((item, index) => <span key={item.label} data-tier={index}><i aria-hidden="true" />{item.label} <b>{formatCount(item.count)}</b></span>)}
+          {composition.map((item, index) => <span key={item.label} data-tier={index}><i aria-hidden="true" /><span>{item.label}</span><b>{formatCount(item.count)}</b><small>hồ sơ</small></span>)}
         </div>
       </div>
     </section>
@@ -99,7 +106,7 @@ function GroupDashboard({members,pending,schemas,scope,canEdit,onOpen,pendingPan
           <span className="group-detail-track" aria-hidden="true"><i style={{width: `${total ? item.count / total * 100 : 0}%`}} /></span>
         </li>)}</ul> : <EmptyState title="Chưa có dữ liệu" description="Thông tin được tổng hợp từ hồ sơ đã duyệt."/>}
       </section>
-      <DashboardCharts scope={scope} total={total} composition={composition} bars={bars} months={months} pendingMonths={monthlyRegistrations(waiting)} month={filters.month} period={period} dimension={dimension} onDimension={setDimension}/></div>}
+      <DashboardCharts scope={scope} total={total} composition={composition} bars={bars} months={months} pendingMonths={monthlyRegistrations(chartPending)} month={filters.month} period={period} dimension={dimension} onDimension={setDimension}/></div>}
     <div hidden={view!=='list'} className="group-records"><DashboardMemberList members={approved} hasMembers={members.length>0} schemas={schemas} scope={scope} effectiveGroup={scope} canEdit={canEdit} asOf={asOf} lastUpdated={lastUpdated} onOpen={onOpen} queryReset={resets.query} pageReset={resets.page}/></div>
     </div>
   </div>;
