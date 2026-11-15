@@ -606,7 +606,7 @@
   position: relative;
   margin: 20px 0 0;
   min-width: 0;
-  height: 228px;
+  height: auto;
 }
 .area-chart > svg {
   display: block;
@@ -1073,8 +1073,13 @@
 }
 .chart-series-key {
   display: flex;
-  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 20px;
   margin-top: 12px;
+  padding: 4px 0;
+  line-height: 1.5;
   color: var(--muted);
   font-size: 11px;
 }
@@ -1084,6 +1089,8 @@
   gap: 7px;
 }
 .chart-series-key i {
+  display: block;
+  flex: 0 0 8px;
   width: 8px;
   height: 8px;
   border-radius: 3px;

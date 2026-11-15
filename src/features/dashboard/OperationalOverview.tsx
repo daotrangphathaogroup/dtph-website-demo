@@ -1,7 +1,7 @@
 'use client';
 import {useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
-import {ChartPie, Clock3, FilterX, RefreshCw, SlidersHorizontal} from 'lucide-react';
+import {ChartPie, Clock3, FilterX, RefreshCw} from 'lucide-react';
 import {Button, IconButton} from '../../components/ui/primitives';
 import {groupLabels} from '../../lib/types';
 import type {Member, MemberGroup} from '../../lib/types';
@@ -86,44 +86,51 @@ export default function OperationalOverview({members, pending, schemas, canEdit,
 
   return (
     <div className="ops-dashboard">
-      <div className="ops-filters" role="region" aria-label="Bộ lọc tổng quan">
-        <span className="ops-filter-icon" aria-hidden="true"><SlidersHorizontal size={17} /></span>
-        <label>Chúng
-          <select aria-label="Lọc chúng tổng quan" value={filters.group} onChange={e => changeFilter('group', e.target.value as OperationFilters['group'])}>
-            <option value="all">Cả ba chúng</option>
-            {operationGroups.map(group => <option key={group} value={group}>{groupLabels[group]}</option>)}
-          </select>
-        </label>
-        <label>Tổ
-          <select aria-label="Lọc tổ tổng quan" value={filters.team} onChange={e => changeFilter('team', e.target.value)}>
-            <option value="all">Tất cả tổ</option>
-            {[1, 2, 3].map(team => <option key={team} value={team}>Tổ {team}</option>)}
-            <option value="unknown">Chưa phân tổ</option>
-          </select>
-        </label>
-        <label>Địa chỉ (mới)
-          <select aria-label="Lọc khu vực tổng quan" value={filters.ward} onChange={e => changeFilter('ward', e.target.value)}>
-            <option value="all">Tất cả khu vực</option>
-            {wardOptions.map(ward => <option key={ward}>{ward}</option>)}
-            <option value="unknown">Chưa rõ khu vực</option>
-          </select>
-        </label>
-        <label>Năm
-          <select aria-label="Lọc năm tổng quan" value={year} onChange={e => setYear(e.target.value)}>
-            <option value="all">Tất cả các năm</option>
-            {years.map(value => <option key={value}>{value}</option>)}
-          </select>
-        </label>
-        <label>Tháng
-          <select aria-label="Lọc tháng tổng quan" value={month ?? 'all'} onChange={e => setMonth(e.target.value === 'all' ? null : Number(e.target.value))}>
-            <option value="all">Tất cả các tháng</option>
-            {Array.from({length: 12}, (_, index) => <option key={index} value={index + 1}>Tháng {index + 1}</option>)}
-          </select>
-        </label>
-        {filtered && <Button variant="ghost" onClick={() => {setFilters(emptyOperationFilters); setWork('all'); setYear('all'); setMonth(null);}}>
-          <FilterX size={15} /> Xóa bộ lọc
-        </Button>}
-      </div>
+      <section className="ops-filters" aria-label="Bộ lọc tổng quan">
+        <div className="ops-filter-top">
+          <div className="ops-group-filter" role="group" aria-label="Lọc chúng tổng quan">
+            <button type="button" aria-pressed={filters.group === 'all'} onClick={() => changeFilter('group', 'all')}>Cả ba chúng</button>
+            {operationGroups.map(group => <button key={group} type="button" data-group={group} aria-pressed={filters.group === group} onClick={() => changeFilter('group', group)}>
+              <i aria-hidden="true" />{groupLabels[group]}
+            </button>)}
+          </div>
+          <Button variant="ghost" aria-label="Xóa bộ lọc" title="Xóa bộ lọc" disabled={!filtered} onClick={() => {setFilters(emptyOperationFilters); setWork('all'); setYear('all'); setMonth(null);}}>
+            <FilterX size={15} /><span>Xóa bộ lọc</span>
+          </Button>
+        </div>
+        <div className="ops-filter-details">
+          <fieldset className="ops-team-filter">
+            <legend>Tổ sinh hoạt</legend>
+            <div role="group" aria-label="Lọc tổ tổng quan">
+              {[['all', 'Tất cả'], ['1', 'Tổ 1'], ['2', 'Tổ 2'], ['3', 'Tổ 3'], ['unknown', 'Chưa phân tổ']].map(([value, label]) =>
+                <button key={value} type="button" aria-pressed={filters.team === value} onClick={() => changeFilter('team', value)}>{label}</button>
+              )}
+            </div>
+          </fieldset>
+          <label>Địa chỉ (mới)
+            <select aria-label="Lọc khu vực tổng quan" value={filters.ward} onChange={e => changeFilter('ward', e.target.value)}>
+              <option value="all">Tất cả khu vực</option>
+              {wardOptions.map(ward => <option key={ward}>{ward}</option>)}
+              <option value="unknown">Chưa rõ khu vực</option>
+            </select>
+          </label>
+          <label>Năm đăng ký
+            <select aria-label="Lọc năm tổng quan" value={year} onChange={e => setYear(e.target.value)}>
+              <option value="all">Tất cả các năm</option>
+              {years.map(value => <option key={value}>{value}</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="ops-filter-period">
+          <fieldset className="ops-month-filter">
+            <legend>Tháng đăng ký</legend>
+            <div role="group" aria-label="Lọc tháng tổng quan">
+              <button type="button" aria-pressed={month === null} onClick={() => setMonth(null)}>Tất cả</button>
+              {Array.from({length: 12}, (_, index) => <button key={index} type="button" aria-label={`Tháng ${index + 1}`} aria-pressed={month === index + 1} onClick={() => setMonth(index + 1)}>T{index + 1}</button>)}
+            </div>
+          </fieldset>
+        </div>
+      </section>
       <div className="ops-summary-grid">
         <section className="ops-panel">
           <header className="ops-card-heading">

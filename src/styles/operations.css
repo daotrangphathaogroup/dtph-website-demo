@@ -80,9 +80,6 @@
 .review-matches {padding: 0; margin: 0; list-style: none;}
 .review-matches li {display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line);}
 .review-matches small {display: block; color: var(--text-secondary);}
-.ops-filters {display:flex;gap:14px;align-items:end;border:1px solid var(--line);padding:15px 18px;background:var(--surface);border-radius:14px;}
-.ops-filters label {display:grid;gap:6px;font-size:11px;font-weight:500;color:var(--text-secondary);min-width:0;flex:1;max-width:250px;}
-.ops-filters select {width:100%;min-width:0;min-height:36px;font-size:12px;background:var(--surface);}
 .ops-records {display:grid;gap:16px;min-width:0;scroll-margin-top:100px;outline:none;}
 .ops-records > .dashboard-card {min-width:0;}
 .ops-work-tabs {display:flex;gap:6px;flex-wrap:wrap;}
@@ -91,10 +88,6 @@
 .ops-work-tabs button[aria-pressed=true] {background:#edf4ff;color:var(--blue-ink);border-color:#bdd2ed;}
 .ops-records h2 {margin: 0; font-size: 18px;}
 .ops-records h2 small {margin-inline-start: 6px; color: var(--muted); font-size: 13px;}
-@media (max-width: 600px) {
-  .ops-filters {flex-wrap: wrap; gap: 10px; padding: 12px;}
-  .ops-filters label {max-width: none; flex: 1 1 120px;}
-}
 
 .ops-panel {box-shadow: 0 6px 20px rgb(30 59 90 / 5%);}
 .ops-card-heading {
@@ -102,8 +95,7 @@
   align-items: flex-start;
   gap: 11px;
 }
-.ops-card-icon,
-.ops-filter-icon {
+.ops-card-icon {
   display: grid;
   flex: 0 0 auto;
   place-items: center;
@@ -117,7 +109,6 @@
   color: #8a5305;
   background: #faebd3;
 }
-.ops-filter-icon {width: 36px; height: 36px; border-radius: 9px;}
 .ops-panel .dashboard-legend {gap: 8px;}
 .ops-panel .dashboard-legend li {
   padding: 9px 8px;
@@ -135,9 +126,6 @@
   background: #e9f1ff;
   color: #245ca9;
 }
-@media (max-width: 600px) {
-  .ops-filter-icon {display: none;}
-}
 .ops-dashboard {grid-template-columns: minmax(0, 1fr);}
 .ops-dashboard > div[id] {min-width: 0;}
 .ops-panel .dashboard-legend {grid-auto-rows: minmax(38px, auto); flex: 0 1 auto;}
@@ -150,8 +138,6 @@
 }
 
 .dashboard-updated {font-size: 11px; color: var(--text-secondary); margin: -8px 0 14px; text-align: right;}
-.ops-filters {flex-wrap: wrap;}
-.ops-filters label {flex-basis: 120px; max-width: none;}
 .pending-disclosure {display: inline-flex; gap: 8px; align-items: center; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; padding: 3px 0; cursor: pointer;}
 .pending-disclosure > svg {transition: rotate 180ms ease; flex-shrink: 0;}
 .pending-disclosure[aria-expanded="false"] > svg {rotate: -90deg;}
@@ -162,3 +148,45 @@
 @media (prefers-reduced-motion: reduce) {.pending-disclosure > svg {transition: none;}}
 .ops-dashboard > .dashboard-month-chart {grid-column: auto; grid-row: auto;}
 .ops-dashboard > .dashboard-month-chart .chart-title p {display: block; font-size: 12px; color: var(--text-secondary);}
+
+/* Direct scope choices, geography, then the registration period. */
+.ops-filters {display: grid; gap: 14px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); min-width: 0; container-type: inline-size;}
+.ops-filter-top {display: flex; align-items: center; justify-content: space-between; gap: 12px;}
+.ops-group-filter {display: flex; flex-wrap: wrap; gap: 6px; min-width: 0;}
+.ops-filters button {font-size: 12px;}
+.ops-group-filter > button {display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 7px 12px; border: 1px solid transparent; border-radius: 8px; background: var(--surface-secondary); color: var(--text-secondary);}
+.ops-group-filter > button[aria-pressed="true"] {background: #eaf2ff; color: #2056a6; border-color: #afc8f0;}
+.ops-group-filter i {width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: var(--scope-color);}
+.ops-group-filter [data-group="children"] {--scope-color: var(--children-color);}
+.ops-group-filter [data-group="youth"] {--scope-color: var(--youth-color);}
+.ops-group-filter [data-group="congregation"] {--scope-color: var(--congregation-color);}
+.ops-filter-top > .button {flex-shrink: 0; padding-inline: 8px;}
+.ops-filter-details {display: grid; grid-template-columns: minmax(0, 1fr) minmax(140px, 210px) 150px; gap: 14px;}
+.ops-filters :is(label, legend) {font-size: 11px; color: var(--text-secondary); font-weight: 500;}
+.ops-filters label {display: grid; gap: 6px; min-width: 0;}
+.ops-filters legend {margin-bottom: 6px;}
+.ops-filters select {min-width: 0; width: 100%; min-height: 36px; font-size: 12px; background-color: var(--surface);}
+.ops-team-filter > div {display: flex; flex-wrap: wrap; gap: 5px;}
+.ops-team-filter button, .ops-month-filter button {min-height: 36px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--text-secondary); padding: 6px 11px; font-variant-numeric: tabular-nums;}
+.ops-filters :is(.ops-team-filter, .ops-month-filter) button[aria-pressed="true"] {background: #eaf2ff; border-color: #afc8f0; color: #2056a6; font-weight: 600;}
+.ops-filter-period {display: grid; padding-top: 14px; border-top: 1px solid var(--line);}
+.ops-month-filter > div {display: grid; grid-template-columns: 1.6fr repeat(12, minmax(0, 1fr)); gap: 4px;}
+.ops-month-filter button {padding-inline: 3px; font-size: 11px;}
+@media (hover: hover) {
+  .ops-filters :is(.ops-group-filter, .ops-team-filter, .ops-month-filter) button:hover {border-color: #afc8f0; background: #f1f6fe; color: #2056a6;}
+}
+@container (max-width: 720px) {
+  .ops-filter-top {align-items: center;}
+  .ops-group-filter {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1;}
+  .ops-filter-details {grid-template-columns: minmax(0, 1fr) 140px;}
+  .ops-team-filter {grid-column: 1 / -1;}
+  .ops-month-filter > div {grid-template-columns: repeat(7, minmax(0, 1fr));}
+}
+@container (max-width: 450px) {
+  .ops-filter-top {gap: 8px;}
+  .ops-group-filter > button {padding-inline: 7px; font-size: 11px;}
+  .ops-filter-top > .button {min-width: 32px; min-height: 32px; padding: 8px;}
+  .ops-filter-top > .button > span {display: none;}
+  .ops-filter-details {grid-template-columns: minmax(0, 1fr) 125px; gap: 12px;}
+  .ops-team-filter button {padding-inline: 9px;}
+}
