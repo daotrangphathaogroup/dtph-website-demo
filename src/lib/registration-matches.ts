@@ -27,12 +27,13 @@ export function findRegistrationMatches(pending: Member[], directory: Member[]) 
       const other = candidate.identity;
       const sameBirthday = entry.birthday && entry.birthday === other.birthday;
       const samePhone = entry.phone && entry.phone === other.phone;
+      if (!sameBirthday && !samePhone) return [];
       const reasons = ['Trùng họ tên'];
       if (sameBirthday) reasons.push('trùng ngày sinh');
       else if (entry.birthday && other.birthday) reasons.push('khác ngày sinh');
       if (samePhone) reasons.push('trùng SĐT cá nhân');
-      return [{member: candidate.member, reason: reasons.join(', '), likely: Boolean(sameBirthday || (samePhone && !(entry.birthday && other.birthday)))}];
-    }).sort((a, b) => Number(b.likely) - Number(a.likely));
+      return [{member: candidate.member, reason: reasons.join(', ')}];
+    });
     return [member.id, matches] as const;
   }));
 }

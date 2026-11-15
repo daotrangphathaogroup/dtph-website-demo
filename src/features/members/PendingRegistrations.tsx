@@ -87,7 +87,7 @@ export default function PendingRegistrations({
                   {!!registrationMatches?.get(m.id)?.length && (
                     <small className="review-match-label">
                       <AlertTriangle size={13} aria-hidden="true" />
-                      {registrationMatches.get(m.id)?.some(match => match.likely) ? "Có thể trùng hồ sơ" : "Có hồ sơ cùng tên"}
+                      Có thể trùng hồ sơ
                     </small>
                   )}
                 </td>

@@ -132,7 +132,7 @@ test("Pending review and member details preserve Admin actions and Manager view-
     const pending = render(
       h(PendingRegistrations, {
         members: [m],
-        registrationMatches: new Map([[m.id, [{member: member(2), reason: "Trùng họ tên, trùng ngày sinh", likely: true}]]]),
+        registrationMatches: new Map([[m.id, [{member: member(2), reason: "Trùng họ tên, trùng ngày sinh"}]]]),
         canApprove: canEdit,
         saving: new Set(),
         rejecting: null,
