@@ -43,7 +43,7 @@ export default function QuickSearch({members, onOpen}: {members: Member[]; onOpe
           {results.length ? (
             <ul>
               {results.map((result) => (
-                <li key={result.id}>
+                <li key={result.id} data-group={result.group}>
                   <span className="search-result-avatar" aria-hidden="true">
                     <UserRound size={18} />
                   </span>

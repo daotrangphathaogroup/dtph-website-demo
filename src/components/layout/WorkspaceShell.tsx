@@ -158,7 +158,7 @@ export default function WorkspaceShell({
     );
   };
   return (
-    <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""}`}>
+    <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""}`} data-page={page} data-group={page === 'members' ? group : undefined}>
       <a className="skip-link" href="#main-content">
         Đến nội dung chính
       </a>

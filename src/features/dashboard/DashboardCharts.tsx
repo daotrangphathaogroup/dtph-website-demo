@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useId, useRef, useState } from "react";
 import { ChartNoAxesCombined, ChartColumn, ChartLine } from "lucide-react";
 import MonthlyAreaChart from "./MonthlyAreaChart";
 import { EmptyState, SegmentedControl } from "../../components/ui/primitives";
@@ -11,6 +11,14 @@ const palette = [
 ];
 export type Dimension = "ward" | "age" | "gender";
 export function Donut({ items, total, colors = palette }: { items: Distribution[]; total: number; colors?: readonly string[] }) {
+  const id = useId().replaceAll(':', '');
+  const root = useRef<HTMLDivElement>(null);
+  const [hover, setHover] = useState<{index: number | null; x: number; y: number} | null>(null);
+  function show(index: number | null, x: number, y: number) {
+    const bounds = root.current?.getBoundingClientRect();
+    if (bounds) setHover({index, x: Math.max(88, Math.min(bounds.width - 88, x - bounds.left)), y: y - bounds.top});
+  }
+  const hovered = hover?.index != null ? items[hover.index] : null;
   let angle = 0;
   const segments = items.map((item, i) => {
     const start = angle;
@@ -19,10 +27,18 @@ export function Donut({ items, total, colors = palette }: { items: Distribution[
     return {start, share, color: colors[i % colors.length], label: item.label, count: item.count};
   });
   return (
-    <div className="dashboard-composition">
+    <div className="dashboard-composition" ref={root} onPointerLeave={() => setHover(null)}>
       <div
         className={`dashboard-donut ${!total ? "is-empty" : ""}`}
         role="img"
+        tabIndex={0}
+        aria-describedby={hover ? `${id}-tooltip` : undefined}
+        onPointerMove={e => {
+          const segment = e.target instanceof Element ? e.target.closest<SVGCircleElement>('.donut-segment') : null;
+          show(segment ? Number(segment.dataset.index) : null, e.clientX, e.clientY);
+        }}
+        onFocus={e => {const box = e.currentTarget.getBoundingClientRect(); show(null, box.x + box.width / 2, box.y + box.height / 2);}}
+        onBlur={() => setHover(null)}
         aria-label={
           total
             ? items.map((i) => `${i.label}: ${i.count}`).join(", ")
@@ -30,13 +46,17 @@ export function Donut({ items, total, colors = palette }: { items: Distribution[
         }
       >
         <svg className="donut-ring" viewBox="0 0 200 200" aria-hidden="true">
+          <defs>{segments.map((segment, index) => <linearGradient key={segment.label} id={`${id}-ring-${index}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={`color-mix(in srgb, ${segment.color} 78%, white)`} />
+            <stop offset="100%" stopColor={segment.color} />
+          </linearGradient>)}</defs>
           <circle className="donut-track" cx="100" cy="100" r="84" />
-          {segments.filter(segment => segment.share > 0).map(segment => {
+          {segments.map((segment, index) => {
+            if (!segment.share) return null;
             const gap = Math.min(1.3, segment.share * 0.15);
-            return <circle key={segment.label} className="donut-segment" cx="100" cy="100" r="84" pathLength="100"
-              stroke={segment.color} strokeDasharray={`${segment.share - gap} ${100 - segment.share + gap}`}
+            return <circle key={segment.label} className="donut-segment" data-index={index} cx="100" cy="100" r="84" pathLength="100"
+              stroke={`url(#${id}-ring-${index})`} strokeDasharray={`${segment.share - gap} ${100 - segment.share + gap}`}
               strokeDashoffset={-segment.start - gap / 2}>
-              <title>{segment.label}: {segment.count.toLocaleString('vi-VN')} huynh đệ</title>
             </circle>;
           })}
         </svg>
@@ -47,7 +67,11 @@ export function Donut({ items, total, colors = palette }: { items: Distribution[
       </div>
       <ul className="dashboard-legend">
         {items.map((item, i) => (
-          <li key={item.label} style={{borderInlineStartColor: colors[i % colors.length]}}>
+          <li key={item.label} style={{borderInlineStartColor: colors[i % colors.length]}} tabIndex={0}
+            aria-describedby={hover?.index === i ? `${id}-tooltip` : undefined}
+            onPointerMove={e => show(i, e.clientX, e.clientY)}
+            onFocus={e => {const box = e.currentTarget.getBoundingClientRect(); show(i, box.x + box.width / 2, box.y);}}
+            onBlur={() => setHover(null)}>
             <span
               className="chart-dot"
               style={{ background: colors[i % colors.length] }}
@@ -65,6 +89,12 @@ export function Donut({ items, total, colors = palette }: { items: Distribution[
           </li>
         ))}
       </ul>
+      {hover && <output id={`${id}-tooltip`} role="tooltip" className="donut-tooltip" data-placement={hover.y < 100 ? 'below' : 'above'}
+        style={{left: hover.x, top: hover.y + (hover.y < 100 ? 16 : -16)}}>
+        <span>{hovered?.label ?? 'Tổng số huynh đệ'}</span>
+        <strong>{(hovered?.count ?? total).toLocaleString('vi-VN')} <small>hồ sơ</small></strong>
+        {hovered && <small>{(total ? hovered.count / total * 100 : 0).toLocaleString('vi-VN', {maximumFractionDigits: 1})}% tổng số</small>}
+      </output>}
     </div>
   );
 }

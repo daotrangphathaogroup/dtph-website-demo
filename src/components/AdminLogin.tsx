@@ -1,7 +1,7 @@
 'use client';
 import {useEffect, useId, useState} from 'react';
 import {useRouter} from 'next/navigation';
-import {ArrowRight, ShieldCheck} from 'lucide-react';
+import {ArrowRight, ShieldCheck, Flower2} from 'lucide-react';
 import PublicShell from './PublicShell';
 import {Button, Feedback, Field} from './ui/primitives';
 import {api} from '../lib/api';
@@ -27,6 +27,7 @@ export default function AdminLogin() {
   return (
     <PublicShell>
       <section className="auth-card">
+        <Flower2 className="auth-ornament" size={150} strokeWidth={.7} aria-hidden="true" />
         <span className="auth-icon" aria-hidden="true">
           <ShieldCheck size={25} strokeWidth={1.5} />
         </span>

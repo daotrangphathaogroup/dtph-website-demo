@@ -207,7 +207,9 @@ export default function MonthlyAreaChart({
           className="area-chart-tooltip"
           aria-live="polite"
           style={{
-            left: `clamp(76px, ${(selected.x / chart.width) * 100}%, calc(100% - 76px))`,
+            left: `clamp(88px, ${(selected.x / chart.width) * 100}%, calc(100% - 88px))`,
+            top: selected.y + (selected.y < 112 ? 16 : -16),
+            transform: selected.y < 112 ? 'translateX(-50%)' : 'translate(-50%, -100%)',
           }}
         >
           <span>Tháng {selected.month}</span>
