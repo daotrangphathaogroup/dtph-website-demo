@@ -5,7 +5,7 @@ import {BarChart3,List,Clock3,UsersRound,Network} from 'lucide-react';
 import {EmptyState,SegmentedControl} from './ui/primitives';
 import type {Member,MemberGroup} from '../lib/types';
 import type {RegistrationSchema} from '../lib/registration';
-import {wards,currentWard} from '../lib/areas';
+import {wards,currentWard,teamsForGroup} from '../lib/areas';
 import {distribution,emptyDashboardFilters,filterDashboard,memberTeam,memberWard,monthlyRegistrations,registrationDate,todayInVietnam} from '../lib/dashboard';
 import type {DashboardFilters as Filters} from '../lib/dashboard';
 import {useGroupViewTransition} from '../hooks/useGroupViewTransition';
@@ -36,10 +36,12 @@ function GroupDashboard({members,pending,schemas,scope,canEdit,onOpen,pendingPan
   const years=useMemo(()=>[...new Set([new Date().getFullYear().toString(),...source.map(m=>registrationDate(m).slice(0,4)).filter(Boolean)])].sort().reverse(),[source]);
   const wardOptions=useMemo(()=>[...new Set([...currentWards,...source.map(memberWard).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,'vi')),[source]);
   const composition=useMemo(()=>{
-    const items=[1,2,3].map(team=>({label:`Tổ ${team}`,count:approved.filter(m=>memberTeam(m)===String(team)).length}));
-    if(approved.some(m=>!['1','2','3'].includes(memberTeam(m))))items.push({label:'Chưa phân tổ',count:approved.filter(m=>!['1','2','3'].includes(memberTeam(m))).length});
+    const teams=teamsForGroup(scope);
+    const items=teams.map(team=>({label:`Tổ ${team}`,count:approved.filter(m=>memberTeam(m)===String(team)).length}));
+    const unassigned = approved.length - items.reduce((total, item) => total + item.count, 0);
+    if (unassigned) items.push({label:'Chưa phân tổ',count:unassigned});
     return items;
-  },[approved]);
+  },[approved,scope]);
   const detailKey = scope === 'children' ? 'schoolClass' : 'position';
   const profileBreakdown = useMemo(() => {
     const counts = new Map<string, number>();

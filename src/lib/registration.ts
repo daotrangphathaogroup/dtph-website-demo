@@ -13,7 +13,7 @@ export function normalizeRegistrationSchema(schema:RegistrationSchema):Registrat
  const canonical=groupFields(schema.group);
  const fields=[...canonical.map(f=>({...schema.fields.find(existing=>existing.key===f.key),...f})),
   ...schema.fields.filter(f=>isProfileFieldAvailable(f.key,schema.group)&&!canonical.some(c=>c.key===f.key))];
- return {...schema,version:Math.max(schema.version,15),fields};
+ return {...schema,version:Math.max(schema.version,16),fields};
 }
 export function isProfileFieldAvailable(key:string,group:MemberGroup):boolean {
  return ( !Object.values(participationYearKeys).includes(key)||key===participationYearKeys[group])&&!['job','hometown','personality','participationStartYear'].includes(key)&&(key!=='relativePhone'||group==='children')&&(!['nickname','schoolClass','parentName'].includes(key)||group==='children');
@@ -40,7 +40,7 @@ function groupFields(group:MemberGroup):ProfileField[]{
  ];
 }
 // Sheet 1 owns the complete profile; staffOnly marks fields absent from sheet 2.
-export const defaultSchemas:Record<MemberGroup,RegistrationSchema>={children:{group:'children',version:15,fields:groupFields('children')},youth:{group:'youth',version:15,fields:groupFields('youth')},congregation:{group:'congregation',version:15,fields:groupFields('congregation')}};
+export const defaultSchemas:Record<MemberGroup,RegistrationSchema>={children:{group:'children',version:16,fields:groupFields('children')},youth:{group:'youth',version:16,fields:groupFields('youth')},congregation:{group:'congregation',version:16,fields:groupFields('congregation')}};
 export function profileVisibleFields(schema:RegistrationSchema):ProfileField[]{
  const fields=schema.fields.filter(field=>isProfileFieldAvailable(field.key,schema.group)&&!field.hiddenInTable);
  return [...fields.filter(field=>!['notes','status'].includes(field.key)),...fields.filter(field=>['notes','status'].includes(field.key))];

@@ -1,4 +1,4 @@
-import {teamAreas} from '../../src/lib/areas.ts';
+import {teamAreas,teamsForGroup} from '../../src/lib/areas.ts';
 // Synthetic local-only records. Nothing here is imported from real member files.
 export function generateDemoProfiles({seed=20261027,asOf='2026-10-27'}={}){
  let state=seed>>>0;const random=()=>{state=(Math.imul(1664525,state)+1013904223)>>>0;return state/4294967296;},pick=items=>items[Math.floor(random()*items.length)],integer=(min,max)=>min+Math.floor(random()*(max-min+1));
@@ -10,7 +10,7 @@ export function generateDemoProfiles({seed=20261027,asOf='2026-10-27'}={}){
  const [year,month,day]=asOf.split('-').map(Number),rows=[];
  for(const [group,approvedCount]of [['children',90],['youth',120],['congregation',150]]){
   for(let i=0;i<approvedCount+4;i++){
-   const pending=i>=approvedCount,gender=pick(['Nam','Nữ']),name=pick(family)+' '+pick(gender==='Nam'?male:female),team=integer(1,3),ward=pick(teamAreas[team]);
+   const pending=i>=approvedCount,gender=pick(['Nam','Nữ']),name=pick(family)+' '+pick(gender==='Nam'?male:female),team=pick(teamsForGroup(group)),ward=pick(teamAreas[team]);
    const birthYear=year-(group==='children'?integer(6,16):group==='youth'?integer(18,34):integer(35,78));
    const occupation=group==='children'?'Học sinh':group==='youth'?pick(['Sinh viên','Nhân viên văn phòng','Kỹ sư','Giáo viên','Kinh doanh','Công nhân','Không']):pick(adultJobs);
    const joinedYear=pending?year:pick([year,year,year,year,year-1,year-2]),joinedMonth=pending?month:integer(1,joinedYear===year?month:12),joinedDay=integer(1,joinedYear===year&&joinedMonth===month?Math.min(day,28):28);

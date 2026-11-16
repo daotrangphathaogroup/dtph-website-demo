@@ -1,12 +1,18 @@
 /** Phân Tổ sinh hoạt theo bản đồ do Đạo Tràng cung cấp, không phải địa giới hành chính mới. */
-export type Team = 1 | 2 | 3;
+import type {MemberGroup} from './types';
+export type Team = 1 | 2 | 3 | 4 | 5;
+const baseTeams = [1,2,3] as const;
+const allTeams = [1,2,3,4,5] as const;
+export function teamsForGroup(group?:MemberGroup|'all'|null){return group==='children'||group==='youth'?baseTeams:allTeams;}
+export function teamOptionLabel(team:number|string){return Number(team)===4?'Tổ 4 · Trị An':Number(team)===5?'Tổ 5 · Thị trấn Vĩnh An':`Tổ ${team}`;}
 export const teamAreas:Record<Team,readonly string[]>={
- 1:['Bửu Long','Tân Hạnh','Hóa An','Bửu Hòa','Tân Vạn','Thống Nhất','Hiệp Hòa'],
- 2:['Tân Phong','Trảng Dài','Hố Nai','Tân Biên','Tân Hòa','Tân Hiệp'],
- 3:['Long Bình','An Bình','Long Bình Tân','An Hòa','Long Hưng','Phước Tân','Tam Phước']
+ 1:['Bửu Long','Tân Hạnh','Hóa An','Bửu Hòa','Tân Vạn','Thống Nhất','Hiệp Hòa','Quang Vinh','Trung Dũng'],
+ 2:['Tân Phong','Trảng Dài','Hố Nai','Tân Biên','Tân Hòa','Tân Hiệp','Tân Mai'],
+ 3:['Long Bình','An Bình','Long Bình Tân','An Hòa','Long Hưng','Phước Tân','Tam Phước','Bình Đa','Tam Hiệp'],
+ 4:['Trị An'],
+ 5:['Thị trấn Vĩnh An']
 };
-export const unassignedWards=['Bình Đa','Quang Vinh','Tam Hiệp','Tân Mai','Trung Dũng'] as const;
-export const wards=[...Object.values(teamAreas).flat(),...unassignedWards].sort((a,b)=>a.localeCompare(b,'vi'));
+export const wards=Object.values(teamAreas).flat().sort((a,b)=>a.localeCompare(b,'vi'));
 
 const currentWards: Record<string, readonly string[]> = {
  'Biên Hòa':['Tân Hạnh','Hóa An','Bửu Hòa','Tân Vạn'],
@@ -19,6 +25,8 @@ const currentWards: Record<string, readonly string[]> = {
  'Tân Triều':['Tân Phong'],
  'Phước Tân':['Phước Tân'],
  'Tam Phước':['Tam Phước'],
+ // NQ 1662/NQ-UBTVQH15: former Trị An and Vĩnh An are in the new Trị An commune.
+ 'Trị An':['Trị An','Thị trấn Vĩnh An'],
 };
 const wardCrosswalk = new Map(
  Object.entries(currentWards).flatMap(([current, former]) => former.map(ward => [ward, current] as const))
@@ -26,8 +34,8 @@ const wardCrosswalk = new Map(
 export function currentWard(former: unknown): string {
  return wardCrosswalk.get(String(former ?? '').trim()) ?? '';
 }
-export function getTeam(area:string):Team|null{
- for(const team of [1,2,3] as const)if(teamAreas[team].includes(area))return team;
+export function getTeam(area:string,group?:MemberGroup|null):Team|null{
+ for(const team of teamsForGroup(group))if(teamAreas[team].includes(area))return team;
  return null;
 }
 export function teamLabel(area:string):string{const team=getTeam(area);return team===null?'Chưa phân tổ':`Tổ ${team}`;}

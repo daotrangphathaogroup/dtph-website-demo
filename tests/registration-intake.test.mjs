@@ -130,6 +130,16 @@ test("Automatic registration derives group on server, persists nickname and resp
         409,
       );
     }
+    for (const [address, team] of [["Trị An", 4], ["Thị trấn Vĩnh An", 5]]) {
+      const values = validValues({ name: "Hồ sơ Tổ " + team, birthday: "1980-01-01", address, team });
+      assert.equal(intakeStepError(1, values, today), "");
+      assert.equal((await call("/registrations/auto", {values, requestId: randomUUID()})).status, 201);
+      const saved = (await db.query("SELECT profile_data FROM members WHERE name=$1", [values.name])).rows[0];
+      assert.equal(saved.profile_data.team, team);
+      const youth = {...values, birthday: "2000-01-01"};
+      assert.ok(intakeStepError(1, youth, today));
+      assert.equal((await call("/registrations/auto", {values: youth, requestId: randomUUID()})).status, 400);
+    }
     const result = await call(
       "/registrations/auto",
       {
@@ -171,7 +181,7 @@ test("Automatic registration derives group on server, persists nickname and resp
     );
     assert.equal(
       (await db.query("SELECT count(*)::int AS n FROM members")).rows[0].n,
-      5,
+      cases.length + 3,
     );
   } finally {
     await db.close();

@@ -38,7 +38,7 @@ test('Pending timestamps never borrow imported joined dates; empty reports stay 
  assert.equal(pendingDate(member('a','youth',{}, {submittedAt:'bad',joined:'2000-01-01'}),today),Infinity);
  assert.equal(pendingDate(member('b','youth',{}, {submittedAt:'2027-01-01T00:00:00Z'}),today),Infinity);
  assert.ok(Number.isFinite(pendingDate(member('c','youth',{}, {submittedAt:'2026-11-09T18:00:00Z'}),today)));
- const r=operationsReport([],[],today);assert.equal(r.counts.all,0);assert.equal(r.assigned,0);assert.equal(r.wards.length,0);assert.equal(r.matrix.length,4);
+ const r=operationsReport([],[],today);assert.equal(r.counts.all,0);assert.equal(r.assigned,0);assert.equal(r.wards.length,0);assert.equal(r.matrix.length,6);
 });
 test('Recognition tags never change operational tasks or imply activity',()=>{
  const a=member('a','children',{relativePhone:'0901234567',team:1,birthday:'2018-01-01'}),b={...a,profileData:{...a.profileData,status:['tinh-tan','hoa-dong']}};

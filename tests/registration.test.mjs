@@ -107,9 +107,13 @@ test('Workbook profiles: exact public fields, full staff data, image and linked 
    }
    assert.equal((await call('/members/'+youth,'PATCH',{profileData:{status:['tinh-tan']}},manager)).status,403);
    assert.equal((await call('/registrations/youth','POST',{values:validValues({status:['tinh-tan']}),requestId:randomUUID()})).status,400);
-   const saved=await call('/members/'+youth,'PATCH',{profileData:{status:['hoa-dong','tinh-tan','tinh-tan']}},dev);
-   assert.equal(saved.status,200);assert.deepEqual(saved.body.member.profileData.status,['tinh-tan','hoa-dong']);
-   const kept=await call('/members/'+youth,'PATCH',{profileData:{notes:'Giữ thẻ'}},dev);assert.deepEqual(kept.body.member.profileData.status,['tinh-tan','hoa-dong']);
+   const saved=await call('/members/'+youth,'PATCH',{profileData:{status:['ngai-viec','tinh-tan','tinh-tan']}},dev);
+   assert.equal(saved.status,200);assert.deepEqual(saved.body.member.profileData.status,['tinh-tan','ngai-viec']);
+   const kept=await call('/members/'+youth,'PATCH',{profileData:{notes:'Giữ thẻ'}},dev);assert.deepEqual(kept.body.member.profileData.status,['tinh-tan','ngai-viec']);
+   assert.equal((await call('/members/'+youth,'PATCH',{profileData:{status:['hoa-dong']}},dev)).status,400);
+   await db.query('UPDATE members SET profile_data=profile_data || $2::jsonb WHERE id=$1',[youth,JSON.stringify({status:['hoa-dong']})]);
+   const legacyKept=await call('/members/'+youth,'PATCH',{profileData:{status:['hoa-dong','cong-qua']}},dev);
+   assert.equal(legacyKept.status,200);assert.deepEqual(legacyKept.body.member.profileData.status,['cong-qua','hoa-dong']);
    const cleared=await call('/members/'+youth,'PATCH',{profileData:{status:[]}},dev);assert.equal(cleared.status,200);assert.deepEqual(cleared.body.member.profileData.status,[]);
    await db.query('UPDATE members SET profile_data=profile_data || $2::jsonb WHERE id=$1',[youth,JSON.stringify({status:'Nội dung cũ',notes:'Giữ nguyên'})]);
    await db.query("DELETE FROM app_meta WHERE key='recognition_tags_20261105'");

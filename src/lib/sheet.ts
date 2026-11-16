@@ -34,7 +34,7 @@ const phoneSearchValue=(value:string)=>value.replace(/\D/g,'').replace(/^84(?=[3
 
 export function filterSheet(members:Member[],query:string,filters:Record<string,string>,fields:ProfileField[]):Member[]{
  const normalized=sheetText(query).trim();
- const terms=normalized.match(/\bto\s*[123]\b|\d{4}-\d{2}-\d{2}|\d{1,2}[/.\-]\d{1,2}[/.\-]\d{4}|[\p{L}\p{N}]+/gu)??[];
+ const terms=normalized.match(/\bto\s*[1-5]\b|\d{4}-\d{2}-\d{2}|\d{1,2}[/.\-]\d{1,2}[/.\-]\d{4}|[\p{L}\p{N}]+/gu)??[];
  const phoneQuery=!dateSearchValue(normalized)&&/^[+\d\s().-]+$/.test(normalized)&&phoneSearchValue(normalized).length>=7?phoneSearchValue(normalized):undefined;
  return members.filter(member=>{
   if(!Object.entries(filters).every(([key,value])=>!value||(key==='status'&&value!=='__empty'?selectedRecognitionTags(member.profileData?.status).some(t=>t.label===value):value==='__empty'?sheetValue(member,key)===undefined||sheetValue(member,key)==='':String(sheetValue(member,key))===value)))return false;
@@ -49,7 +49,7 @@ export function filterSheet(members:Member[],query:string,filters:Record<string,
   return terms.every(term=>{
    const date=dateSearchValue(term);
    if(date)return values.some(v=>v.field.type==='date'&&dateSearchValue(v.raw)===date);
-   const team=term.match(/^to\s*([123])$/);
+   const team=term.match(/^to\s*([1-5])$/);
    if(team)return values.some(v=>v.field.type==='team'&&Number(v.value)===Number(team[1]));
    if(/^\d+$/.test(term))return values.some(v=>v.raw.includes(term)||v.digits.includes(term));
    return values.some(v=>v.words.some(word=>word.startsWith(term)));

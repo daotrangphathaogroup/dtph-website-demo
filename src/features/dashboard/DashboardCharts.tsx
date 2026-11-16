@@ -246,7 +246,7 @@ function DashboardCharts({
               <span className="chart-unit">Người</span>
             </header>
             <Donut items={composition} total={total} colors={scope
-              ? ['var(--group-accent)', 'color-mix(in srgb, var(--group-accent) 70%, white)', 'color-mix(in srgb, var(--group-accent) 42%, white)', '#939da9']
+              ? ['var(--group-accent)', 'color-mix(in srgb, var(--group-accent) 70%, white)', 'color-mix(in srgb, var(--group-accent) 42%, white)', ...(scope === 'congregation' ? ['var(--cyan)', 'var(--chart-amber)'] : []), '#939da9']
               : undefined} />
           </section>
         )}

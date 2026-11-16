@@ -176,7 +176,7 @@ export default function WorkspaceShell({
           <Link
             href="/"
             className="brand workspace-brand"
-            aria-label="Đạo Tràng Phật Hào"
+            aria-label="Đạo tràng Phật Hào – Biên Hòa"
           >
             <Brand />
           </Link>

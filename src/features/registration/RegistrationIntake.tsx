@@ -12,7 +12,7 @@ import {
   registrationGroup,
 } from "../../lib/registration-flow";
 import { todayInVietnam } from "../../lib/dashboard";
-import { getTeam, teamAreas, unassignedWards } from "../../lib/areas";
+import { getTeam, teamAreas, teamsForGroup, teamOptionLabel } from "../../lib/areas";
 import { Button, Feedback, Field } from "../../components/ui/primitives";
 import Dialog from "../../components/ui/Dialog";
 import {useInlineDelivery} from "../../hooks/useInlineDelivery";
@@ -102,7 +102,8 @@ export default function RegistrationIntake({
     const name = `${pick(["Nguyễn", "Trần", "Lê", "Phạm"])} ${pick(["Minh An", "Ngọc Hân", "Gia Bảo", "Thanh Tâm", "Hoàng Nam"])} (thử)`;
     const year = Number(today.slice(0, 4)) - pick([10, 12, 15, 20, 25, 35, 45, 52, 60]);
     const birthday = `${year}-${String(1 + Math.floor(Math.random() * 12)).padStart(2, "0")}-10`;
-    const address = pick(Object.values(teamAreas).flat());
+    const demoGroup = registrationGroup(birthday, today);
+    const address = pick(teamsForGroup(demoGroup).flatMap(team => teamAreas[team]));
     const phone = () => `090${String(Math.floor(Math.random() * 10000000)).padStart(7, "0")}`;
     const canvas = document.createElement("canvas");
     canvas.width = 360;
@@ -115,7 +116,7 @@ export default function RegistrationIntake({
     ctx.fillStyle = tokens.getPropertyValue("--accent").trim();
     ctx.beginPath(); ctx.arc(180, 170, 70, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(180, 390, 130, 120, 0, 0, Math.PI * 2); ctx.fill();
-    const isChild = registrationGroup(birthday, today) === "children";
+    const isChild = demoGroup === "children";
     setValues({...blank, name, gender: pick(["Nam", "Nữ"]), birthday, address,
       team: getTeam(address) ?? 1, phone: phone(), relativePhone: isChild ? phone() : "",
       parentName: isChild ? pick(["Nguyễn Văn Minh", "Trần Thị Mai", "Lê Thanh Bình"]) : "",
@@ -142,7 +143,7 @@ export default function RegistrationIntake({
     setValues((v) => ({
       ...v,
       [key]: value,
-      ...(key === "address" ? { team: getTeam(value) ?? "" } : {}),
+      ...(key === "address" ? { team: getTeam(value, group) ?? "" } : {}),
     }));
   }
   function activateStep(step: number) {
@@ -379,16 +380,13 @@ export default function RegistrationIntake({
                           onChange={(e) => update("address", e.target.value)}
                         >
                           <option value="">Chọn phường/xã</option>
-                          {([1, 2, 3] as const).map((team) => (
+                          {teamsForGroup(group).map((team) => (
                             <optgroup key={team} label={`Tổ ${team}`}>
                               {teamAreas[team].map((ward) => (
                                 <option key={ward}>{ward}</option>
                               ))}
                             </optgroup>
                           ))}
-                          <optgroup label="Chưa có Tổ mặc định">
-                            {unassignedWards.map(ward => <option key={ward}>{ward}</option>)}
-                          </optgroup>
                         </select>
                       </Field>
                       <Field
@@ -404,9 +402,9 @@ export default function RegistrationIntake({
                           onChange={(e) => update("team", e.target.value)}
                         >
                           <option value="">Chọn tổ</option>
-                          {[1, 2, 3].map((team) => (
+                          {teamsForGroup(group).map((team) => (
                             <option value={team} key={team}>
-                              Tổ {team}
+                              {teamOptionLabel(team)}
                             </option>
                           ))}
                         </select>

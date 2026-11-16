@@ -1,4 +1,5 @@
 import type {Member, MemberGroup} from './types';
+import {teamsForGroup} from './areas.ts';
 import {memberAge, memberTeam, memberWard} from './dashboard.ts';
 
 export const operationGroups: MemberGroup[] = ['children','youth','congregation'];
@@ -9,7 +10,7 @@ export const workLabels: Record<WorkKind,string> = {
 export type OperationFilters = {group:MemberGroup|'all';team:string;ward:string};
 export const emptyOperationFilters: OperationFilters = {group:'all',team:'all',ward:'all'};
 export function filterOperations(members:Member[],filters:OperationFilters){
-  return members.filter(m=>(filters.group==='all'||m.group===filters.group)&&(filters.team==='all'||(filters.team==='unknown'?!['1','2','3'].includes(memberTeam(m)):memberTeam(m)===filters.team))&&(filters.ward==='all'||(filters.ward==='unknown'?!memberWard(m):memberWard(m)===filters.ward)));
+  return members.filter(m=>(filters.group==='all'||m.group===filters.group)&&(filters.team==='all'||(filters.team==='unknown'?!teamsForGroup(m.group).map(String).includes(memberTeam(m)):memberTeam(m)===filters.team))&&(filters.ward==='all'||(filters.ward==='unknown'?!memberWard(m):memberWard(m)===filters.ward)));
 }
 const phoneValid=(value:unknown)=>/^0[35789]\d{8}$/.test(String(value??'').replace(/[\s().-]/g,'').replace(/^\+?84(?=[35789]\d{8}$)/,'0'));
 export function contactIssue(m:Member){
@@ -39,18 +40,20 @@ export function operationsReport(members:Member[],directoryMembers:Member[],toda
   const rows=[...new Map(members.filter(m=>m.registrationStatus==='approved').map(m=>[m.id,m])).values()];
   const flags=new Map<string,MemberWork>();
   const counts={all:rows.length,unassigned:0,contact:0,links:0,transition:0,team:0};
-  const matrix=['1','2','3','unknown'].map(team=>({team,cells:operationGroups.map(group=>({group,total:0,unassigned:0,links:0}))}));
+  const teamIds = teamsForGroup().map(String);
+  const matrix=[...teamIds,'unknown'].map(team=>({team,cells:operationGroups.map(group=>({group,total:0,unassigned:0,links:0}))}));
   const caregiverCounts=new Map<string,{id:string;name:string;counts:number[];total:number}>();
   const wardCounts=new Map<string,number[]>();
   for(const m of rows){
     const groupIndex=operationGroups.indexOf(m.group);if(groupIndex<0)continue;
     const caregiver=String(m.profileData?.caregiver??'').trim();
     const valid=Boolean(caregiver&&caregiver!==m.id&&directory.has(caregiver));
-    const teamIndex=['1','2','3'].indexOf(memberTeam(m));
+    const team = memberTeam(m);
+    const teamIndex = teamsForGroup(m.group).some(value => String(value) === team) ? teamIds.indexOf(team) : -1;
     const flag:MemberWork={unassigned:!caregiver,links:Boolean(caregiver&&!valid),contact:contactIssue(m),transition:transitionReview(m,today),team:teamIndex<0,caregiver:valid?caregiver:''};
     flags.set(m.id,flag);
     for(const key of ['unassigned','contact','links','transition','team'] as const)if(flag[key])counts[key]++;
-    const cell=matrix[teamIndex<0?3:teamIndex].cells[groupIndex];cell.total++;if(flag.unassigned)cell.unassigned++;if(flag.links)cell.links++;
+    const cell=matrix[teamIndex<0?teamIds.length:teamIndex].cells[groupIndex];cell.total++;if(flag.unassigned)cell.unassigned++;if(flag.links)cell.links++;
     if(valid){
       let entry=caregiverCounts.get(caregiver);
       if(!entry){entry={id:caregiver,name:directory.get(caregiver)!.name,counts:[0,0,0],total:0};caregiverCounts.set(caregiver,entry);}

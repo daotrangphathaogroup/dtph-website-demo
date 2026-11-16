@@ -3,7 +3,7 @@ import {useId, useState} from 'react';
 import type {ProfileField, RegistrationSchema, ProfileValues} from '../lib/registration';
 import RecognitionTagEditor from './RecognitionTagEditor';
 import {displayValue, profileFieldLabel, profileVisibleFields} from '../lib/registration';
-import {currentWard, getTeam, teamAreas, unassignedWards, wards} from '../lib/areas';
+import {currentWard, getTeam, teamAreas, teamsForGroup, teamOptionLabel} from '../lib/areas';
 import {legacyProvinces} from '../lib/provinces';
 import MemberPicker from './MemberPicker';
 import PortraitInput from './PortraitInput';
@@ -39,7 +39,7 @@ export default function ProfileForm({
     setValues((v) => ({
       ...v,
       [key]: value,
-      ...(key === 'address' ? {team: getTeam(value) ?? ''} : {}),
+      ...(key === 'address' ? {team: getTeam(value, schema.group) ?? ''} : {}),
     }));
   function control(f: ProfileField) {
     const label = profileFieldLabel(f),
@@ -86,16 +86,11 @@ export default function ProfileForm({
             {f.key === 'position' && value && !f.options?.includes(String(value)) && (
               <option value={value} disabled>{value} (giá trị cũ)</option>
             )}
-            {f.type === 'ward' && value && !wards.includes(value) && (
+            {f.type === 'ward' && value && getTeam(value, schema.group) === null && (
               <option value={value}>{value}</option>
             )}
-            {f.type === 'ward' && (
-              <optgroup label="Chưa có Tổ mặc định">
-                {unassignedWards.map(ward => <option key={ward}>{ward}</option>)}
-              </optgroup>
-            )}
             {f.type === 'ward'
-              ? ([1, 2, 3] as const).map((team) => (
+              ? teamsForGroup(schema.group).map((team) => (
                   <optgroup key={team} label={`Tổ ${team}`}>
                     {teamAreas[team].map((ward) => (
                       <option key={ward} value={ward}>
@@ -107,11 +102,11 @@ export default function ProfileForm({
               : (f.type === 'province'
                   ? legacyProvinces
                   : f.type === 'team'
-                    ? ['1', '2', '3']
+                    ? teamsForGroup(schema.group).map(String)
                     : (f.options ?? [])
                 ).map((option) => (
                   <option key={option} value={option}>
-                    {f.type === 'team' ? `Tổ ${option}` : option}
+                    {f.type === 'team' ? teamOptionLabel(option) : option}
                   </option>
                 ))}
           </select>

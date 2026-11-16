@@ -1,3 +1,4 @@
+import {getTeam,teamsForGroup} from "./areas.ts";
 import type { MemberGroup } from "./types";
 import type { ProfileValues } from "./registration";
 
@@ -74,9 +75,9 @@ export function intakeStepError(
       return "Vui lòng nhập ngày sinh hợp lệ, từ năm 1900 đến hôm nay.";
   }
   if (step === 1) {
-    if (!String(values.address ?? "").trim()) return "Vui lòng chọn phường/xã theo địa chỉ cũ.";
-    if (!["1", "2", "3"].includes(String(values.team)))
-      return "Vui lòng chọn Tổ 1, 2 hoặc 3.";
+    if (!getTeam(String(values.address ?? ""), group)) return "Vui lòng chọn phường/xã theo địa chỉ cũ.";
+    if (!teamsForGroup(group).map(String).includes(String(values.team)))
+      return "Vui lòng chọn tổ phù hợp với chúng.";
   }
   if (step === 2) {
     if (group !== "children" && !values.phone)

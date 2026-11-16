@@ -3,6 +3,7 @@ import {useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
 import {ChartPie, Clock3, FilterX, RefreshCw} from 'lucide-react';
 import {Button, IconButton} from '../../components/ui/primitives';
+import {teamsForGroup,teamOptionLabel} from '../../lib/areas';
 import {groupLabels} from '../../lib/types';
 import type {Member, MemberGroup} from '../../lib/types';
 import type {RegistrationSchema} from '../../lib/registration';
@@ -56,7 +57,12 @@ export default function OperationalOverview({members, pending, schemas, canEdit,
   const filtered = filters.group !== 'all' || filters.team !== 'all' || filters.ward !== 'all' || year !== 'all' || month !== null;
 
   function changeFilter<K extends keyof OperationFilters>(key: K, value: OperationFilters[K]) {
-    setFilters(previous => ({...previous, [key]: value}));
+    setFilters(previous => {
+      const next = {...previous, [key]: value};
+      if (key === 'group' && !['all', 'unknown'].includes(next.team) &&
+          !teamsForGroup(next.group).some(team => String(team) === next.team)) next.team = 'all';
+      return next;
+    });
     setWork('all');
   }
   const oldest = waiting[0];
@@ -102,7 +108,7 @@ export default function OperationalOverview({members, pending, schemas, canEdit,
           <fieldset className="ops-team-filter">
             <legend>Tổ sinh hoạt</legend>
             <div role="group" aria-label="Lọc tổ tổng quan">
-              {[['all', 'Tất cả'], ['1', 'Tổ 1'], ['2', 'Tổ 2'], ['3', 'Tổ 3'], ['unknown', 'Chưa phân tổ']].map(([value, label]) =>
+              {[['all', 'Tất cả'], ...teamsForGroup(filters.group).map(team => [String(team), teamOptionLabel(team)]), ['unknown', 'Chưa phân tổ']].map(([value, label]) =>
                 <button key={value} type="button" aria-pressed={filters.team === value} onClick={() => changeFilter('team', value)}>{label}</button>
               )}
             </div>

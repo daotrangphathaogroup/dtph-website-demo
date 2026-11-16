@@ -4,6 +4,7 @@ import { Filter, RefreshCw, X, Check } from "lucide-react";
 import { Button, IconButton } from "../../components/ui/primitives";
 import { groupLabels } from "../../lib/types";
 import type { MemberGroup } from "../../lib/types";
+import {teamsForGroup,teamOptionLabel} from "../../lib/areas";
 import { ageBands } from "../../lib/dashboard";
 import type { DashboardFilters as Filters } from "../../lib/dashboard";
 type Props = {
@@ -166,9 +167,9 @@ function DashboardFilters({
                   onChange={(e) => onChange("team", e.target.value)}
                 >
                   <option value="all">Tất cả</option>
-                  {[1, 2, 3].map((t) => (
+                  {teamsForGroup(scope).map((t) => (
                     <option key={t} value={t}>
-                      Tổ {t}
+                      {teamOptionLabel(t)}
                     </option>
                   ))}
                   <option value="unknown">Chưa phân tổ</option>

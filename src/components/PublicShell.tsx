@@ -16,7 +16,7 @@ export default function PublicShell({
         Đến nội dung chính
       </a>
       <header className="public-header">
-        <Link className="brand" href="/" aria-label="Đạo Tràng Phật Hào">
+        <Link className="brand" href="/" aria-label="Đạo tràng Phật Hào – Biên Hòa">
           <Brand />
         </Link>
         {!hideNavigation && (

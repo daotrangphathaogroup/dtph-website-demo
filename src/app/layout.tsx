@@ -5,7 +5,7 @@ import localFont from 'next/font/local';
 import InterfaceMotion from '../components/ui/InterfaceMotion';
 const manrope = localFont({src: './fonts/Manrope-Variable.ttf', weight: '200 800', style: 'normal', variable: '--font-manrope', display: 'swap', preload: true, adjustFontFallback: 'Arial'});
 export const metadata: Metadata = {
-  title: 'Đạo Tràng Phật Hào · Cổng thông tin Đạo Tràng',
+  title: 'Đạo tràng Phật Hào – Biên Hòa',
   description: 'Cổng thông tin Đạo Tràng Phật Hào — quản lý hồ sơ huynh đệ và đăng ký tu học.',
   icons: {icon: '/logo-ctn.png'},
 };
