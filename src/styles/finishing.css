@@ -69,7 +69,8 @@
 .icon-button {border-radius: 9px;}
 :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):focus {border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent), 0 2px 5px #23457805;}
 .field:focus-within .field-title {color: var(--blue-ink);}
-.search-control:focus-within {border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 8%, transparent);}
+.search-control:focus-within {border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 12%, transparent);}
+.search-control:focus-within input:focus {border-color: transparent; box-shadow: none;}
 .search-control:focus-within > svg {color: var(--accent);}
 .badge {box-shadow: inset 0 0 0 1px #ffffff50;}
 .empty-state > span, .empty-state > svg {color: var(--accent);}
@@ -189,16 +190,19 @@
 .donut-tooltip strong {font-size: 21px; line-height: 1.4; font-variant-numeric: tabular-nums;}
 .donut-tooltip small {font-size: 11px; font-weight: 400;}
 .area-chart-tooltip {z-index: 20; width: 160px;}
-/* Brand hierarchy: the organization first, with its locality kept visible. */
-.brand-name .brand-prefix {display: block; margin: 0; color: var(--ink); font-size: 15px; line-height: 1.25; letter-spacing: .1em; font-weight: 800;}
-.brand-name .brand-line {display: flex; align-items: center; gap: 7px; margin: 4px 0 0; letter-spacing: normal;}
-.brand-name .brand-title {font-size: 11px; font-weight: 600; letter-spacing: .09em; color: var(--text-secondary);}
-.brand-name .brand-location {display: inline-flex; padding: 2px 6px; border: 1px solid var(--finish-edge); border-radius: 5px; color: var(--blue-ink); background: var(--blue); font-size: 10px; font-weight: 700; line-height: 1.4; letter-spacing: .04em; white-space: nowrap;}
+/* The workspace blue anchors the name; quiet gold details retain a ceremonial character. */
+.brand .brand-logo {border-radius: 50%; outline: 1px solid #c6a66a66; outline-offset: 3px; filter: none;}
+.brand .brand-prefix {display: flex; align-items: center; gap: 8px; margin: 0; color: var(--text-secondary); font-size: 10px; line-height: 1.3; letter-spacing: .22em; font-weight: 600;}
+.brand .brand-prefix::after {content: ""; width: 26px; height: 1px; background: #c6a66a;}
+.brand .brand-line {display: flex; align-items: center; gap: 10px; margin: 3px 0 0; letter-spacing: normal;}
+.brand .brand-title {color: color-mix(in srgb, var(--blue-ink) 82%, var(--ink)); font-size: 23px; line-height: 1.15; font-weight: 800; letter-spacing: .045em; white-space: nowrap;}
+.brand .brand-location {display: inline-flex; align-items: center; padding: 4px 8px; border: 1px solid color-mix(in srgb, var(--reference-accent) 60%, var(--line)); border-radius: 4px; color: var(--blue-ink); background: var(--blue); font-size: 10px; font-weight: 800; line-height: 1.3; letter-spacing: .09em; white-space: nowrap;}
 @media (max-width: 480px) {
- .brand-name .brand-prefix {font-size: 12px;}
- .brand-name .brand-title {font-size: 10px;}
- .brand-name .brand-location {font-size: 9px; padding: 2px 4px;}
- .brand-name .brand-line {gap: 4px;}
+ .brand .brand-prefix {font-size: 8px; letter-spacing: .18em;}
+ .brand .brand-prefix::after {width: 18px;}
+ .brand .brand-title {font-size: 18px;}
+ .brand .brand-location {font-size: 8px; padding: 1px 5px;}
+ .brand .brand-line {flex-direction: column; align-items: flex-start; gap: 3px; margin-top: 2px;}
 }
 .group-dashboard[data-group="congregation"] .group-team-summary [data-tier="3"] {--team-swatch: var(--cyan);}
 .group-dashboard[data-group="congregation"] .group-team-summary [data-tier="4"] {--team-swatch: var(--chart-amber);}

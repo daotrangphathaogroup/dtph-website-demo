@@ -937,3 +937,12 @@
 
 .delivery-particles > i:nth-child(7n) { width: 8px; height: 8px; border-radius: 0; background: var(--reference-accent); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
 .particles-trail > i:nth-child(7n) { clip-path: none; width: 3px; height: 3px; border-radius: 50%; }
+.intake-referrer-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--ink);
+}
+.intake-referrer-toggle input { flex: 0 0 auto; }

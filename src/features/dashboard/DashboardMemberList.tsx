@@ -4,6 +4,7 @@ import MemberDataTable from "../../components/MemberDataTable";
 import { groupLabels } from "../../lib/types";
 import type { Member, MemberGroup } from "../../lib/types";
 import type { ProfileField, RegistrationSchema } from "../../lib/registration";
+import type {SheetScopeFilter} from '../members/sheet-types';
 type Props = {
   members: Member[];
   hasMembers: boolean;
@@ -16,6 +17,7 @@ type Props = {
   onOpen: (m: Member, edit: boolean) => void;
   queryReset: number;
   pageReset: number;
+  sheetScope?: SheetScopeFilter;
 };
 export default function DashboardMemberList({
   members,
@@ -23,6 +25,7 @@ export default function DashboardMemberList({
   effectiveGroup,
   canEdit,
   onOpen,
+  sheetScope,
 }: Props) {
   const schema = useMemo<RegistrationSchema>(() => {
     if (effectiveGroup) return schemas[effectiveGroup];
@@ -61,11 +64,11 @@ export default function DashboardMemberList({
   return (
     <section className="dashboard-card dashboard-list">
       <MemberDataTable
-        key={effectiveGroup ?? "all"}
         members={rows}
         schema={schema}
         preferenceScope={effectiveGroup ?? "all"}
         label={effectiveGroup ? groupLabels[effectiveGroup] : "Toàn Đạo tràng"}
+        sheetScope={sheetScope}
         canEdit={canEdit}
         onOpen={(member, edit) =>
           onOpen(members.find((m) => m.id === member.id) ?? member, edit)

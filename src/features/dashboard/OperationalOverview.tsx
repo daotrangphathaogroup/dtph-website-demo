@@ -189,11 +189,11 @@ export default function OperationalOverview({members, pending, schemas, canEdit,
           ))}
         </div>
         <DashboardMemberList
-          key={JSON.stringify([filters.group, filters.team, filters.ward, work, year, month])}
           members={records}
           hasMembers={directory.length > 0}
           schemas={schemas}
           effectiveGroup={filters.group === 'all' ? undefined : filters.group}
+          sheetScope={{group: filters.group, team: filters.team, onGroupChange: group => changeFilter('group', group), onTeamChange: team => changeFilter('team', team)}}
           canEdit={canEdit}
           asOf={today}
           lastUpdated={lastUpdated}

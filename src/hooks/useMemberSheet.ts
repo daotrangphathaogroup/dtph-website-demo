@@ -40,6 +40,14 @@ export function useMemberSheet(
     [page, setPage] = useState(1),
     [size, setSize] = useState(25),
     [selected, setSelected] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    // A group change must not retain filters for columns that group does not have.
+    setFilters(old => {
+      const next = Object.fromEntries(Object.entries(old).filter(([key]) => fields.some(field => field.key === key)));
+      return Object.keys(next).length === Object.keys(old).length ? old : next;
+    });
+    setPage(1);
+  }, [fields]);
   const allCheckbox = useRef<HTMLInputElement>(null),
     resizeCleanup = useRef<() => void>(() => {}),
     latestPrefs = useRef(prefs);

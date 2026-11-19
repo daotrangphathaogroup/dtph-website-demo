@@ -367,3 +367,105 @@
 .sheet-table tbody tr:nth-child(even):not(.is-selected):not(:hover) td {
   background: #f8fafc;
 }
+
+.sheet-fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--ink);
+  overflow: hidden;
+}
+.sheet-fullscreen > .sheet {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.sheet-fullscreen .sheet > :not(.sheet-scroll) { flex-shrink: 0; }
+.sheet-fullscreen .sheet-scroll {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overscroll-behavior: contain;
+}
+.sheet-fullscreen .sheet-filters {
+  max-height: 30dvh;
+  overflow: auto;
+}
+
+.sheet-workspace-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.sheet-workspace-icon {display: grid; place-items: center; width: 36px; height: 40px; border: 1px solid #c5d8f5; border-radius: 7px; background: var(--blue); color: var(--blue-ink);}
+.sheet-workspace-heading h2 {margin: 0; font-size: 16px; line-height: 1.4; font-weight: 700;}
+.sheet-workspace-heading p {margin: 2px 0 0; font-size: 11px; color: var(--muted);}
+.sheet-workspace-hint {margin-left: auto; color: var(--muted); font-size: 11px; white-space: nowrap;}
+.sheet-workspace-hint kbd {padding: 3px 5px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface-subtle); font: inherit;}
+.sheet-fullscreen .sheet-toolbar {gap: 12px; padding: 10px 20px; background: #f8fafd; border-bottom: 1px solid var(--line);}
+.sheet-fullscreen .sheet-toolbar > .search-control {max-width: 360px;}
+.sheet-fullscreen .sheet-toolbar .search-control {min-height: 34px; border-radius: 6px;}
+.sheet-fullscreen .sheet-toolbar .search-control input {padding-block: 7px; font-size: 12px;}
+.sheet-fullscreen .sheet-tools {gap: 6px;}
+.sheet-fullscreen .sheet-tools .button {min-height: 34px; padding: 7px 10px; border-radius: 6px; box-shadow: none; font-size: 12px;}
+.sheet-fullscreen .sheet-tools .button:hover {transform: none;}
+.sheet-scope-bar {display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 8px 20px; border-bottom: 1px solid var(--line); background: var(--surface);}
+.sheet-scope-control {display: grid; grid-template-columns: 48px minmax(0, 1fr); align-items: center; gap: 10px; min-width: 0; padding-block: 4px;}
+.sheet-scope-control + .sheet-scope-control {margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--line);}
+.sheet-scope-control > span {color: var(--text-secondary); font-size: 11px; font-weight: 700;}
+.sheet-scope-buttons {display: flex; flex-wrap: wrap; gap: 4px;}
+.sheet-scope-buttons button {min-height: 29px; padding: 5px 9px; border: 1px solid transparent; border-radius: 5px; background: var(--surface-subtle); color: var(--text-secondary); font-size: 11px; font-weight: 500; line-height: 1.5; transition: background-color 120ms ease, border-color 120ms ease;}
+.sheet-scope-buttons button[aria-pressed="true"] {border-color: #bbcff0; background: var(--blue); color: var(--blue-ink); font-weight: 700;}
+.sheet-group-buttons [data-group="children"] {--scope-color: var(--children-color);}
+.sheet-group-buttons [data-group="youth"] {--scope-color: var(--youth-color);}
+.sheet-group-buttons [data-group="congregation"] {--scope-color: var(--congregation-color);}
+.sheet-group-buttons [data-group]:not([data-group="all"])::before {content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--scope-color);}
+@media (hover: hover) {
+  .sheet-scope-buttons button:hover {background: var(--blue); border-color: #bbcff0;}
+}
+.sheet-fullscreen .sheet-context {min-height: 38px; padding: 7px 20px; font-size: 11px; background: var(--surface);}
+.sheet-fullscreen .sheet-record-count strong {padding: 1px 5px; font-size: 11px; min-width: 24px;}
+.sheet-fullscreen .sheet-scroll {border-top: 0; background: #f8fafd;}
+.sheet-fullscreen .sheet-table {font-size: 12px;}
+.sheet-fullscreen .sheet-table :is(th, td) {border-right: 1px solid #e3e7ee; border-bottom: 1px solid #e3e7ee; box-shadow: none;}
+.sheet-fullscreen .sheet-table th {height: 38px; background: #f3f6fa;}
+.sheet-fullscreen .sheet-table th.sheet-name {position: sticky;}
+.sheet-fullscreen .sheet-table thead > tr:not(.sheet-column-letters) > th {top: 25px;}
+.sheet-fullscreen .sheet-table .sheet-column-letters th {height: 25px; top: 0; z-index: 7; padding: 0 8px; background: #edf1f6; color: #67768a; font-size: 10px; font-weight: 500; text-align: center;}
+.sheet-fullscreen .sheet-table .sheet-column-letters :is(.sheet-name, .sheet-check, .sheet-actions) {z-index: 8;}
+.sheet-fullscreen .sheet-table .sheet-number {background: #f5f7fa;}
+.sheet-fullscreen .sheet-table td {height: 40px; padding-block: 5px;}
+.sheet-fullscreen .sheet-compact .sheet-table td {height: 34px; padding-block: 3px;}
+.sheet-fullscreen .sheet-comfortable .sheet-table td {height: 52px; padding-block: 8px;}
+.sheet-fullscreen .sheet-table tbody tr:nth-child(even):not(.is-selected):not(:hover) td {background: var(--surface);}
+.sheet-fullscreen .sheet-table tbody tr:hover td {background: #f1f6ff;}
+.sheet-fullscreen .sheet-table tr.is-selected td {background: #e6efff;}
+.sheet-fullscreen .sheet-table th[aria-sort]:not([aria-sort="none"]) {background: #e6efff; box-shadow: inset 0 -2px var(--accent);}
+.sheet-fullscreen .sheet-sort {font-size: 11px; font-weight: 600;}
+.sheet-fullscreen .data-pagination {padding: 10px 20px; min-height: 56px; background: #f8fafd; border-top: 1px solid #d5deeb;}
+@media (max-width: 760px) {
+  .sheet-workspace-heading {padding: 10px 12px; gap: 9px;}
+  .sheet-workspace-heading h2 {font-size: 14px;}
+  .sheet-workspace-hint {display: none;}
+  .sheet-fullscreen .sheet-toolbar {padding: 8px 12px; gap: 7px;}
+  .sheet-fullscreen .sheet-toolbar > .search-control {max-width: none;}
+  .sheet-scope-bar {padding: 6px 12px;}
+  .sheet-scope-control {grid-template-columns: 32px minmax(0, 1fr); align-items: start; gap: 8px;}
+  .sheet-scope-control > span {min-width: 32px; padding-top: 6px;}
+  .sheet-scope-buttons {min-width: 0;}
+  .sheet-scope-buttons button {padding-inline: 7px;}
+  .sheet-fullscreen .sheet-context {padding-inline: 12px;}
+  .sheet-fullscreen .data-pagination {padding: 8px 12px;}
+}

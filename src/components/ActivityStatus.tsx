@@ -13,7 +13,7 @@ export default function ActivityStatus({value,compact=false,name='huynh đệ'}:
  useEffect(()=>{
   if(!mode)return;
   const outside=(event:PointerEvent)=>{if(!trigger.current?.contains(event.target as Node)&&!popup.current?.contains(event.target as Node))close();};
-  const escape=(event:KeyboardEvent)=>{if(event.key==='Escape')close();};
+  const escape=(event:KeyboardEvent)=>{if(event.key==='Escape'){event.preventDefault();close();}};
   const another=(event:Event)=>{if((event as CustomEvent<string>).detail!==id)close();};
   window.dispatchEvent(new CustomEvent('recognition-popover-open',{detail:id}));
   window.addEventListener('recognition-popover-open',another);
@@ -44,6 +44,6 @@ export default function ActivityStatus({value,compact=false,name='huynh đệ'}:
    <strong>{name}</strong><span className="recognition-popover-label">Tình trạng · {tags.length} thẻ ghi nhận</span>
    {tags.length?pills:<p className="recognition-empty">Chưa gắn thẻ nào.</p>}
    <small>Gắn hoặc bỏ thẻ trong Chỉnh sửa hồ sơ.</small>
-  </div>,document.body)}
+  </div>,trigger.current?.closest('dialog')??document.body)}
  </>;
 }

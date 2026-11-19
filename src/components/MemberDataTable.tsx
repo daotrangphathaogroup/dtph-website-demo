@@ -1,14 +1,23 @@
 "use client";
-import { ArrowDown, ArrowUp, ChevronsUpDown, Eye, Pencil } from "lucide-react";
-import type { Member } from "../lib/types";
+import { ArrowDown, ArrowUp, ChevronsUpDown, Eye, Pencil, Table2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {groupLabels} from '../lib/types';
+import type { Member, MemberGroup } from "../lib/types";
 import type { RegistrationSchema } from "../lib/registration";
 import { displayValue } from "../lib/registration";
 import { sheetValue } from "../lib/sheet";
 import { useMemberSheet } from "../hooks/useMemberSheet";
 import MemberSheetToolbar from "../features/members/MemberSheetToolbar";
+import type {SheetScopeFilter} from '../features/members/sheet-types';
 import Pagination from "./ui/Pagination";
 import ActivityStatus from "./ActivityStatus";
 import { EmptyState, IconButton } from "./ui/primitives";
+function columnLetter(index: number) {
+  let label = '';
+  for (let n = index + 1; n > 0; n = Math.floor((n - 1) / 26))
+    label = String.fromCharCode(65 + (n - 1) % 26) + label;
+  return label;
+}
 export default function MemberDataTable({
   members,
   schema,
@@ -16,21 +25,55 @@ export default function MemberDataTable({
   onOpen,
   preferenceScope,
   label,
+  sheetScope,
 }: {
   members: Member[];
   schema: RegistrationSchema;
   canEdit: boolean;
   preferenceScope?: string;
   label?: string;
+  sheetScope?: SheetScopeFilter;
   onOpen: (member: Member, edit: boolean) => void;
 }) {
   const sheet = useMemberSheet(members, schema, preferenceScope);
-  return (
+  const [expanded, setExpanded] = useState(false);
+  const fullscreenDialog = useRef<HTMLDialogElement>(null);
+  const tableSection = useRef<HTMLElement>(null);
+  function toggleFullscreen() {
+    if (!expanded && sheetScope) {
+      const team = sheet.filters.team;
+      const group = (Object.keys(groupLabels) as MemberGroup[]).find(key => groupLabels[key] === sheet.filters.groupLabel);
+      if (group) sheetScope.onGroupChange?.(group);
+      if (team) sheetScope.onTeamChange(team === '__empty' ? 'unknown' : team);
+      sheet.setFilters(old => {const next = {...old}; delete next.team; delete next.groupLabel; return next;});
+    }
+    setExpanded(!expanded);
+  }
+  useEffect(() => {
+    if (!expanded) return;
+    const dialog = fullscreenDialog.current;
+    if (!dialog) return;
+    const overflow = document.body.style.overflow;
+    dialog.showModal();
+    document.body.style.overflow = "hidden";
+    return () => {
+      dialog.close();
+      document.body.style.overflow = overflow;
+      tableSection.current?.querySelector<HTMLButtonElement>("[data-sheet-fullscreen]")?.focus({ preventScroll: true });
+    };
+  }, [expanded]);
+  const content = (
     <section
+      ref={tableSection}
       className={`sheet sheet-${sheet.prefs.density}`}
       aria-label="Bảng dữ liệu huynh đệ"
     >
-      <MemberSheetToolbar sheet={sheet} />
+      {expanded && <header className="sheet-workspace-heading">
+        <span className="sheet-workspace-icon"><Table2 size={21} aria-hidden="true" /></span>
+        <div><h2>{label ?? "Hồ sơ huynh đệ"}</h2><p>Bảng dữ liệu</p></div>
+        <span className="sheet-workspace-hint"><kbd>Esc</kbd> để thu nhỏ</span>
+      </header>}
+      <MemberSheetToolbar sheet={sheet} expanded={expanded} sheetScope={sheetScope} onToggleFullscreen={toggleFullscreen} />
       <div className="sheet-scroll" tabIndex={0} aria-label="Cuộn bảng dữ liệu">
         <table
           className="sheet-table"
@@ -58,6 +101,11 @@ export default function MemberDataTable({
             <col style={{ width: 96 }} />
           </colgroup>
           <thead>
+            {expanded && <tr className="sheet-column-letters" aria-hidden="true">
+              <th className="sheet-check" /><th className="sheet-number">#</th>
+              {sheet.visible.map((field, index) => <th key={field.key} className={field.key === 'name' ? 'sheet-name' : ''}>{columnLetter(index)}</th>)}
+              <th className="sheet-actions" />
+            </tr>}
             <tr>
               <th className="sheet-check" scope="col">
                 <input
@@ -252,4 +300,17 @@ export default function MemberDataTable({
       />
     </section>
   );
+  return expanded ? (
+    <dialog
+      ref={fullscreenDialog}
+      className="sheet-fullscreen"
+      aria-label={`Bảng dữ liệu toàn màn hình${label ? ` · ${label}` : ""}`}
+      onCancel={(event) => {
+        event.preventDefault();
+        setExpanded(false);
+      }}
+    >
+      {content}
+    </dialog>
+  ) : content;
 }

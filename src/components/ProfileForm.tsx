@@ -2,12 +2,14 @@
 import {useId, useState} from 'react';
 import type {ProfileField, RegistrationSchema, ProfileValues} from '../lib/registration';
 import RecognitionTagEditor from './RecognitionTagEditor';
-import {displayValue, profileFieldLabel, profileVisibleFields} from '../lib/registration';
+import {profileFieldLabel, profileVisibleFields} from '../lib/registration';
 import {currentWard, getTeam, teamAreas, teamsForGroup, teamOptionLabel} from '../lib/areas';
 import {legacyProvinces} from '../lib/provinces';
 import MemberPicker from './MemberPicker';
 import PortraitInput from './PortraitInput';
 import {Button, Feedback} from './ui/primitives';
+import DateInput from './ui/DateInput';
+import {todayInVietnam} from '../lib/dashboard';
 type Props = {
   schema: RegistrationSchema;
   initial?: ProfileValues;
@@ -47,6 +49,8 @@ export default function ProfileForm({
       value = Array.isArray(values[f.key]) ? '' : String(values[f.key] ?? '');
     if (f.readOnly)
       return <input id={id} value={f.key === 'addressNew' ? currentWard(values.address) : value} readOnly aria-readonly="true" className="system-field" />;
+    if (f.type === 'date')
+      return <DateInput id={id} required={f.required} value={value} max={f.key === 'birthday' ? todayInVietnam() : undefined} autoComplete={f.key === 'birthday' ? 'bday' : 'off'} onChange={next => update(f.key, next)} />;
     if (f.type === 'tags') return <RecognitionTagEditor value={values[f.key]} onChange={tags=>setValues(v=>({...v,[f.key]:tags}))} />;
     if (f.type === 'image')
       return (
@@ -142,9 +146,7 @@ export default function ProfileForm({
               ? 'number'
               : f.type === 'phone'
                 ? 'tel'
-                : f.type === 'date'
-                  ? 'date'
-                  : 'text'
+                : 'text'
           }
           required={f.required}
           value={value}
@@ -171,9 +173,6 @@ export default function ProfileForm({
             <option value="Học sinh" />
             <option value="Sinh viên" />
           </datalist>
-        )}
-        {f.type === 'date' && (
-          <small>{value ? displayValue(value, f) : 'Ngày / tháng / năm'}</small>
         )}
       </>
     );

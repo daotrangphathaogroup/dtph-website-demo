@@ -109,7 +109,7 @@ function GroupDashboard({members,pending,schemas,scope,canEdit,onOpen,pendingPan
         </li>)}</ul> : <EmptyState title="Chưa có dữ liệu" description="Thông tin được tổng hợp từ hồ sơ đã duyệt."/>}
       </section>
       <DashboardCharts scope={scope} total={total} composition={composition} bars={bars} months={months} pendingMonths={monthlyRegistrations(chartPending)} month={filters.month} period={period} dimension={dimension} onDimension={setDimension}/></div>}
-    <div hidden={view!=='list'} className="group-records"><DashboardMemberList members={approved} hasMembers={members.length>0} schemas={schemas} scope={scope} effectiveGroup={scope} canEdit={canEdit} asOf={asOf} lastUpdated={lastUpdated} onOpen={onOpen} queryReset={resets.query} pageReset={resets.page}/></div>
+    <div hidden={view!=='list'} className="group-records"><DashboardMemberList members={approved} hasMembers={members.length>0} schemas={schemas} scope={scope} effectiveGroup={scope} sheetScope={{group: scope, team: filters.team, onTeamChange: team => change('team', team)}} canEdit={canEdit} asOf={asOf} lastUpdated={lastUpdated} onOpen={onOpen} queryReset={resets.query} pageReset={resets.page}/></div>
     </div>
   </div>;
 }

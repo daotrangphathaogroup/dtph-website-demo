@@ -21,6 +21,7 @@ import {registrationDelivery} from "../../lib/registration-delivery";
 import type {DeliveryPhase} from "../../lib/registration-delivery";
 import PortraitInput from "../../components/PortraitInput";
 import MemberPicker from "../../components/MemberPicker";
+import DateInput from "../../components/ui/DateInput";
 
 const commonSteps = [
   "Thông tin cơ bản",
@@ -59,6 +60,7 @@ export default function RegistrationIntake({
     [reviewPayload, setReviewPayload] = useState("");
   const inlineDelivery = useInlineDelivery(busy);
   const [demo, setDemo] = useState(false);
+  const [hasReferrer, setHasReferrer] = useState(false);
   const [deliveryPhase, setDeliveryPhase] = useState<DeliveryPhase>("packing");
   const deliveryAbort = useRef<AbortController | null>(null);
   useEffect(() => () => deliveryAbort.current?.abort(), []);
@@ -125,6 +127,7 @@ export default function RegistrationIntake({
       avatar: canvas.toDataURL("image/jpeg", 0.85),
     });
     setDemo(true);
+    setHasReferrer(false);
     setCurrent(4);
     setReached(4);
     setReceipt(null);
@@ -352,16 +355,15 @@ export default function RegistrationIntake({
                         </select>
                       </Field>
                       <Field required label="Ngày sinh" htmlFor={`${id}-birthday`}>
-                        <input
+                        <DateInput
                           id={`${id}-birthday`}
                           required
-                          type="date"
-                          min="1900-01-01"
                           max={today}
                           autoComplete="bday"
                           value={birthday}
-                          onChange={(e) => update("birthday", e.target.value)}
+                          onChange={(value) => update("birthday", value)}
                         />
+                        <small className="muted">Ngày/tháng/năm, ví dụ 15/08/2000.</small>
                       </Field>
                       {group && (
                         <p className="intake-group" role="status">
@@ -506,10 +508,21 @@ export default function RegistrationIntake({
                   {index === finalStep && (
                     <>
                       {!children && <>
-                      <p className="intake-note">
-                        Nếu có người giới thiệu, nhập tên và chọn đúng huynh đệ
-                        trong danh sách. Có thể để trống.
-                      </p>
+                      <label className="intake-referrer-toggle">
+                        <input
+                          type="checkbox"
+                          checked={hasReferrer}
+                          aria-controls={`${id}-referrer`}
+                          aria-expanded={hasReferrer}
+                          onChange={(event) => {
+                            setHasReferrer(event.target.checked);
+                            if (!event.target.checked) update("introducedBy", "");
+                          }}
+                        />
+                        <span>Có huynh đệ giới thiệu (nếu có)</span>
+                      </label>
+                      {hasReferrer && <div id={`${id}-referrer`}>
+                      <p className="intake-note">Nhập tên và chọn đúng huynh đệ trong danh sách.</p>
                       <Field label="Người giới thiệu (nếu có)">
                         <MemberPicker
                           value={String(values.introducedBy)}
@@ -518,6 +531,7 @@ export default function RegistrationIntake({
                           onChange={(v) => update("introducedBy", v)}
                         />
                       </Field>
+                      </div>}
                       </>}
                       <div className="intake-review">
                         <strong>{values.name}</strong>

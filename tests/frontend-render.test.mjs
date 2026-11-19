@@ -19,6 +19,7 @@ const { default: RegistrationComplete } =
   await import("../src/components/RegistrationComplete.tsx");
 const { default: QuickSearch } = await import("../src/components/QuickSearch.tsx");
 const { default: PublicShell } = await import("../src/components/PublicShell.tsx");
+const { default: DateInput, parseDateInput } = await import("../src/components/ui/DateInput.tsx");
 const { defaultSchemas, profileVisibleFields } = await import("../src/lib/registration.ts");
 const noop = () => {},
   waiting = { children: 2, youth: 0, congregation: 1 };
@@ -85,7 +86,8 @@ test("Public forms remove retired fields and hide child occupations and referral
       }),
     );
     assert.match(markup, /Gửi thông tin đăng ký/);
-    assert.match(markup, /type="date"/);
+    assert.doesNotMatch(markup, /type="date"/);
+    assert.match(markup, /placeholder="DD\/MM\/YYYY"/);
     assert.doesNotMatch(markup, /Quê quán|Nơi công tác|Trường học/);
     if(group==='children'){
       assert.doesNotMatch(markup,/Nghề nghiệp|Người giới thiệu|HĐ chăm sóc/);
@@ -96,6 +98,17 @@ test("Public forms remove retired fields and hide child occupations and referral
     assert.equal(markup.includes('type="password"'), false);
     assert.equal(markup.includes('value="Khác"'), group!=='children');
   }
+});
+test("Typed dates preserve ISO storage and reject impossible calendar dates", () => {
+  for (const [text, iso] of [
+    ['29/02/2024', '2024-02-29'], ['15082000', '2000-08-15'],
+    ['1/1/2000', '2000-01-01'], ['31/02/2000', ''], ['29/02/2023', ''],
+    ['00/01/2000', ''], ['01/13/2000', ''], ['15/08/20', ''], ['', ''],
+  ]) assert.equal(parseDateInput(text), iso, text);
+  const markup = render(h(DateInput, {value: '2000-08-15', onChange: noop, required: true}));
+  assert.match(markup, /type="text"/);
+  assert.match(markup, /inputMode="numeric"/);
+  assert.match(markup, /value="15\/08\/2000"/);
 });
 test("Detailed sheet paginates to 25 rows, preserves selection, sorting, export and read-only Manager", () => {
   const members = Array.from({ length: 30 }, (_, i) => member(i + 1));
@@ -117,6 +130,8 @@ test("Detailed sheet paginates to 25 rows, preserves selection, sorting, export 
     assert.match(markup,/HĐ chăm sóc/);assert.match(markup,/Lớp/);
     assert.match(markup, /Tùy chỉnh bảng/);
     assert.match(markup, /Xuất Excel/);
+    assert.match(markup, /title="Phóng to bảng toàn màn hình"/);
+    assert.match(markup, /aria-pressed="false"/);
     assert.match(markup, /role="separator"/);
     assert.match(markup, /aria-sort="ascending"/);
     assert.match(markup, /Số dòng mỗi trang/);

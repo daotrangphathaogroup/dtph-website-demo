@@ -1,7 +1,9 @@
 import { useId, useRef } from "react";
-import { Download, Filter, SlidersHorizontal, X } from "lucide-react";
-import type { ReturnTypeOfSheet } from "./sheet-types";
+import { Download, Filter, Maximize2, Minimize2, SlidersHorizontal, X } from "lucide-react";
+import type { ReturnTypeOfSheet, SheetScopeFilter } from "./sheet-types";
 import { displayValue } from "../../lib/registration";
+import {groupLabels} from '../../lib/types';
+import {teamsForGroup, teamOptionLabel} from '../../lib/areas';
 import {
   Button,
   Feedback,
@@ -10,8 +12,14 @@ import {
 } from "../../components/ui/primitives";
 export default function MemberSheetToolbar({
   sheet,
+  expanded,
+  onToggleFullscreen,
+  sheetScope,
 }: {
   sheet: ReturnTypeOfSheet;
+  expanded: boolean;
+  onToggleFullscreen: () => void;
+  sheetScope?: SheetScopeFilter;
 }) {
   const optionsRef = useRef<HTMLDetailsElement>(null),
     filterId = useId();
@@ -22,6 +30,7 @@ export default function MemberSheetToolbar({
     }
   };
   const count = Object.values(sheet.filters).filter(Boolean).length;
+  const directScope = expanded && sheetScope;
   return (
     <>
       <div className="sheet-toolbar">
@@ -49,7 +58,10 @@ export default function MemberSheetToolbar({
             ref={optionsRef}
             className="sheet-options"
             onKeyDown={(e) => {
-              if (e.key === "Escape") closeOptions();
+              if (e.key === "Escape") {
+                e.preventDefault();
+                closeOptions();
+              }
             }}
           >
             <summary className="button secondary">
@@ -119,10 +131,48 @@ export default function MemberSheetToolbar({
             <Download size={16} />
             {sheet.selected.size ? "Xuất Excel dòng đã chọn" : "Xuất Excel"}
           </Button>
+          <Button
+            variant="secondary"
+            data-sheet-fullscreen
+            aria-pressed={expanded}
+            title={expanded ? "Thu nhỏ bảng (Esc)" : "Phóng to bảng toàn màn hình"}
+            onClick={onToggleFullscreen}
+          >
+            {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+            {expanded ? "Thu nhỏ" : "Phóng to"}
+          </Button>
         </div>
       </div>
+      {directScope && <div className="sheet-scope-bar" aria-label="Phạm vi bảng dữ liệu">
+        {sheetScope.onGroupChange && <div className="sheet-scope-control">
+          <span>Chúng</span>
+          <div role="group" aria-label="Lọc chúng trong bảng" className="sheet-scope-buttons sheet-group-buttons">
+            {(['all', 'children', 'youth', 'congregation'] as const).map(group => <button
+              key={group} type="button" data-group={group} aria-pressed={sheetScope.group === group}
+              onClick={() => {
+                sheet.setPage(1);
+                sheetScope.onGroupChange?.(group);
+              }}
+            >{group === 'all' ? 'Cả ba chúng' : groupLabels[group]}</button>)}
+          </div>
+        </div>}
+        <div className="sheet-scope-control">
+          <span>Tổ</span>
+          <div role="group" aria-label="Lọc tổ trong bảng" className="sheet-scope-buttons">
+            {['all', ...teamsForGroup(sheetScope.group).map(String), 'unknown'].map(team => <button
+              key={team} type="button" title={team === 'all' ? 'Tất cả tổ' : team === 'unknown' ? 'Chưa phân tổ' : teamOptionLabel(team)}
+              aria-pressed={sheetScope.team === team}
+              onClick={() => {
+                sheet.setFilters(old => {const next = {...old}; delete next.team; return next;});
+                sheet.setPage(1);
+                sheetScope.onTeamChange(team);
+              }}
+            >{team === 'all' ? 'Tất cả' : team === 'unknown' ? 'Chưa phân tổ' : `Tổ ${team}`}</button>)}
+          </div>
+        </div>
+      </div>}
       <div className="sheet-filters" id={filterId} hidden={!sheet.showFilters}>
-        {sheet.filterFields.map((f) => (
+        {sheet.filterFields.filter(f => !directScope || !['team', 'groupLabel'].includes(f.key)).map((f) => (
           <label className="field" key={f.key}>
             <span>{f.label}</span>
             <select
