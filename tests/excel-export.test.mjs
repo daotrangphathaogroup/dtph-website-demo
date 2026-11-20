@@ -23,11 +23,11 @@ test('Excel export is a real XLSX preserving Vietnamese, phone zeroes, blanks, n
 });
 
 test('Excel member rows preserve visible column order, readable references, dates and student labels', () => {
- const rows=sheetExportData([{id:'PH1',name:'An',birthday:'2012-03-04',phone:'0901234567',references:{introducedBy:{id:'PH2',name:'Tâm An'}},profileData:{schoolClass:'5'}}], [
+ const rows=sheetExportData([{id:'PH1',name:'An',birthday:'2012-03-04',phone:'0901234567',references:{introducedBy:{id:'PH2',name:'Tâm An'}},profileData:{schoolClass:'5',introducedBy:'Tâm An'}}], [
   {key:'phone',label:'SĐT',type:'phone'},
   {key:'birthday',label:'Ngày sinh',type:'date'},
   {key:'schoolClass',label:'Lớp',type:'select'},
-  {key:'introducedBy',label:'Người giới thiệu',type:'member'},
+  {key:'introducedBy',label:'Người giới thiệu',type:'text'},
  ]);
  assert.deepEqual(rows,[['SĐT','Ngày sinh','Lớp','Người giới thiệu'],['0901234567','04/03/2012','5','Tâm An']]);
 });

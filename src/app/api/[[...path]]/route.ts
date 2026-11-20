@@ -5,7 +5,7 @@ export const runtime='nodejs';
 export const dynamic='force-dynamic';
 export const maxDuration=30;
 async function handler(request:Request){
- try{const {app}=await getBackend();return await handleRequest(app,request);}
+ try{const {app}=await getBackend();return await handleRequest(app,request,{vercel:process.env.VERCEL==='1'});}
  catch(error){
   const reason=serviceFailure(error);
   console.error('API unavailable:',reason);

@@ -76,7 +76,7 @@ export default function MemberProfileDialog({
                       <dt>{profileFieldLabel(field)}</dt>
                       <dd>{field.key === "status"
                         ? <ActivityStatus value={values[field.key]} />
-                        : member.references?.[field.key]?.name ?? displayValue(values[field.key], field)}</dd>
+                        : field.type === "member" ? member.references?.[field.key]?.name ?? displayValue(values[field.key], field) : displayValue(values[field.key], field)}</dd>
                     </div>
                   ))}
               </dl>

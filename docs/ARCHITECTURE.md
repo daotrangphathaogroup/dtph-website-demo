@@ -11,7 +11,7 @@
 - Dev: singleton khai báo server-only, toàn quyền hồ sơ, cấu hình, tạo/list/reset/delete Admin/Manager. Không thể tạo Dev qua API hoặc xóa Dev; partial unique index ngăn thêm Dev.
 - Admin: xem/chỉnh sửa hồ sơ của mọi nhóm; không có quyền tài khoản khác hoặc cấu hình Dev.
 - Manager: xem toàn bộ danh sách/hồ sơ của ba nhóm, không ghi hồ sơ, đăng ký lớp hoặc cấu hình.
-- Public: bootstrap không có dữ liệu cá nhân, quick search giới hạn 20 tên/nhóm, không trả ID/địa chỉ/điện thoại/email.
+- Public: bootstrap không có dữ liệu cá nhân; các API search/member-options/member-portraits/avatars đều yêu cầu phiên nhân sự, kể cả truy vấn rỗng hoặc ID không tồn tại.
 
 Mọi API ghi kiểm tra quyền và Origin. Tài khoản mới chỉ cần ID chữ/số và mật khẩu, không họ tên hay phân công lớp. ID mới chuẩn hóa lowercase và unique. Username cũ có dấu gạch giữ khả năng đăng nhập để không khóa người quản lý hiện có.
 
@@ -19,7 +19,7 @@ Mọi API ghi kiểm tra quyền và Origin. Tài khoản mới chỉ cần ID c
 
 Scrypt hash, không đọc lại mật khẩu/hash từ API. Dev chỉ đặt mật khẩu mới. Mọi staff đổi mật khẩu riêng phải nhập mật khẩu hiện tại; đổi/reset mật khẩu thu hồi toàn bộ phiên. Xóa tài khoản cũng thu hồi phiên, giữ hồ sơ huynh đệ và audit log.
 
-Dev `dev` có mật khẩu ban đầu khai báo server/dev-account.mjs, tạo một lần và không ghi đè hash đã đổi khi redeploy. Cookie ph_staff_session HttpOnly, Secure production, SameSite Strict, 8 giờ. Rate limit lưu database, kiểm tra Origin cho mọi mutation. Bảng staff bật RLS, revoke anon/authenticated.
+Dev `dev` có mật khẩu ban đầu khai báo server/dev-account.mjs, tạo một lần và không ghi đè hash đã đổi khi redeploy. Bootstrap mật khẩu trong source chỉ hoạt động trên local; production giữ tài khoản được cấp riêng và không chấp nhận mật khẩu khởi tạo. Login khóa dòng tài khoản trong cùng transaction với tạo phiên để đồng bộ với đổi/reset mật khẩu. Cookie ph_staff_session HttpOnly, Secure production, SameSite Strict, 8 giờ. Rate limit lưu database, kiểm tra Origin cho mọi mutation. Bảng staff bật RLS, revoke anon/authenticated.
 
 ## Dữ liệu và migration
 

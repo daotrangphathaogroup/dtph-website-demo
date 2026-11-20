@@ -20,7 +20,6 @@ import RegistrationDelivery, {RegistrationCardFace, RegistrationCardCover, Regis
 import {registrationDelivery} from "../../lib/registration-delivery";
 import type {DeliveryPhase} from "../../lib/registration-delivery";
 import PortraitInput from "../../components/PortraitInput";
-import MemberPicker from "../../components/MemberPicker";
 import DateInput from "../../components/ui/DateInput";
 
 const commonSteps = [
@@ -60,7 +59,6 @@ export default function RegistrationIntake({
     [reviewPayload, setReviewPayload] = useState("");
   const inlineDelivery = useInlineDelivery(busy);
   const [demo, setDemo] = useState(false);
-  const [hasReferrer, setHasReferrer] = useState(false);
   const [deliveryPhase, setDeliveryPhase] = useState<DeliveryPhase>("packing");
   const deliveryAbort = useRef<AbortController | null>(null);
   useEffect(() => () => deliveryAbort.current?.abort(), []);
@@ -127,7 +125,6 @@ export default function RegistrationIntake({
       avatar: canvas.toDataURL("image/jpeg", 0.85),
     });
     setDemo(true);
-    setHasReferrer(false);
     setCurrent(4);
     setReached(4);
     setReceipt(null);
@@ -505,49 +502,18 @@ export default function RegistrationIntake({
                     </Field>
                     </>
                   )}
-                  {index === finalStep && (
-                    <>
-                      {!children && <>
-                      <label className="intake-referrer-toggle">
+                  {!children && index === finalStep && (
+                      <Field label="Người giới thiệu (nếu có)" htmlFor={`${id}-introducedBy`}>
                         <input
-                          type="checkbox"
-                          checked={hasReferrer}
-                          aria-controls={`${id}-referrer`}
-                          aria-expanded={hasReferrer}
-                          onChange={(event) => {
-                            setHasReferrer(event.target.checked);
-                            if (!event.target.checked) update("introducedBy", "");
-                          }}
-                        />
-                        <span>Có huynh đệ giới thiệu (nếu có)</span>
-                      </label>
-                      {hasReferrer && <div id={`${id}-referrer`}>
-                      <p className="intake-note">Nhập tên và chọn đúng huynh đệ trong danh sách.</p>
-                      <Field label="Người giới thiệu (nếu có)">
-                        <MemberPicker
+                          id={`${id}-introducedBy`}
+                          type="text"
+                          maxLength={200}
+                          autoComplete="off"
+                          placeholder="Nhập họ tên huynh đệ giới thiệu"
                           value={String(values.introducedBy)}
-                          label="Người giới thiệu (nếu có)"
-                          required={false}
-                          onChange={(v) => update("introducedBy", v)}
+                          onChange={(event) => update("introducedBy", event.target.value)}
                         />
                       </Field>
-                      </div>}
-                      </>}
-                      <div className="intake-review">
-                        <strong>{values.name}</strong>
-                        <span>
-                          {group && groupLabels[group]} · {age} tuổi
-                        </span>
-                        <span>
-                          {values.address} · Tổ {values.team}
-                        </span>
-                        <small>
-                          {isStaff
-                            ? "Phiếu được ghi nhận trực tiếp vì bạn đang đăng nhập tài khoản quản lý."
-                            : "Phiếu được gửi đến nhân sự Đạo Tràng để duyệt."}
-                        </small>
-                      </div>
-                    </>
                   )}
                   {index === current && error && !reviewPayload && (
                     <Feedback>{error}</Feedback>

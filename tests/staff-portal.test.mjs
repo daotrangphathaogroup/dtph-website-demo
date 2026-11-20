@@ -16,13 +16,14 @@ test('Public portal and Dev/Admin/Manager permissions',async t=>{
  try{
   dev=(await call('/admin/login','POST',{username:'dev',password:'1@345678'})).cookie;
   for(const role of ['admin','manager'])assert.equal((await call('/admin/accounts','POST',{username:role,password:'PhatHao@123',role},dev)).status,201);
-  await t.test('public home data is private; quick search exposes only name and group; legacy auth removed',async()=>{
+  await t.test('public profile and portrait APIs require staff; legacy auth removed',async()=>{
    const state=await call('/bootstrap');assert.equal(state.body.session,null);assert.deepEqual(state.body.store.members,[]);
    for(const url of ['/auth/login','/auth/register','/auth/verify','/auth/password','/auth/google/start','/auth/google/callback'])assert.equal((await call(url,url.endsWith('start')||url.endsWith('callback')?'GET':'POST',url.endsWith('start')||url.endsWith('callback')?undefined:{})).status,404);
    assert.equal((await call('/admin/accounts','POST',{username:'hacker',password:'Password@123',role:'admin'})).status,401);
    assert.equal((await call('/members/PH00001','PATCH',{name:'Hacker'})).status,401);
-   const search=await call('/search?q='+encodeURIComponent('Nguyễn'));assert.equal(search.status,200);assert.ok(search.body.results.length);assert.ok(search.body.results.every(r=>Object.keys(r).sort().join(',')==='group,name'));
-   assert.deepEqual((await call('/search?q=%25')).body.results,[]);assert.deepEqual((await call('/search?q=%25%25')).body.results,[]);
+   assert.equal((await call('/search?q='+encodeURIComponent('Nguyễn'))).status,401);
+   const search=await call('/search?q='+encodeURIComponent('Nguyễn'),'GET',undefined,dev);assert.equal(search.status,200);assert.ok(search.body.results.length);assert.ok(search.body.results.every(r=>Object.keys(r).sort().join(',')==='group,name'));
+   assert.deepEqual((await call('/search?q=%25','GET',undefined,dev)).body.results,[]);assert.deepEqual((await call('/search?q=%25%25','GET',undefined,dev)).body.results,[]);
   });
   await t.test('login uses username, private cookies, and ignores old member sessions',async()=>{
    for(const username of ['PH00001','0901200000','member@example.com'])assert.equal((await call('/admin/login','POST',{username,password:'PhatHao@123'})).status,401);

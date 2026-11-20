@@ -1,13 +1,16 @@
 import {IncomingMessage,ServerResponse} from 'node:http';
-import {Socket} from 'node:net';
+import {Socket,isIP} from 'node:net';
 const BODY_LIMIT=2*1024*1024;
 /** Bridge the tested HTTP application to Next's Web Request/Response interface. */
-export async function handleRequest(app,request){
+export async function handleRequest(app,request,{vercel=false}={}){
  const headers=new Headers({'Cache-Control':'no-store','Content-Type':'application/json'});
  if(Number(request.headers.get('content-length'))>BODY_LIMIT)return new Response(JSON.stringify({error:'Dữ liệu vượt dung lượng cho phép.'}),{status:413,headers});
  const chunks=[];let size=0;
  if(request.body){const reader=request.body.getReader();while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>BODY_LIMIT){await reader.cancel();return new Response(JSON.stringify({error:'Dữ liệu vượt dung lượng cho phép.'}),{status:413,headers});}chunks.push(Buffer.from(value));}}
- const socket=new Socket();Object.defineProperty(socket,'remoteAddress',{value:'127.0.0.1'});
+ // Only the Vercel runtime may trust its overwritten client-IP header. Other headers never set identity.
+ const forwarded=vercel?request.headers.get('x-vercel-forwarded-for'):null;
+ const address=forwarded&&isIP(forwarded)?forwarded:'127.0.0.1';
+ const socket=new Socket();Object.defineProperty(socket,'remoteAddress',{value:address});
  const req=new IncomingMessage(socket);req.method=request.method;const url=new URL(request.url);req.url=url.pathname+url.search;req.headers=Object.fromEntries(request.headers.entries());req.headers['content-length']=String(size);req.push(Buffer.concat(chunks));req.push(null);
  const res=new ServerResponse(req);
  return new Promise((resolve,reject)=>{

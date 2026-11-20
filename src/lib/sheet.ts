@@ -13,7 +13,7 @@ export function sheetValue(member:Member,key:string):string|number|undefined {
  if(key==='name')return member.name||value;
  if(key==='id')return member.id??value;
  if(key==='joined')return member.joined??value;
- if(member.references?.[key]?.name)return member.references[key].name;
+ if(key!=='introducedBy'&&member.references?.[key]?.name)return member.references[key].name;
  if(value!==undefined&&value!==null)return value;
  switch(key){
   case 'birthday':return member.birthday;

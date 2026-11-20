@@ -15,8 +15,6 @@ const { default: MemberProfileDialog } =
   await import("../src/features/members/MemberProfileDialog.tsx");
 const { default: ManagementDashboard } =
   await import("../src/components/ManagementDashboard.tsx");
-const { default: RegistrationComplete } =
-  await import("../src/components/RegistrationComplete.tsx");
 const { default: QuickSearch } = await import("../src/components/QuickSearch.tsx");
 const { default: PublicShell } = await import("../src/components/PublicShell.tsx");
 const { default: DateInput, parseDateInput } = await import("../src/components/ui/DateInput.tsx");
@@ -87,7 +85,9 @@ test("Public forms remove retired fields and hide child occupations and referral
     );
     assert.match(markup, /Gửi thông tin đăng ký/);
     assert.doesNotMatch(markup, /type="date"/);
-    assert.match(markup, /placeholder="DD\/MM\/YYYY"/);
+    assert.match(markup, /placeholder="DD"/);
+    assert.match(markup, /placeholder="MM"/);
+    assert.match(markup, /placeholder="YYYY"/);
     assert.doesNotMatch(markup, /Quê quán|Nơi công tác|Trường học/);
     if(group==='children'){
       assert.doesNotMatch(markup,/Nghề nghiệp|Người giới thiệu|HĐ chăm sóc/);
@@ -108,7 +108,8 @@ test("Typed dates preserve ISO storage and reject impossible calendar dates", ()
   const markup = render(h(DateInput, {value: '2000-08-15', onChange: noop, required: true}));
   assert.match(markup, /type="text"/);
   assert.match(markup, /inputMode="numeric"/);
-  assert.match(markup, /value="15\/08\/2000"/);
+  for (const part of ["15", "08", "2000"]) assert.ok(markup.includes(`value="${part}"`));
+  assert.equal((markup.match(/class="date-separator"/g)||[]).length,2);
 });
 test("Detailed sheet paginates to 25 rows, preserves selection, sorting, export and read-only Manager", () => {
   const members = Array.from({ length: 30 }, (_, i) => member(i + 1));
@@ -206,14 +207,6 @@ test("Management opens with records and defers charts to statistics mode", () =>
   assert.match(markup, /Hồ sơ đã duyệt<\/span><strong>2<\/strong>/);
   assert.equal(markup.includes('aria-label="Lọc nhóm"'), false);
 });
-test("Registration completion exposes only one action back to home", () => {
-  const markup = render(h(RegistrationComplete, { status: "pending" }));
-  assert.match(markup, /Đã hoàn thành đăng ký/);
-  assert.match(markup, /chờ phía quản lý/);
-  assert.equal((markup.match(/<a\s/g) || []).length, 1);
-  assert.match(markup, /href="\/"/);
-});
-
 test("Overview keeps working filters and member table alongside the two summary charts", () => {
   const markup = render(
     h(ManagementDashboard, {
@@ -238,7 +231,9 @@ test("Guided intake starts with only basic information and exposes no premature 
     await import("../src/features/registration/RegistrationIntake.tsx");
   const markup = render(h(RegistrationIntake));
   assert.match(markup, /Thông tin cơ bản/);
-  assert.match(markup, /autoComplete="bday"/);
+  assert.match(markup, /autoComplete="bday-day"/);
+  assert.match(markup, /autoComplete="bday-month"/);
+  assert.match(markup, /autoComplete="bday-year"/);
   assert.match(markup, /Tiếp tục/);
   assert.doesNotMatch(markup, /Gửi phiếu đăng ký/);
   assert.doesNotMatch(markup, /Chọn nhóm sinh hoạt/);
@@ -256,9 +251,9 @@ test('Every group profile shows all configured information including staff field
   const schema=defaultSchemas[group];
   const profileData=Object.fromEntries(schema.fields.map(f=>[f.key, f.key==='team'?2:f.key==='birthday'?'2000-03-04':f.key==='status'?['tinh-tan','hoa-dong']:`Thông tin ${f.key}`]));
   profileData.notes='Dòng một\nDòng hai';
-  profileData.introducedBy='PH2';
+  profileData.introducedBy='Người giới thiệu A';
   profileData.caregiver='PH3';
-  const m={...member(1),group,profileData,references:{introducedBy:{id:'PH2',name:'Người giới thiệu A'},caregiver:{id:'PH3',name:'Huynh đệ chăm sóc B'}}};
+  const m={...member(1),group,profileData,references:{introducedBy:{id:'PH2',name:'Tên liên kết cũ'},caregiver:{id:'PH3',name:'Huynh đệ chăm sóc B'}}};
   const markup=render(h(MemberProfileDialog,{member:m,schema,editing:false,canEdit:false,approving:false,onClose:noop,onEdit:noop,onApprove:noop,onSave:async()=>{}}));
   assert.equal((markup.match(/<dt>/g)||[]).length,profileVisibleFields(schema).filter(f=>f.type!=='image'&&!['name','id'].includes(f.key)).length);
   if(group==='children'){assert.doesNotMatch(markup,/Người giới thiệu A|Nghề nghiệp/);}else assert.match(markup,/Người giới thiệu A/);

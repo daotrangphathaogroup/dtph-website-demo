@@ -319,47 +319,6 @@
   font-size: 11px;
   text-align: center;
 }
-.registration-complete {
-  width: 100%;
-  max-width: 480px;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  text-align: center;
-  padding: 40px 32px;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  background: var(--surface);
-}
-.completion-icon {
-  display: grid;
-  place-items: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  background: var(--status-sage-soft);
-  color: var(--success);
-  margin-bottom: 24px;
-}
-.registration-complete .eyebrow {
-  font-size: 9px;
-}
-.registration-complete h1 {
-  font-size: 25px;
-  letter-spacing: -0.7px;
-  margin-top: 12px;
-}
-.registration-complete p {
-  font-size: 13px;
-  line-height: 1.8;
-  max-width: 360px;
-  margin-top: 16px;
-}
-.registration-complete > .button {
-  margin-top: 28px;
-}
-@media (max-width: 900px) {
-}
 @media (max-width: 760px) {
   .public-site {
     margin: 0;
@@ -426,12 +385,6 @@
     padding: 24px;
   }
   .auth-card header h1 {
-    font-size: 23px;
-  }
-  .registration-complete {
-    padding: 32px 24px;
-  }
-  .registration-complete h1 {
     font-size: 23px;
   }
   .field input,
@@ -611,24 +564,6 @@
   justify-content: flex-end;
   padding: 16px 0;
   border-top: 1px solid var(--line);
-}
-.intake-review {
-  display: grid;
-  gap: 5px;
-  margin-top: 8px;
-  border-top: 1px solid var(--line);
-  padding-top: 16px;
-  font-size: 12px;
-  color: var(--muted);
-}
-.intake-review > strong {
-  color: var(--ink);
-  font-size: 14px;
-  font-weight: 500;
-}
-.intake-review > small {
-  margin-top: 8px;
-  font-size: 11px;
 }
 .intake-staff-link {
   display: inline-flex;
@@ -937,12 +872,10 @@
 
 .delivery-particles > i:nth-child(7n) { width: 8px; height: 8px; border-radius: 0; background: var(--reference-accent); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
 .particles-trail > i:nth-child(7n) { clip-path: none; width: 3px; height: 3px; border-radius: 50%; }
-.intake-referrer-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  font-size: 14px;
-  color: var(--ink);
-}
-.intake-referrer-toggle input { flex: 0 0 auto; }
+.typed-date-control {display: flex; align-items: center; min-width: 0; min-height: 44px; padding: 0 8px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); transition: border-color 140ms ease, box-shadow 140ms ease;}
+.typed-date-control:focus-within {border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 12%, transparent);}
+.date-segment {display: flex; align-items: center; min-width: 0; flex: 1 1 0;}
+.date-segment:last-child {flex-grow: 1.4;}
+.date-separator {flex-shrink: 0; padding-inline: 4px; color: var(--muted); font-size: 16px; user-select: none;}
+.typed-date-control input {min-width: 0; min-height: 42px; padding: 8px 2px; border: 0; border-radius: 0; background: transparent; text-align: center; font-size: 16px; font-variant-numeric: tabular-nums; outline: none !important;}
+.typed-date-control input::placeholder {color: var(--text-subtle); font-size: 13px;}

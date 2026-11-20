@@ -38,6 +38,15 @@ export function usePortalData() {
     return request;
   }, []);
   useEffect(() => {
+    const clearSession = () => {
+      invalidate();
+      setData(emptyState);
+      setUpdatedAt('');
+    };
+    window.addEventListener('ph:session-expired', clearSession);
+    return () => window.removeEventListener('ph:session-expired', clearSession);
+  }, [invalidate]);
+  useEffect(() => {
     mounted.current = true;
     void refresh().catch((e) => {
       if (mounted.current) setError((e as Error).message);

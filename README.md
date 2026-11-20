@@ -23,9 +23,9 @@ Trang `/` dùng chung thanh bên. Công khai chỉ hiện Tổng quát / Tìm ki
 - Dev có toàn bộ quyền, thêm Cấu hình đăng ký / Cấu hình nhà phát triển. Quản lý tài khoản và đổi mật khẩu nằm trong menu góc phải, không cần trang riêng.
 - Dev tạo Admin/Manager bằng ID (chữ/số, 1–40 ký tự) + mật khẩu, danh sách không chứa mật khẩu/hash. Dev đặt mật khẩu mới hoặc xóa tài khoản; Admin/Manager chỉ đổi mật khẩu của mình bằng mật khẩu hiện tại.
 
-Tài khoản Dev duy nhất khai báo trong `server/dev-account.mjs`: ID `dev`, mật khẩu **ban đầu** `1@345678`. Backend tạo một lần, lưu scrypt hash và không đặt lại mật khẩu khi khởi động/redeploy. Đổi mật khẩu qua menu tài khoản sau khi đăng nhập. Không cho tạo thêm/xóa Dev; database có unique index giới hạn một Dev.
+Dev local được khởi tạo từ `server/dev-account.mjs` và không ghi đè hash đã đổi. **Production không tạo Dev từ source, không chấp nhận mật khẩu khởi tạo và giữ nguyên mật khẩu đã đổi của tài khoản hiện có.** Dev production cần được cấp bằng quy trình quản trị riêng. Database chỉ cho phép một Dev.
 
-Tài khoản quản trị ở `staff_accounts`, độc lập với hồ sơ `members`. Không có tài khoản huynh đệ, OTP, SMS/email login, Google hoặc Supabase Auth. Tìm kiếm công khai chỉ trả họ tên/nhóm, không trả liên hệ hoặc hồ sơ chi tiết.
+Tài khoản quản trị ở `staff_accounts`, độc lập với hồ sơ `members`. Không có tài khoản huynh đệ, OTP, SMS/email login, Google hoặc Supabase Auth. Tra cứu tên, danh sách chọn huynh đệ và mọi ảnh/hồ sơ chỉ dành cho phiên nhân sự hợp lệ; không có API tra cứu hồ sơ công khai.
 
 ## Local
 

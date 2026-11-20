@@ -99,6 +99,12 @@ export default function App({
     });
   }
   const [reviewingDuplicate, setReviewingDuplicate] = useState<Member | null>(null);
+  useEffect(() => {
+    setDetail(null);
+    setEditing(false);
+    setRejecting(null);
+    setReviewingDuplicate(null);
+  }, [staff?.id]);
   const registrationMatches = useMemo(() => {
     const waiting = data.pendingRegistrations ?? [];
     return findRegistrationMatches(waiting, [...data.store.members, ...waiting]);
@@ -278,6 +284,7 @@ export default function App({
         <>
           {page === "overview" && (
             <RegistrationIntake
+              key={staff?.id ?? "public"}
               isStaff={!!staff}
               onRegistered={() => void refreshWithNotice()}
             />
@@ -324,7 +331,7 @@ export default function App({
           )}
         </>
       )}
-      {detail && (
+      {staff && detail && (
         <MemberProfileDialog
           key={detail.id}
           member={detail}
@@ -338,7 +345,7 @@ export default function App({
           onSave={saveProfile}
         />
       )}
-      {reviewingDuplicate && (
+      {staff && reviewingDuplicate && (
         <Dialog title="Kiểm tra hồ sơ có thể trùng" description={reviewingDuplicate.name} onClose={() => setReviewingDuplicate(null)}>
           <ul className="review-matches">
             {(registrationMatches.get(reviewingDuplicate.id) ?? []).map(({member, reason}) => (

@@ -16,7 +16,7 @@ test('Registration approval separates public submissions and trusted staff regis
    const requestId=randomUUID(),payload={values:{...validValues(),name:'Waiting '+group},requestId};
    const result=await call('/registrations/'+group,'POST',payload);assert.equal(result.status,201);assert.equal(result.body.status,'pending');assert.equal(result.body.member,undefined);
    const state=(await call('/bootstrap','GET',undefined,manager)).body,member=state.pendingRegistrations.find(m=>m.name===payload.values.name);assert.ok(member);assert.equal(member.group,group);assert.ok(!state.store.members.some(m=>m.id===member.id));
-   assert.deepEqual((await call('/search?q='+encodeURIComponent(payload.values.name))).body.results,[]);
+   assert.deepEqual((await call('/search?q='+encodeURIComponent(payload.values.name),'GET',undefined,manager)).body.results,[]);
    assert.equal((await call('/enrollments/tldd-01/'+member.id,'PUT',{},admin)).status,400);
    assert.equal((await call('/registrations/'+member.id+'/approve','POST',{})).status,401);
    assert.equal((await call('/registrations/'+member.id+'/approve','POST',{},manager)).status,403);
@@ -25,7 +25,7 @@ test('Registration approval separates public submissions and trusted staff regis
    const approved=await call('/registrations/'+member.id+'/approve','POST',{},group==='children'?dev:admin);assert.equal(approved.status,200);assert.equal(approved.body.member.registrationStatus,'approved');
    assert.equal((await call('/registrations/'+member.id+'/approve','POST',{},admin)).status,200);
    assert.equal((await db.query("SELECT count(*)::int AS n FROM audit_log WHERE target=$1 AND action='registration_approve'",[member.id])).rows[0].n,1);
-   const after=(await call('/bootstrap','GET',undefined,manager)).body;assert.ok(!after.pendingRegistrations.some(m=>m.id===member.id));assert.ok(after.store.members.some(m=>m.id===member.id));assert.equal((await call('/search?q='+encodeURIComponent(payload.values.name))).body.results.length,group==='children'?0:1);
+   const after=(await call('/bootstrap','GET',undefined,manager)).body;assert.ok(!after.pendingRegistrations.some(m=>m.id===member.id));assert.ok(after.store.members.some(m=>m.id===member.id));assert.equal((await call('/search?q='+encodeURIComponent(payload.values.name))).status,401);
    assert.equal((await call('/search?q='+encodeURIComponent(payload.values.name),'GET',undefined,manager)).body.results.length,1);
    assert.equal((await call('/registrations/'+group,'POST',payload)).body.status,'approved');
   }
@@ -60,7 +60,7 @@ test('Rejecting a registration requires Admin/Dev and retains an audited, termin
    assert.equal((await db.query('SELECT registration_status FROM members WHERE id=$1',[member.id])).rows[0].registration_status,'rejected');
    assert.equal((await db.query("SELECT count(*)::int AS n FROM audit_log WHERE target=$1 AND action='registration_reject'",[member.id])).rows[0].n,1);
    const state=(await call('/bootstrap','GET',undefined,manager)).body;assert.ok(!state.pendingRegistrations.some(m=>m.id===member.id));assert.ok(!state.store.members.some(m=>m.id===member.id));
-   assert.deepEqual((await call('/search?q='+encodeURIComponent(payload.values.name))).body.results,[]);
+   assert.deepEqual((await call('/search?q='+encodeURIComponent(payload.values.name),'GET',undefined,manager)).body.results,[]);
    assert.equal((await call('/registrations/'+group,'POST',payload)).body.status,'rejected');
   }
   const approved=(await call('/bootstrap','GET',undefined,dev)).body.store.members[0];assert.equal((await call('/registrations/'+approved.id+'/reject','POST',{},dev)).status,409);

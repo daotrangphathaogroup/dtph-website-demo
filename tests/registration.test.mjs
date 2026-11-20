@@ -122,18 +122,19 @@ test('Workbook profiles: exact public fields, full staff data, image and linked 
    assert.deepEqual(migrated.status,[]);assert.equal(migrated.legacyActivityStatus,'Nội dung cũ');assert.equal(migrated.notes,'Giữ nguyên');
 
   });
-  await t.test('linked member picker exposes minimal approved identities and portrait; links store ID, not name',async()=>{
+  await t.test('Caregivers retain member links while referrals accept ordinary text',async()=>{
    const data=validValues({name:'Đồng tên',dharmaName:'Thiện Tâm',introducedBy:ids.children});await call('/registrations/youth','POST',{values:data,requestId:randomUUID()},manager);await call('/registrations/congregation','POST',{values:validValues({name:'Đồng tên'}),requestId:randomUUID()},manager);
-   const options=(await call('/member-options?q='+encodeURIComponent('Đồng tên'))).body.results;assert.equal(options.length,2);assert.ok(options.some(p=>p.dharmaName==='Thiện Tâm'));assert.ok(options.some(p=>p.dharmaName===''));assert.notEqual(options[0].id,options[1].id);assert.deepEqual(Object.keys(options[0]).sort(),['avatar','dharmaName','group','id','name']);
-   const pending=await call('/registrations/youth','POST',{values:validValues({name:'Pending identity'}),requestId:randomUUID()});assert.equal(pending.status,201);assert.deepEqual((await call('/member-options?q=Pending')).body.results,[]);
+   const options=(await call('/member-options?q='+encodeURIComponent('Đồng tên'),'GET',undefined,manager)).body.results;assert.equal(options.length,2);assert.ok(options.some(p=>p.dharmaName==='Thiện Tâm'));assert.ok(options.some(p=>p.dharmaName===''));assert.notEqual(options[0].id,options[1].id);assert.deepEqual(Object.keys(options[0]).sort(),['avatar','dharmaName','group','id','name']);
+   const pending=await call('/registrations/youth','POST',{values:validValues({name:'Pending identity'}),requestId:randomUUID()});assert.equal(pending.status,201);assert.deepEqual((await call('/member-options?q=Pending','GET',undefined,manager)).body.results,[]);
    const pendingId=(await db.query('SELECT id FROM members WHERE name=$1',['Pending identity'])).rows[0].id;
-   for(const introducedBy of ['Raw name',pendingId])assert.equal((await call('/registrations/youth','POST',{values:validValues({introducedBy}),requestId:randomUUID()})).status,400);
+   for(const introducedBy of ['  Người giới thiệu ngoài hệ thống  ',pendingId]){const requestId=randomUUID();const referral=await call('/registrations/youth','POST',{values:validValues({introducedBy}),requestId},manager);assert.equal(referral.status,201);const stored=(await db.query('SELECT m.id,m.profile_data FROM members m JOIN registration_submissions r ON r.member_id=m.id WHERE r.request_id=$1',[requestId])).rows[0];assert.equal(stored.profile_data.introducedBy,introducedBy.trim());const member=(await call('/bootstrap','GET',undefined,manager)).body.store.members.find(m=>m.id===stored.id);assert.equal(member.references.introducedBy,undefined);}
+   assert.equal((await call('/registrations/youth','POST',{values:validValues({introducedBy:'a'.repeat(201)}),requestId:randomUUID()})).status,400);
    const result=await call('/members/'+ids.youth,'PATCH',{profileData:{caregiver:ids.children,introducedBy:ids.congregation}},dev);assert.equal(result.status,200);assert.equal(result.body.member.profileData.caregiver,ids.children);assert.equal(result.body.member.references.caregiver.id,ids.children);
    assert.equal((await call('/members/'+ids.youth,'PATCH',{profileData:{caregiver:ids.youth}},dev)).status,400);
-   assert.equal((await call('/member-portraits/'+pendingId)).status,404);assert.equal((await call('/member-portraits/'+ids.children)).status,404);
-   assert.deepEqual((await call('/member-options?id='+ids.children)).body.results,[]);
+   assert.equal((await call('/member-portraits/'+pendingId,'GET',undefined,manager)).status,404);assert.equal((await call('/member-portraits/'+ids.children)).status,401);
+   assert.equal((await call('/member-options?id='+ids.children)).status,401);
    const childName=(await db.query('SELECT name FROM members WHERE id=$1',[ids.children])).rows[0].name;
-   assert.ok(!(await call('/search?q='+encodeURIComponent(childName))).body.results.some(p=>p.group==='children'));
+   assert.equal((await call('/search?q='+encodeURIComponent(childName))).status,401);
    assert.equal((await call('/member-options?id='+ids.children,'GET',undefined,manager)).body.results[0].id,ids.children);
    assert.equal((await call('/member-portraits/'+ids.children,'GET',undefined,manager)).status,200);
    const image=(await call('/member-portraits/'+ids.children,'GET',undefined,manager)).bytes,meta=await sharp(image).metadata();assert.equal(meta.width,360);assert.equal(meta.height,480);assert.equal(meta.format,'webp');
