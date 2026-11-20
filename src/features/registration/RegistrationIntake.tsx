@@ -2,7 +2,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { ArrowRight, Check, KeyRound, Shuffle } from "lucide-react";
 import Link from "next/link";
-import { api } from "../../lib/api";
+import { submitRegistration } from "../../lib/api";
 import { groupLabels } from "../../lib/types";
 import type { ProfileValues } from "../../lib/registration";
 import {
@@ -208,10 +208,10 @@ export default function RegistrationIntake({
     try {
       const result = await registrationDelivery(async () => {
         if (demo) return {status: "pending" as const};
-        const response = await api<{status: "pending" | "approved" | "rejected"}>("/registrations/auto", "POST", {
+        const response = await submitRegistration({
           values: JSON.parse(payload),
           requestId: request.current!.id,
-        });
+        }, controller.signal);
         if (response.status === "rejected") throw new Error("Phiếu này đã được từ chối. Vui lòng liên hệ nhân sự Đạo Tràng.");
         return {status: response.status};
       }, setDeliveryPhase, controller.signal, window.matchMedia("(prefers-reduced-motion: reduce)").matches, steps.length);
