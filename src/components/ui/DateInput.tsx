@@ -80,7 +80,7 @@ export default function DateInput({
         autoComplete={props.autoComplete === "bday" ? ["bday-day", "bday-month", "bday-year"][index] : props.autoComplete}
         type="text"
         inputMode="numeric"
-        placeholder={["DD", "MM", "YYYY"][index]}
+        placeholder={["Ngày", "Tháng", "Năm"][index]}
         maxLength={lengths[index]}
         value={part}
         onChange={event => {

@@ -85,9 +85,9 @@ test("Public forms remove retired fields and hide child occupations and referral
     );
     assert.match(markup, /Gửi thông tin đăng ký/);
     assert.doesNotMatch(markup, /type="date"/);
-    assert.match(markup, /placeholder="DD"/);
-    assert.match(markup, /placeholder="MM"/);
-    assert.match(markup, /placeholder="YYYY"/);
+    assert.match(markup, /placeholder="Ngày"/);
+    assert.match(markup, /placeholder="Tháng"/);
+    assert.match(markup, /placeholder="Năm"/);
     assert.doesNotMatch(markup, /Quê quán|Nơi công tác|Trường học/);
     if(group==='children'){
       assert.doesNotMatch(markup,/Nghề nghiệp|Người giới thiệu|HĐ chăm sóc/);
